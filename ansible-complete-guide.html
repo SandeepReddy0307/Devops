@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansible Complete Guide — Basics to Advanced</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #ee0000; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 15px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(238,0,0,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-yaml { background: #6e40c9; color: white; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(238,0,0,0.06); } .best .box-title { color: #ff6b6b; } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">A</span> Ansible Complete Guide</h1>
+    <p>Configuration management &amp; automation</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:9px 16px;background:var(--brand,#ee0000);color:#fff;border-radius:2px;font-size:13px;font-weight:700;text-decoration:none;">◎ Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Foundations</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#what-is-ansible">1. What is Ansible?</a>
+    <a href="#how-it-works">2. How Ansible Works (agentless)</a>
+    <a href="#install">3. Install &amp; First Command</a>
+    <a href="#inventory">4. Inventory — your fleet</a>
+
+    <div class="nav-group-title">Part 2 — Playbooks</div>
+    <a href="#adhoc">5. Ad-hoc Commands &amp; Modules</a>
+    <a href="#playbooks">6. Playbooks</a>
+    <a href="#idempotency">7. Idempotency — the core idea</a>
+    <a href="#variables">8. Variables &amp; Facts</a>
+    <a href="#templates">9. Templates (Jinja2)</a>
+    <a href="#handlers">10. Handlers, Loops &amp; Conditionals</a>
+
+    <div class="nav-group-title">Part 3 — Structure &amp; Scale</div>
+    <a href="#roles">11. Roles — reusable structure</a>
+    <a href="#galaxy">12. Ansible Galaxy &amp; Collections</a>
+    <a href="#vault">13. Ansible Vault — secrets</a>
+    <a href="#patterns">14. Advanced Patterns</a>
+
+    <div class="nav-group-title">Part 4 — Production</div>
+    <a href="#cicd">15. Ansible in CI/CD</a>
+    <a href="#terraform">16. Ansible + Terraform</a>
+
+    <div class="nav-group-title">Part 5 — Advanced Engine</div>
+    <a href="#execution">17. Execution Strategies &amp; Forks</a>
+    <a href="#jinja-deep">18. Advanced Jinja2 &amp; Filters</a>
+    <a href="#errors">19. Error Handling &amp; Blocks</a>
+    <a href="#performance">20. Performance Tuning</a>
+    <a href="#dynamic-inv">21. Dynamic Inventory Deep Dive</a>
+
+    <div class="nav-group-title">Part 6 — Extend &amp; Scale</div>
+    <a href="#custom-modules">22. Custom Modules &amp; Plugins</a>
+    <a href="#collections-deep">23. Building Collections</a>
+    <a href="#molecule">24. Testing with Molecule</a>
+    <a href="#network-cloud">25. Network &amp; Cloud Automation</a>
+    <a href="#awx">26. AWX / Automation Platform</a>
+
+    <div class="nav-group-title">Part 7 — Reference</div>
+    <a href="#best-practices">27. Best Practices</a>
+    <a href="#troubleshooting">28. Troubleshooting Playbook</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Ansible: The Complete Guide</h1>
+<p class="lead">Automate server configuration, application deployment, and orchestration with simple, agentless YAML — from your first playbook to reusable roles, vaults, and CI-driven automation.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>Each concept: <strong>what it is</strong>, <strong>why it exists</strong>, <strong>the YAML</strong>, and <strong>★ best practice</strong>. Ansible pairs naturally with the <a href="terraform-complete-guide.html">Terraform guide</a> (which <em>provisions</em> the servers Ansible then <em>configures</em>) and builds on the <a href="linux-complete-guide.html">Linux guide</a>.</p>
+</div>
+
+<h2 id="what-is-ansible">1. What is Ansible?</h2>
+<p class="section-intro">Ansible automates repetitive IT tasks — configuring servers, installing software, deploying apps — by describing the desired state in YAML and running it across many machines at once.</p>
+
+<div class="box eli5">
+  <span class="box-title">Ansible = a to-do list your servers follow</span>
+  <p>Instead of SSH-ing into 50 servers and typing the same commands 50 times, you write the steps down once in a <strong>playbook</strong> and Ansible runs them on all 50 in parallel. And it's <em>smart</em>: if a step is already done (package already installed), it skips it. So you can run it again and again safely.</p>
+</div>
+
+<h3>Why Ansible exists</h3>
+<p>Before configuration management, servers were configured by hand or by fragile bash scripts that assumed a clean starting state. That approach doesn't survive contact with reality: servers drift apart ("snowflake" servers), a script that worked on a fresh box breaks when re-run on a half-configured one, and nobody can say with confidence what state any given machine is in. Ansible exists to replace <em>imperative</em> "run these commands" thinking with <em>declarative</em> "here is the state I want" thinking. You describe the end result; Ansible figures out whether each step is already satisfied and only changes what needs changing.</p>
+<p>It was designed to be radically simple to adopt compared to earlier tools (Puppet, Chef) that require an agent daemon and a central server. Ansible needs neither — which is why a single engineer can start managing a fleet in an afternoon.</p>
+
+<h4>How it works under the hood</h4>
+<p>When you run a playbook, the <strong>control node</strong> (your laptop or CI runner, the only machine with Ansible installed) reads your YAML, resolves the inventory into a concrete host list, and for each task connects to each managed host over SSH. It then copies a small, self-contained Python <strong>module</strong> file to a temporary directory on the target, executes it with the task's arguments, captures the JSON the module prints to stdout, and deletes the temp file. Nothing stays behind — there is no running agent. The module itself contains the logic to check current state and decide whether a change is needed.</p>
+
+<div class="box note">
+  <span class="box-title">Declarative desired state, not a script</span>
+  <p>A task like "package nginx is <code>present</code>" is a <em>goal</em>, not a command. Ansible asks the target "is nginx installed?" and installs it only if not. Contrast a bash script that blindly runs <code>apt install nginx</code> every time. This distinction — state vs. commands — is the mental foundation for everything else in this guide.</p>
+</div>
+
+<div class="code-label label-cmd">A worked example: one command against your whole fleet</div>
+<pre><code># Report the uptime of every host, in parallel
+ansible all -i inventory.ini -m command -a "uptime"</code></pre>
+<div class="code-label label-output">Output</div>
+<pre><code>web-1 | CHANGED | rc=0 &gt;&gt;
+ 12:30:01 up 5 days,  3:14,  0 users,  load average: 0.02, 0.05, 0.01
+web-2 | CHANGED | rc=0 &gt;&gt;
+ 12:30:01 up 5 days,  3:11,  0 users,  load average: 0.00, 0.01, 0.00
+db-1  | CHANGED | rc=0 &gt;&gt;
+ 12:30:01 up 9 days,  8:42,  0 users,  load average: 0.10, 0.08, 0.09</code></pre>
+<p>That single line did what would otherwise be three SSH logins and three manually-typed commands — and it would scale identically to 300 hosts.</p>
+
+<div class="box warn">
+  <span class="box-title">Common early misconceptions</span>
+  <p>Ansible is <strong>push-based and stateless</strong> — it does not keep a database of your infrastructure the way Terraform keeps state. It also is <strong>not</strong> a monitoring or scheduling system by itself; it runs when you run it (AWX/cron adds scheduling, see §28). And "agentless" doesn't mean "requirement-less": managed Linux hosts still need Python and reachable SSH.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Recipe vs. errand list</span>
+  <p>Think of a shell script as an <em>errand list</em>: "buy milk, buy eggs" — run it twice and you buy milk twice. An Ansible playbook is a <em>recipe for what the fridge should contain</em>: "there should be milk and eggs." Run it twice and the second time it looks in the fridge, sees they're already there, and does nothing. Same desired outcome, no waste, no harm.</p>
+</div>
+
+<h2 id="how-it-works">2. How Ansible Works — Agentless over SSH</h2>
+<p class="section-intro">Ansible's killer feature: <strong>no agent</strong> to install on the machines you manage. It connects over plain SSH (or WinRM for Windows) and runs small modules, then removes them.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Ansible control node pushes over SSH to managed nodes">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Agentless: control node → SSH → managed nodes</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="310" y="50" width="200" height="60" rx="10" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="410" y="76" text-anchor="middle" class="svg-label" fill="#ff6b6b">Control node</text>
+    <text x="410" y="94" text-anchor="middle" class="svg-sub">your laptop / CI (has playbooks)</text>
+    <rect x="40" y="160" width="200" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="140" y="185" text-anchor="middle" class="svg-sub">web-1 (no agent)</text>
+    <rect x="310" y="160" width="200" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="410" y="185" text-anchor="middle" class="svg-sub">web-2 (no agent)</text>
+    <rect x="580" y="160" width="200" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="680" y="185" text-anchor="middle" class="svg-sub">db-1 (no agent)</text>
+    <g stroke="#58a6ff" stroke-width="2">
+      <line x1="380" y1="110" x2="150" y2="158" marker-end="url(#as)"/>
+      <line x1="410" y1="110" x2="410" y2="158" marker-end="url(#as)"/>
+      <line x1="440" y1="110" x2="670" y2="158" marker-end="url(#as)"/>
+    </g>
+    <text x="250" y="135" text-anchor="middle" class="svg-sub" fill="#58a6ff">SSH</text>
+  </g>
+  <defs><marker id="as" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Only the control node needs Ansible. Managed nodes just need SSH + Python. This is why Ansible is so easy to adopt — nothing to install on the fleet.</figcaption>
+</figure>
+
+<h3>Why agentless matters</h3>
+<p>Agent-based tools (Puppet, Chef, Salt in its classic mode) require you to install a daemon on every managed machine, keep it patched, open a port for it, and run a central master server it phones home to. That is a lot of moving parts to secure and maintain — and a bootstrapping problem (how do you install the agent on a brand-new box?). Ansible sidesteps all of it by riding on infrastructure you already have and trust: SSH. If you can SSH to a box, you can manage it. There is no new attack surface, no agent version skew, and no "the agent died so the host stopped reporting" failure mode.</p>
+
+<h4>The task execution lifecycle, step by step</h4>
+<p>For each task on each host, Ansible does roughly this:</p>
+<ol>
+  <li><strong>Connect</strong> — opens an SSH session (reusing an existing one if <code>ControlPersist</code> is enabled).</li>
+  <li><strong>Assemble the module</strong> — on the control node, Ansible bundles the module's Python code plus your task arguments into a single executable payload.</li>
+  <li><strong>Ship it</strong> — copies that payload into a temp dir under the remote user's home (e.g. <code>~/.ansible/tmp/</code>).</li>
+  <li><strong>Execute</strong> — runs the payload with the remote Python interpreter, escalating with <code>become</code> (sudo) if requested.</li>
+  <li><strong>Collect</strong> — the module prints a JSON result (<code>changed</code>, <code>failed</code>, plus any data) to stdout, which Ansible parses.</li>
+  <li><strong>Clean up</strong> — deletes the temp files. Nothing persists on the target.</li>
+</ol>
+
+<div class="box note">
+  <span class="box-title">Pipelining removes round-trips</span>
+  <p>Normally steps 3–4 mean multiple SSH operations per task (copy file, then execute). With <code>pipelining = true</code> (in <code>ansible.cfg</code>), Ansible pipes the module straight into the remote Python process over the existing SSH connection, eliminating the separate copy step. This can cut playbook time dramatically — see §22. It requires that the remote sudoers file does not force <code>requiretty</code>.</p>
+</div>
+
+<div class="code-label label-cmd">Watch the connection happen with -vvv</div>
+<pre><code>ansible web-1 -i inventory.ini -m ping -vvv</code></pre>
+<div class="code-label label-output">Abbreviated output — note the SSH command and temp dir</div>
+<pre><code>ESTABLISH SSH CONNECTION FOR USER: ubuntu
+SSH: EXEC ssh -o ControlMaster=auto -o ControlPersist=60s ... 10.0.1.11
+&lt;10.0.1.11&gt; PUT /tmp/ansible-local-.../ping.py TO /home/ubuntu/.ansible/tmp/ansible-tmp-.../AnsiballZ_ping.py
+&lt;10.0.1.11&gt; EXEC /bin/sh -c 'python3 .../AnsiballZ_ping.py &amp;&amp; sleep 0'
+web-1 | SUCCESS =&gt; {
+    "changed": false,
+    "ping": "pong"
+}</code></pre>
+<p>You can see the whole lifecycle: it establishes SSH, PUTs the module into a temp dir, EXECs it with remote Python, and the module replies with JSON. The <code>ping</code> module deliberately reports <code>changed: false</code> because checking reachability changes nothing.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Module ship and run lifecycle over SSH">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Module lifecycle: assemble → ship → run → collect → clean up</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="90" width="150" height="70" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="95" y="118" text-anchor="middle" class="svg-label" fill="#ff6b6b">Control node</text>
+    <text x="95" y="136" text-anchor="middle" class="svg-sub">bundles module</text>
+    <text x="95" y="150" text-anchor="middle" class="svg-sub">+ args (AnsiballZ)</text>
+    <rect x="650" y="90" width="150" height="70" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="725" y="118" text-anchor="middle" class="svg-label" fill="#7ee787">Managed node</text>
+    <text x="725" y="136" text-anchor="middle" class="svg-sub">~/.ansible/tmp/</text>
+    <text x="725" y="150" text-anchor="middle" class="svg-sub">remote python3</text>
+    <g stroke="#58a6ff" stroke-width="2">
+      <line x1="170" y1="108" x2="648" y2="108" marker-end="url(#ans-ship)"/>
+      <line x1="648" y1="142" x2="172" y2="142" marker-end="url(#ans-ship)"/>
+    </g>
+    <text x="410" y="102" text-anchor="middle" class="svg-sub" fill="#58a6ff">① SSH PUT payload  →  ② EXEC with sudo/become</text>
+    <text x="410" y="160" text-anchor="middle" class="svg-sub" fill="#58a6ff">④ JSON result (changed / failed / data)  ←  ③ module checks state &amp; acts</text>
+    <rect x="300" y="195" width="220" height="34" rx="6" fill="#21262d" stroke="#f0883e"/>
+    <text x="410" y="217" text-anchor="middle" class="svg-sub" fill="#f0883e">⑤ temp files deleted — nothing persists</text>
+  </g>
+  <defs><marker id="ans-ship" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Every task is a self-contained round trip. The module carries its own decision logic, runs on the target's Python, returns JSON, then vanishes — no daemon, no leftover state.</figcaption>
+</figure>
+
+<div class="box warn">
+  <span class="box-title">Gotchas: Python, host keys, and WinRM</span>
+  <p>Because modules run in <em>remote</em> Python, the target must have a Python interpreter — set <code>ansible_python_interpreter</code> if it lives somewhere non-standard (e.g. <code>/usr/bin/python3</code> on minimal images). The first SSH connection may block on host-key verification; pre-seed <code>known_hosts</code> or set <code>host_key_checking</code> deliberately. Windows hosts don't use SSH-by-default modules — they connect over <strong>WinRM</strong> and run PowerShell modules instead.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A traveling contractor with a toolbox</span>
+  <p>Imagine a contractor who owns no permanent office in your building. Each time there's a job, they knock on the door (SSH), bring exactly the one tool they need for that task (the module), do the work, take the tool back, and leave — no locker, no stored equipment, no rent. That's agentless: the intelligence lives on the control node and visits only when needed.</p>
+</div>
+
+<h2 id="install">3. Install &amp; First Command</h2>
+<div class="code-label label-cmd">Install &amp; ping your fleet</div>
+<pre><code>python3 -m pip install --user ansible
+ansible --version
+
+# "ping" all hosts (checks SSH + Python, does NOT ICMP ping)
+ansible all -i inventory.ini -m ping</code></pre>
+
+<h3>Why the install is so light — and what actually gets installed</h3>
+<p>You only install Ansible on the <strong>control node</strong>. The PyPI package <code>ansible</code> is a "batteries-included" bundle: it pulls in <code>ansible-core</code> (the engine: <code>ansible</code>, <code>ansible-playbook</code>, <code>ansible-galaxy</code> CLIs and the SSH connection machinery) plus a large set of community <strong>collections</strong>. If you want a minimal footprint — common in CI images — install just <code>ansible-core</code> and add only the collections you need via <code>requirements.yml</code>. Managed nodes get nothing installed; they only need SSH access and a Python interpreter.</p>
+
+<div class="box tip">
+  <span class="box-title">Prefer a pinned virtualenv, not a global install</span>
+  <p>Ansible is just Python. Installing it into a dedicated virtualenv (or pinning it in <code>requirements.txt</code>) means every engineer and every CI run uses the <em>same</em> version, so "works on my machine" doesn't turn into "the pipeline behaves differently." Pin both <code>ansible-core</code> and your collections.</p>
+</div>
+
+<div class="code-label label-cmd">Reproducible install into a virtualenv</div>
+<pre><code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install "ansible-core==2.16.*"          # pin the engine
+ansible-galaxy collection install -r requirements.yml   # pin collections
+ansible --version</code></pre>
+<div class="code-label label-output">Output — confirm config file, python, and paths</div>
+<pre><code>ansible [core 2.16.6]
+  config file = /home/you/project/ansible.cfg
+  configured module search path = ['/home/you/.ansible/plugins/modules', ...]
+  ansible python module location = /home/you/project/.venv/lib/python3.11/site-packages/ansible
+  executable location = /home/you/project/.venv/bin/ansible
+  python version = 3.11.4</code></pre>
+<p>The <code>config file</code> line tells you which <code>ansible.cfg</code> is in effect — invaluable when a setting isn't taking effect because a different config is being loaded.</p>
+
+<div class="box warn">
+  <span class="box-title">The <code>ping</code> module is not ICMP ping</span>
+  <p>The most common beginner surprise: <code>-m ping</code> does <em>not</em> send an ICMP packet. It SSHes in, runs a tiny Python module, and expects <code>"pong"</code> back — so it actually verifies the whole management path (SSH auth <em>and</em> a working remote Python), which is exactly what you want to test first. A host that answers a network ping can still fail Ansible's <code>ping</code> if SSH or Python is broken.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Install the remote control, not the TVs</span>
+  <p>Setting up Ansible is like buying one universal remote (the control node). You don't install anything into the TVs (your servers) — the remote just needs line-of-sight (SSH) to talk to them. Buy one good remote, keep its firmware version pinned, and it drives the whole living room.</p>
+</div>
+
+<h2 id="inventory">4. Inventory — Your Fleet</h2>
+<p class="section-intro">The inventory lists the machines Ansible manages, organized into groups you can target.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="Ansible inventory groups and groups of groups">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Inventory: hosts, groups &amp; groups-of-groups</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="300" y="40" width="220" height="44" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="410" y="60" text-anchor="middle" class="svg-label" fill="#ff6b6b">production</text>
+    <text x="410" y="77" text-anchor="middle" class="svg-sub">[production:children] — a group of groups</text>
+    <rect x="150" y="130" width="180" height="44" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="240" y="150" text-anchor="middle" class="svg-label" fill="#58a6ff">[web]</text>
+    <text x="240" y="167" text-anchor="middle" class="svg-sub">tier group</text>
+    <rect x="490" y="130" width="180" height="44" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="580" y="150" text-anchor="middle" class="svg-label" fill="#58a6ff">[db]</text>
+    <text x="580" y="167" text-anchor="middle" class="svg-sub">tier group</text>
+    <rect x="60" y="220" width="150" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="135" y="246" text-anchor="middle" class="svg-sub">web-1  10.0.1.11</text>
+    <rect x="230" y="220" width="150" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="305" y="246" text-anchor="middle" class="svg-sub">web-2  10.0.1.12</text>
+    <rect x="510" y="220" width="150" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="585" y="246" text-anchor="middle" class="svg-sub">db-1  10.0.2.11</text>
+    <g stroke="#8b949e" stroke-width="1.5" marker-end="url(#ans-inv)">
+      <line x1="370" y1="84" x2="250" y2="128"/><line x1="450" y1="84" x2="575" y2="128"/>
+      <line x1="230" y1="174" x2="150" y2="218"/><line x1="255" y1="174" x2="300" y2="218"/>
+      <line x1="580" y1="174" x2="585" y2="218"/>
+    </g>
+    <text x="720" y="248" text-anchor="middle" class="svg-sub" fill="#d2a8ff">group_vars/ &amp; host_vars/</text>
+  </g>
+  <defs><marker id="ans-inv" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Target a single host, a tier group like <code>web</code>, or a composite like <code>production</code> that fans out to every child group's hosts. Variables attach at any level and merge down.</figcaption>
+</figure>
+
+<div class="code-label label-config">inventory.ini</div>
+<pre><code>[web]
+web-1 ansible_host=10.0.1.11
+web-2 ansible_host=10.0.1.12
+
+[db]
+db-1 ansible_host=10.0.2.11
+
+[production:children]   # a group of groups
+web
+db
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/id_ed25519</code></pre>
+<div class="box tip"><span class="box-title">Dynamic inventory for the cloud</span><p>In the cloud, servers come and go. Instead of a static file, use a <strong>dynamic inventory plugin</strong> (e.g., <code>aws_ec2</code>) that queries your cloud provider live and groups hosts by tags — so a newly-provisioned instance is automatically manageable.</p></div>
+
+<h3>Why the inventory is the center of gravity</h3>
+<p>Every Ansible run answers two questions: <em>what</em> to do (the playbook) and <em>where</em> to do it (the inventory). The inventory is your source of truth for the fleet's topology. Groups (<code>[web]</code>, <code>[db]</code>) are how you target subsets, and groups-of-groups (<code>[production:children]</code>) let you compose them — run against <code>production</code> and you hit every web and db host at once. This is what lets one playbook serve staging and prod: same tasks, different inventory.</p>
+
+<h4>How host and group variables attach to hosts</h4>
+<p>Inventory isn't just a host list — it's also where variables live. Ansible looks for <code>host_vars/&lt;hostname&gt;.yml</code> and <code>group_vars/&lt;groupname&gt;.yml</code> directories next to your inventory and merges them onto matching hosts automatically. When a host belongs to several groups, their variables merge; if two groups define the same variable, the one with higher <strong>group priority</strong> (or, by default, the last-loaded alphabetically) wins. The special group <code>all</code> applies to every host, so <code>group_vars/all.yml</code> is the place for fleet-wide defaults.</p>
+
+<div class="code-label label-config">Recommended layout: vars beside the inventory</div>
+<pre><code>inventories/
+  prod/
+    hosts.ini
+    group_vars/
+      all.yml          # fleet-wide defaults
+      web.yml          # vars for the [web] group
+    host_vars/
+      db-1.yml         # vars for just db-1</code></pre>
+
+<div class="code-label label-cmd">Verify what Ansible actually sees</div>
+<pre><code># Render the whole inventory as a tree of groups and hosts
+ansible-inventory -i inventory.ini --graph
+
+# Dump the fully-merged variables for one host (great for debugging precedence)
+ansible-inventory -i inventory.ini --host web-1</code></pre>
+<div class="code-label label-output">--graph output</div>
+<pre><code>@all:
+  |--@production:
+  |  |--@web:
+  |  |  |--web-1
+  |  |  |--web-2
+  |  |--@db:
+  |  |  |--db-1
+  |  |--@ungrouped:</code></pre>
+<p>Always run <code>ansible-inventory --graph</code> before a big playbook — it confirms your groups resolved the way you think, before you accidentally target the wrong hosts.</p>
+
+<div class="box warn">
+  <span class="box-title">Common inventory mistakes</span>
+  <p><strong>1. Targeting <code>all</code> by accident:</strong> forgetting <code>--limit</code> and running a destructive play against every host. <strong>2. INI vs YAML confusion:</strong> INI inventories put host vars inline (<code>web-1 ansible_host=10.0.1.11</code>), while YAML inventories nest them — mixing syntaxes silently drops variables. <strong>3. Duplicate hostnames across groups</strong> are fine (same host, merged vars) but <strong>the same name pointing at different <code>ansible_host</code> values</strong> is a bug. <strong>4. Putting secrets in the inventory file</strong> — use Vault (§13) instead.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A seating chart for your servers</span>
+  <p>The inventory is like a classroom seating chart with named groups: "the front row," "the window seats," "everyone." When the teacher says "front row, hand in your homework," they don't need to name each student. You point Ansible at a group name and it knows exactly which machines that means — and each seat can have sticky notes (variables) attached.</p>
+</div>
+
+<h2 id="adhoc">5. Ad-hoc Commands &amp; Modules</h2>
+<p class="section-intro">For quick one-off tasks, run a single module across hosts without writing a playbook.</p>
+<div class="code-label label-cmd">Ad-hoc examples</div>
+<pre><code>ansible web -m apt -a "name=nginx state=present" --become   # install nginx on [web]
+ansible all -m service -a "name=nginx state=restarted" --become
+ansible all -m shell -a "df -h"                              # run a shell command
+ansible db  -m copy -a "src=./my.cnf dest=/etc/mysql/my.cnf" --become</code></pre>
+<div class="box note"><span class="box-title">Modules are the verbs</span><p>Ansible ships thousands of <strong>modules</strong> — <code>apt</code>, <code>yum</code>, <code>service</code>, <code>copy</code>, <code>template</code>, <code>user</code>, <code>git</code>, <code>docker_container</code>, cloud modules, and more. Each is idempotent: it describes a desired state, not a command to blindly run. Always prefer a module over <code>shell</code>/<code>command</code>.</p></div>
+
+<h3>Why ad-hoc commands exist alongside playbooks</h3>
+<p>Not everything deserves a saved file. Ad-hoc commands are for <em>investigation and one-offs</em>: "is nginx running everywhere?", "how much disk is free on the db tier?", "restart this service on one host right now." They use the exact same modules and inventory as playbooks, so what you learn ad-hoc transfers directly. The rule of thumb: if you'll run it more than once, or it changes state you care about, promote it to a playbook so it's version-controlled and repeatable.</p>
+
+<h4>How a module call resolves under the hood</h4>
+<p><code>ansible web -m apt -a "name=nginx state=present"</code> breaks down as: <code>web</code> is the host pattern (resolved via inventory), <code>-m apt</code> selects the module, and <code>-a</code> passes its arguments. Ansible ships the <code>apt</code> module's Python to each host in the <code>web</code> group, runs it, and the module itself queries dpkg to see whether nginx is installed before deciding to act. That's why the same command is safe to run repeatedly — the idempotency logic lives inside the module, not in your command.</p>
+
+<div class="code-label label-cmd">Worked example: check state, then converge it</div>
+<pre><code># 1) Investigate — is nginx installed anywhere? (read-only)
+ansible web -i inventory.ini -m command -a "dpkg -l nginx" 
+
+# 2) Converge — make sure it's present (idempotent)
+ansible web -i inventory.ini -m apt -a "name=nginx state=present" --become</code></pre>
+<div class="code-label label-output">Second run shows idempotency in action</div>
+<pre><code># First converge:
+web-1 | CHANGED =&gt; { "changed": true, ... }     # installed it
+# Run the SAME command again:
+web-1 | SUCCESS =&gt; { "changed": false, ... }    # already present, did nothing</code></pre>
+<p>The color/keyword tells the story: <strong>CHANGED</strong> (yellow) means Ansible altered the host; <strong>SUCCESS/ok</strong> (green) means reality already matched the goal. A well-behaved fleet trends toward all-green on repeat runs.</p>
+
+<div class="box warn">
+  <span class="box-title"><code>shell</code> vs <code>command</code> vs a real module</span>
+  <p>The <code>command</code> module runs a binary directly (no shell), so <code>|</code>, <code>&gt;</code>, <code>&amp;&amp;</code>, and environment expansion do <em>not</em> work. The <code>shell</code> module runs through <code>/bin/sh</code>, so those do work — but it's a security and idempotency risk. Both report <code>changed</code> every single time because they can't know whether they changed anything. Prefer a purpose-built module (<code>apt</code>, <code>copy</code>, <code>service</code>) that understands state. Only drop to <code>command</code>/<code>shell</code> when no module exists — and then guard it (see §7 and §21).</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A quick phone call vs. a written procedure</span>
+  <p>An ad-hoc command is like phoning one team and saying "hey, restart the printer." A playbook is the written, approved procedure you file away and hand to anyone. Same action, but one is a spur-of-the-moment ask and the other is documented and repeatable. Use the phone call to poke around; write the procedure for anything that matters.</p>
+</div>
+
+<h2 id="playbooks">6. Playbooks</h2>
+<p class="section-intro">A playbook is a YAML file of <strong>plays</strong>; each play maps a group of hosts to a list of <strong>tasks</strong>.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Playbook contains plays which contain tasks which call modules">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Playbook → Plays → Tasks → Modules</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="45" width="760" height="200" rx="10" fill="none" stroke="#ee0000" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="120" y="65" text-anchor="middle" class="svg-label" fill="#ff6b6b">site.yml (playbook)</text>
+    <rect x="55" y="80" width="345" height="150" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="227" y="100" text-anchor="middle" class="svg-label" fill="#58a6ff">Play: hosts: web · become: true</text>
+    <rect x="420" y="80" width="345" height="150" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="592" y="100" text-anchor="middle" class="svg-label" fill="#58a6ff">Play: hosts: db</text>
+    <rect x="75" y="115" width="305" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="227" y="137" text-anchor="middle" class="svg-sub">Task: Install nginx → module: apt</text>
+    <rect x="75" y="155" width="305" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="227" y="177" text-anchor="middle" class="svg-sub">Task: Deploy config → module: template</text>
+    <rect x="75" y="195" width="305" height="30" rx="6" fill="#21262d" stroke="#d2a8ff"/><text x="227" y="215" text-anchor="middle" class="svg-sub">Handler: Restart nginx → module: service</text>
+    <rect x="440" y="115" width="305" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="592" y="137" text-anchor="middle" class="svg-sub">Task: Install mysql → module: apt</text>
+    <rect x="440" y="155" width="305" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="592" y="177" text-anchor="middle" class="svg-sub">Task: Create db → module: mysql_db</text>
+    <text x="592" y="215" text-anchor="middle" class="svg-sub">plays run top-to-bottom, tasks in order</text>
+  </g>
+</svg>
+<figcaption>One playbook can hold many plays. Each play binds a host pattern to an ordered task list; each task invokes exactly one module. Handlers hang off the play and fire on change.</figcaption>
+</figure>
+
+<div class="code-label label-yaml">webserver.yml</div>
+<pre><code>---
+- name: Configure web servers
+  hosts: web
+  become: true                 # run tasks with sudo
+  vars:
+    nginx_port: 80
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Deploy site config
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+      notify: Restart nginx        # triggers a handler (only if changed)
+
+    - name: Ensure nginx is running &amp; enabled
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted</code></pre>
+<div class="code-label label-cmd">Run it</div>
+<pre><code>ansible-playbook -i inventory.ini webserver.yml
+ansible-playbook -i inventory.ini webserver.yml --check --diff   # dry-run + show changes
+ansible-playbook -i inventory.ini webserver.yml --limit web-1    # one host
+ansible-playbook -i inventory.ini webserver.yml --tags config    # only tagged tasks</code></pre>
+
+<h3>Why playbooks are the heart of Ansible</h3>
+<p>An ad-hoc command does one thing on one target set. Real work is a <em>sequence</em>: install the package, drop the config, ensure the service is running, and only restart if the config changed. A playbook captures that whole ordered workflow in one version-controlled file, with names on every step so the run log doubles as documentation. Because it's declarative and idempotent, it's both the deploy tool and the source of truth for "what should this server look like."</p>
+
+<h4>How a playbook is structured and executed</h4>
+<p>A playbook is a list of <strong>plays</strong>. Each play binds a <code>hosts:</code> pattern to a list of <code>tasks:</code>, plus optional <code>vars:</code>, <code>handlers:</code>, and <code>roles:</code>. Execution order is deliberate and top-down: by default Ansible runs task 1 on <em>all</em> targeted hosts, waits for them, then task 2 on all hosts, and so on (the <code>linear</code> strategy, §19). This lockstep is what makes ordered rollouts and "gate on all hosts passing this step" possible. At the very start of a play, unless you disable it, Ansible runs an implicit fact-gathering step (§8) so <code>ansible_facts</code> is populated before your tasks reference it.</p>
+
+<div class="box note">
+  <span class="box-title">Always use fully-qualified module names</span>
+  <p>Write <code>ansible.builtin.apt</code>, not just <code>apt</code>. The FQCN (fully-qualified collection name) makes it unambiguous which collection provides the module, protects you from name collisions when you install community collections, and is the modern, lint-clean style. Short names still work for built-ins but are discouraged in shared code.</p>
+</div>
+
+<div class="code-label label-output">What a run looks like — the PLAY RECAP is the summary that matters</div>
+<pre><code>PLAY [Configure web servers] ***************************************
+
+TASK [Gathering Facts] *********************************************
+ok: [web-1]
+ok: [web-2]
+
+TASK [Install nginx] ***********************************************
+changed: [web-1]
+ok: [web-2]                # web-2 already had it
+
+TASK [Deploy site config] ******************************************
+changed: [web-1]
+changed: [web-2]
+
+RUNNING HANDLER [Restart nginx] ************************************
+changed: [web-1]
+changed: [web-2]
+
+PLAY RECAP *********************************************************
+web-1 : ok=4  changed=3  unreachable=0  failed=0  skipped=0
+web-2 : ok=4  changed=2  unreachable=0  failed=0  skipped=0</code></pre>
+<p>Read the <strong>PLAY RECAP</strong> bottom-up when triaging: <code>unreachable</code> means SSH/connectivity, <code>failed</code> means a task errored, and a healthy re-run should show <code>changed=0</code> everywhere (proof of idempotency).</p>
+
+<div class="box tip">
+  <span class="box-title"><code>--check --diff</code> is your seatbelt</span>
+  <p><code>--check</code> is a dry run: modules report what they <em>would</em> change without touching anything. Add <code>--diff</code> to see the actual before/after of files and templates. Run this against production before every real apply. Note the caveat: tasks whose result depends on an earlier task's real change (e.g. a command that only runs after a package install) may report inaccurately in check mode — use <code>check_mode: false</code> on read-only tasks that must always execute.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Playbook gotchas</span>
+  <p><strong>YAML indentation is significant</strong> — a misaligned <code>-</code> silently changes structure; run <code>ansible-playbook --syntax-check</code> and <code>ansible-lint</code>. <strong><code>become: true</code> is per-play or per-task</strong> — forgetting it gives "permission denied" on privileged tasks. <strong>Order matters</strong> — put "install" before "configure" before "start." And <strong>tasks without <code>name:</code></strong> produce unreadable logs; name everything.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A checklist a whole team runs in lockstep</span>
+  <p>A play is like a preflight checklist read aloud to a row of pilots at once: "everyone, check fuel… now everyone, check flaps…" The captain doesn't move to the next item until every pilot has done the current one. That's why the order is dependable and why one failing pilot is easy to spot — the checklist stops and tells you exactly who and where.</p>
+</div>
+
+<h2 id="idempotency">7. Idempotency — the Core Idea</h2>
+<p class="section-intro">The most important concept in Ansible: running the same playbook twice should produce the same result, changing nothing the second time.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Idempotent runs converge to desired state">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Idempotency: run again = no changes</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="70" width="180" height="60" rx="10" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="150" y="96" text-anchor="middle" class="svg-label" fill="#f0883e">Run 1</text>
+    <text x="150" y="114" text-anchor="middle" class="svg-sub">changed=5</text>
+    <rect x="320" y="70" width="180" height="60" rx="10" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="410" y="96" text-anchor="middle" class="svg-label" fill="#7ee787">Run 2</text>
+    <text x="410" y="114" text-anchor="middle" class="svg-sub">changed=0 (ok)</text>
+    <rect x="580" y="70" width="180" height="60" rx="10" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="670" y="96" text-anchor="middle" class="svg-label" fill="#7ee787">Run 3</text>
+    <text x="670" y="114" text-anchor="middle" class="svg-sub">changed=0 (ok)</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="240" y1="100" x2="318" y2="100" marker-end="url(#ai)"/><line x1="500" y1="100" x2="578" y2="100" marker-end="url(#ai)"/></g>
+    <text x="410" y="165" text-anchor="middle" class="svg-sub">The module checks current state first, and only acts if reality differs from the goal.</text>
+  </g>
+  <defs><marker id="ai" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Idempotency lets you re-run playbooks safely to enforce state — the foundation of reliable configuration management.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Idempotency check then act decision flow inside a module">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Inside a module: check state → compare → act only on diff</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="90" width="150" height="60" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="105" y="116" text-anchor="middle" class="svg-label" fill="#58a6ff">Read current</text>
+    <text x="105" y="134" text-anchor="middle" class="svg-sub">dpkg / checksum</text>
+    <polygon points="300,90 380,120 300,150 220,120" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="300" y="116" text-anchor="middle" class="svg-sub" fill="#f0883e">matches</text>
+    <text x="300" y="130" text-anchor="middle" class="svg-sub" fill="#f0883e">desired?</text>
+    <rect x="440" y="45" width="180" height="52" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="530" y="67" text-anchor="middle" class="svg-label" fill="#7ee787">YES → skip</text>
+    <text x="530" y="85" text-anchor="middle" class="svg-sub">changed: false (ok)</text>
+    <rect x="440" y="145" width="180" height="52" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="530" y="167" text-anchor="middle" class="svg-label" fill="#f0883e">NO → act</text>
+    <text x="530" y="185" text-anchor="middle" class="svg-sub">changed: true</text>
+    <rect x="660" y="145" width="130" height="52" rx="8" fill="#21262d" stroke="#d2a8ff"/>
+    <text x="725" y="167" text-anchor="middle" class="svg-sub" fill="#d2a8ff">notify</text>
+    <text x="725" y="185" text-anchor="middle" class="svg-sub">handlers</text>
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="180" y1="120" x2="218" y2="120" marker-end="url(#ans-idem)"/>
+      <line x1="380" y1="110" x2="438" y2="80" marker-end="url(#ans-idem)"/>
+      <line x1="380" y1="130" x2="438" y2="165" marker-end="url(#ans-idem)"/>
+      <line x1="620" y1="171" x2="658" y2="171" marker-end="url(#ans-idem)"/>
+    </g>
+  </g>
+  <defs><marker id="ans-idem" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The change flag isn't cosmetic: only a true "act" branch reports <code>changed</code>, and only <code>changed</code> triggers handlers — so restarts happen precisely when something really changed.</figcaption>
+</figure>
+
+<div class="box warn"><span class="box-title"><code>shell</code>/<code>command</code> break idempotency</span><p>Raw shell commands run every time and report "changed" always. If you must use them, guard with <code>creates=</code>/<code>removes=</code> or a <code>when:</code>/<code>changed_when:</code> condition. Reach for a real module first — it handles idempotency for you.</p></div>
+
+<h3>Why idempotency is the whole point</h3>
+<p>Without idempotency, re-running automation is dangerous — you might install twice, append a line twice, or restart a service that was fine. That fear leads teams to run automation <em>once</em> and then never again, which is how servers drift. Idempotency flips this: because a re-run is guaranteed safe, you can run the playbook on a schedule (or on every deploy) to <em>continuously enforce</em> the desired state. Drift gets corrected automatically. This is the difference between "a script I ran once" and "the definition of what this server is."</p>
+
+<h4>How idempotency is actually implemented</h4>
+<p>There is no magic in the engine — idempotency lives <em>inside each module</em>. A module follows a check-then-act pattern:</p>
+<ol>
+  <li><strong>Read current state:</strong> the <code>apt</code> module asks dpkg "is nginx installed?"; the <code>copy</code> module computes the checksum of the destination file; the <code>user</code> module reads <code>/etc/passwd</code>.</li>
+  <li><strong>Compare to desired state:</strong> the arguments you passed (<code>state: present</code>, a source file's checksum, a UID).</li>
+  <li><strong>Act only on a diff:</strong> if they already match, return <code>changed: false</code> and do nothing; otherwise make the change and return <code>changed: true</code>.</li>
+</ol>
+<p>The engine aggregates those <code>changed</code> booleans into the <code>changed=N</code> count you see in the recap, and uses them to decide whether to fire handlers. So "idempotent" is a property the module author guarantees — which is exactly why <code>command</code>/<code>shell</code>, which can't inspect arbitrary side effects, can't guarantee it.</p>
+
+<div class="code-label label-yaml">Making a necessary shell command idempotent</div>
+<pre><code>- name: Extract app bundle (only if not already extracted)
+  ansible.builtin.command: tar xzf /tmp/app.tar.gz -C /opt/app
+  args:
+    creates: /opt/app/VERSION      # skip entirely if this file already exists
+
+- name: Run a report and decide "changed" ourselves
+  ansible.builtin.command: /opt/generate-report.sh
+  register: report
+  changed_when: "'wrote' in report.stdout"   # only 'changed' if it actually wrote
+  failed_when: report.rc not in [0, 2]        # rc=2 is an acceptable warning here</code></pre>
+<div class="code-label label-output">Result: honest change reporting on re-run</div>
+<pre><code># First run:  changed: [web-1]   (VERSION didn't exist, tar ran)
+# Second run: ok: [web-1]        (creates: matched, task skipped)</code></pre>
+
+<div class="box warn">
+  <span class="box-title">The "always changed" trap and its fixes</span>
+  <p>A task that reports <code>changed</code> on every run breaks handler logic (it fires restarts needlessly) and hides real changes in the noise. Culprits are almost always <code>command</code>/<code>shell</code>. Fixes, in order of preference: <strong>(1)</strong> switch to a real module; <strong>(2)</strong> add <code>creates:</code>/<code>removes:</code> guards; <strong>(3)</strong> set an explicit <code>changed_when:</code> based on the command's output or return code. Never leave a shell task reporting a blind <code>changed</code>.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A thermostat, not a light switch</span>
+  <p>A light switch is imperative: flip it and the state toggles — flip it twice and you're back where you started, which is not what you wanted. A thermostat is idempotent: you set it to 21°C and it does whatever is needed to reach and hold that temperature. Set it to 21 again and nothing happens — you're already there. Ansible modules are thermostats: you declare the target and re-declaring it is harmless.</p>
+</div>
+
+<h2 id="variables">8. Variables &amp; Facts</h2>
+<p class="section-intro">Variables parameterize playbooks; <strong>facts</strong> are data Ansible auto-discovers about each host (OS, IP, memory).</p>
+<div class="code-label label-yaml">group_vars &amp; using facts</div>
+<pre><code># group_vars/web.yml  — variables for all hosts in [web]
+nginx_worker_processes: 4
+app_version: "1.4.2"
+
+# In a task, reference variables and gathered facts:
+- name: Show OS family and memory
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts['distribution'] }} with {{ ansible_facts['memtotal_mb'] }} MB"</code></pre>
+<div class="box tip"><span class="box-title">Variable precedence</span><p>Ansible has many variable sources with a strict precedence (roughly: command-line <code>-e</code> &gt; task vars &gt; block vars &gt; role vars &gt; host_vars &gt; group_vars &gt; role defaults). When a value surprises you, precedence is usually why. Keep it simple: defaults in roles, overrides in <code>group_vars</code>/<code>host_vars</code>.</p></div>
+
+<h3>Why variables and facts exist</h3>
+<p>The same playbook must work across dev, staging, and prod, across Debian and RHEL, across 1 GB and 64 GB boxes. Hard-coding values would mean a separate playbook per environment — an unmaintainable fork. <strong>Variables</strong> let one playbook adapt by injecting different values per host or group. <strong>Facts</strong> go further: they let the playbook <em>discover</em> the host's reality at runtime (OS family, IP, CPU count, mounted disks) and adapt itself, so you don't have to enumerate every host's specifics by hand.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="Ansible variable precedence layers from lowest to highest">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Variable precedence — highest layer wins outright</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="180" y="42" width="460" height="34" rx="6" fill="#21262d" stroke="#ee0000" stroke-width="2"/><text x="410" y="64" text-anchor="middle" class="svg-label" fill="#ff6b6b">--extra-vars (-e) — always wins</text>
+    <rect x="200" y="82" width="420" height="30" rx="6" fill="#21262d" stroke="#f0883e"/><text x="410" y="102" text-anchor="middle" class="svg-sub" fill="#f0883e">block / task vars</text>
+    <rect x="220" y="118" width="380" height="30" rx="6" fill="#21262d" stroke="#f0883e"/><text x="410" y="138" text-anchor="middle" class="svg-sub" fill="#f0883e">role vars/ (vars/main.yml)</text>
+    <rect x="240" y="154" width="340" height="30" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="410" y="174" text-anchor="middle" class="svg-sub" fill="#58a6ff">play vars:</text>
+    <rect x="260" y="190" width="300" height="30" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="410" y="210" text-anchor="middle" class="svg-sub" fill="#58a6ff">inventory host_vars/</text>
+    <rect x="280" y="226" width="260" height="30" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="246" text-anchor="middle" class="svg-sub" fill="#7ee787">inventory group_vars/ (all &lt; specific)</text>
+    <rect x="300" y="262" width="220" height="30" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="282" text-anchor="middle" class="svg-sub" fill="#7ee787">role defaults/ — lowest (baseline)</text>
+    <text x="690" y="60" text-anchor="middle" class="svg-sub" fill="#ff6b6b">▲ higher</text>
+    <text x="690" y="284" text-anchor="middle" class="svg-sub" fill="#7ee787">▼ lower</text>
+  </g>
+</svg>
+<figcaption>Scalars don't merge — the highest matching layer replaces lower ones. Put baselines in role <code>defaults/</code>, environment values in <code>group_vars/</code>, host tweaks in <code>host_vars/</code>, and reserve <code>-e</code> for CI and emergencies.</figcaption>
+</figure>
+
+<h4>How fact gathering works</h4>
+<p>At the start of each play (unless <code>gather_facts: false</code>), Ansible runs the <code>setup</code> module on every host. It collects hundreds of data points and returns them as the <code>ansible_facts</code> dictionary — <code>ansible_facts['distribution']</code>, <code>['default_ipv4']['address']</code>, <code>['memtotal_mb']</code>, and so on. This is just another module ship-and-run over SSH, which is why it costs time on large fleets (mitigate with fact caching, §22). You can see everything it gathers with the <code>setup</code> module directly.</p>
+
+<div class="code-label label-cmd">Inspect the facts of a host</div>
+<pre><code>ansible web-1 -i inventory.ini -m setup                    # dump all facts
+ansible web-1 -i inventory.ini -m setup -a "filter=ansible_distribution*"</code></pre>
+<div class="code-label label-output">Filtered output</div>
+<pre><code>web-1 | SUCCESS =&gt; {
+    "ansible_facts": {
+        "ansible_distribution": "Ubuntu",
+        "ansible_distribution_major_version": "22",
+        "ansible_distribution_version": "22.04"
+    }
+}</code></pre>
+
+<h4>How precedence resolves in practice</h4>
+<p>When the same variable name is set in multiple places, Ansible does not merge scalar values — the highest-precedence source <em>wins outright</em>. From lowest to highest, the sources you'll touch daily are: role <code>defaults/</code> → inventory group_vars → inventory host_vars → play <code>vars:</code> → role <code>vars/</code> → block/task <code>vars:</code> → <code>--extra-vars</code> (<code>-e</code>, always wins). The practical discipline: put overridable baselines in role <code>defaults/</code>, environment values in <code>group_vars/</code>, host-specific tweaks in <code>host_vars/</code>, and reserve <code>-e</code> for emergencies and CI-injected values.</p>
+
+<div class="code-label label-yaml">Precedence demonstrated + a safe default</div>
+<pre><code># roles/app/defaults/main.yml
+app_port: 8080                 # lowest precedence — a sensible baseline
+
+# group_vars/prod.yml
+app_port: 80                   # prod overrides the default
+
+# task-level (wins over both) or override at runtime:
+- ansible.builtin.debug:
+    msg: "listening on {{ app_port }}"
+# ansible-playbook site.yml -e app_port=9090   # -e beats everything</code></pre>
+<div class="code-label label-cmd">Trace where a value actually came from</div>
+<pre><code>ansible-inventory -i inventories/prod --host web-1   # shows merged vars
+ansible-playbook site.yml -e app_port=9090 --check   # confirm the override wins</code></pre>
+
+<div class="box warn">
+  <span class="box-title">Variable and fact gotchas</span>
+  <p><strong>Undefined variables error at use time</strong> — protect optional ones with <code>{{ x | default('...') }}</code>. <strong>Precedence surprises</strong> come from setting the same name in two layers; consolidate. <strong><code>gather_facts: false</code> means <code>ansible_facts</code> is empty</strong> — a task referencing a fact then fails cryptically. <strong>YAML type coercion:</strong> unquoted <code>version: 1.10</code> becomes the float <code>1.1</code>; quote version strings. And <strong>a bare <code>{{ var }}</code> at the start of a YAML value</strong> must be quoted or YAML treats it as a dict.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Mad-libs with auto-filled blanks</span>
+  <p>A playbook is a mad-libs sheet with blanks like <code>{{ app_port }}</code>. Variables are the words you write in the blanks. Facts are blanks that <em>fill themselves in</em> by looking at the actual server ("this box has 4 CPUs, so write 4"). Precedence is the rule for what happens when two people wrote in the same blank: the person with the most authority (the <code>-e</code> flag) wins.</p>
+</div>
+
+<h2 id="templates">9. Templates (Jinja2)</h2>
+<p class="section-intro">Generate config files dynamically per host using the Jinja2 templating engine.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Jinja2 template rendering on the control node then shipped to targets">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Template module: render control-side → checksum → write only if changed</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="60" width="150" height="52" rx="8" fill="#21262d" stroke="#d2a8ff" stroke-width="2"/><text x="105" y="82" text-anchor="middle" class="svg-label" fill="#d2a8ff">nginx.conf.j2</text><text x="105" y="100" text-anchor="middle" class="svg-sub">{{ }} placeholders</text>
+    <rect x="30" y="128" width="150" height="52" rx="8" fill="#21262d" stroke="#7ee787"/><text x="105" y="150" text-anchor="middle" class="svg-sub">host vars + facts</text><text x="105" y="167" text-anchor="middle" class="svg-sub">memtotal, fqdn…</text>
+    <rect x="280" y="90" width="180" height="60" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/><text x="370" y="115" text-anchor="middle" class="svg-label" fill="#ff6b6b">Jinja2 render</text><text x="370" y="133" text-anchor="middle" class="svg-sub">on control node</text>
+    <polygon points="560,120 630,90 700,120 630,150" fill="#21262d" stroke="#f0883e" stroke-width="2"/><text x="630" y="116" text-anchor="middle" class="svg-sub" fill="#f0883e">checksum</text><text x="630" y="130" text-anchor="middle" class="svg-sub" fill="#f0883e">differs?</text>
+    <rect x="720" y="60" width="80" height="44" rx="6" fill="#21262d" stroke="#7ee787"/><text x="760" y="86" text-anchor="middle" class="svg-sub">write</text>
+    <rect x="720" y="136" width="80" height="44" rx="6" fill="#21262d" stroke="#8b949e"/><text x="760" y="162" text-anchor="middle" class="svg-sub">skip (ok)</text>
+    <g stroke="#58a6ff" stroke-width="2">
+      <line x1="180" y1="86" x2="278" y2="108" marker-end="url(#ans-tpl)"/>
+      <line x1="180" y1="154" x2="278" y2="132" marker-end="url(#ans-tpl)"/>
+      <line x1="460" y1="120" x2="558" y2="120" marker-end="url(#ans-tpl)"/>
+      <line x1="700" y1="108" x2="718" y2="88" marker-end="url(#ans-tpl)"/>
+      <line x1="700" y1="132" x2="718" y2="152" marker-end="url(#ans-tpl)"/>
+    </g>
+    <text x="410" y="205" text-anchor="middle" class="svg-sub">One template + per-host data = correct file everywhere; write (and notify) only on a real diff.</text>
+  </g>
+  <defs><marker id="ans-tpl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Rendering happens on the control node, so targets need no Jinja2 or variables — they just receive the finished file, and idempotency falls out of the checksum comparison.</figcaption>
+</figure>
+<div class="code-label label-config">templates/nginx.conf.j2</div>
+<pre><code>worker_processes {{ nginx_worker_processes }};
+server {
+    listen {{ nginx_port }};
+    server_name {{ ansible_facts['fqdn'] }};
+    {% for backend in app_backends %}
+    upstream_server {{ backend }};
+    {% endfor %}
+}</code></pre>
+
+<h3>Why templating beats copying static files</h3>
+<p>Config files differ per host — a worker count tied to CPU cores, a <code>server_name</code> equal to each host's FQDN, a backend list that varies by environment. Shipping a static file per host would mean maintaining dozens of near-identical files. A template is <em>one</em> file with placeholders that Ansible fills in per host using that host's variables and facts. One source, infinite correct outputs.</p>
+
+<h4>How the <code>template</code> module works under the hood</h4>
+<p>The <code>template</code> module renders the <code>.j2</code> file <em>on the control node</em> using Jinja2, substituting variables and evaluating loops/conditionals, to produce the final text. It then behaves exactly like <code>copy</code>: it checksums the rendered result against the file already on the target and writes only if they differ — so templating is fully idempotent. Because rendering happens control-side, the target never needs Jinja2 or your variables; it just receives the finished file. This also drives handlers: the task reports <code>changed</code> only when the rendered output actually differs, so a "restart on config change" handler fires precisely when the config truly changed.</p>
+
+<div class="code-label label-yaml">The task that renders it — with validation and backup</div>
+<pre><code>- name: Render nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true                 # keep a timestamped copy of the old file
+    validate: "nginx -t -c %s"   # abort if the rendered config is invalid
+  notify: Restart nginx</code></pre>
+<div class="code-label label-cmd">Preview the exact change before applying</div>
+<pre><code>ansible-playbook site.yml --check --diff</code></pre>
+<div class="code-label label-output">--diff shows the rendered before/after</div>
+<pre><code>TASK [Render nginx config] *****************************************
+--- before: /etc/nginx/nginx.conf
++++ after:  /etc/nginx/nginx.conf
+@@ -1,3 +1,3 @@
+-worker_processes 2;
++worker_processes 4;
+ server {
+     listen 80;
+changed: [web-1]</code></pre>
+
+<div class="box tip">
+  <span class="box-title"><code>validate:</code> prevents shipping a broken config</span>
+  <p>The <code>validate</code> parameter runs a checker on the freshly-rendered file (with <code>%s</code> as its path) <em>before</em> installing it. If the check fails, the task fails and the old file is left untouched. This is how you avoid the classic outage where a templated typo takes down every web server at once. Pair it with <code>backup: true</code> for a fast manual rollback path.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Template gotchas</span>
+  <p><strong>Whitespace:</strong> Jinja control blocks (<code>{% ... %}</code>) leave blank lines behind — use <code>{%- ... -%}</code> to trim, or set <code>trim_blocks</code>/<code>lstrip_blocks</code>. <strong>Undefined variables</strong> render as errors (or worse, empty strings under some settings) — default them. <strong>Escaping:</strong> if the target file itself uses <code>{{ }}</code> syntax (e.g. another templating system), wrap it in <code>{% raw %}...{% endraw %}</code>. And <strong>never template a file whose literal <code>{{</code> you didn't intend to render.</strong></p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A form letter with a mail-merge</span>
+  <p>A template is a form letter: "Dear ⟨name⟩, your order ⟨number⟩ ships to ⟨city⟩." The mail-merge (Jinja2) runs it once per recipient, filling the blanks from a spreadsheet (your variables and facts). Everyone gets a letter that reads as if it were written just for them — but you only wrote and maintain the one form.</p>
+</div>
+
+<h2 id="handlers">10. Handlers, Loops &amp; Conditionals</h2>
+<div class="code-label label-yaml">Loops, when, and handlers</div>
+<pre><code>- name: Install multiple packages
+  ansible.builtin.apt: { name: "{{ item }}", state: present }
+  loop: [nginx, git, curl, htop]
+
+- name: Only on Debian family
+  ansible.builtin.apt: { name: nginx, state: present }
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Deploy config
+  ansible.builtin.template: { src: app.j2, dest: /etc/app.conf }
+  notify: reload app            # handler runs ONCE at end, only if this changed</code></pre>
+<div class="box note"><span class="box-title">Handlers run once, at the end, only on change</span><p>A handler is a task triggered by <code>notify</code>. Even if ten tasks notify "restart nginx," it restarts <em>once</em>, after all tasks, and only if something actually changed. This is how you avoid needless service restarts.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Handlers collapse many notifies into one run at end of play">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Handlers: many notifies → one run, at the end</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="55" width="220" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="140" y="77" text-anchor="middle" class="svg-sub">Task: edit nginx.conf (changed) → notify</text>
+    <rect x="30" y="97" width="220" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="140" y="119" text-anchor="middle" class="svg-sub">Task: add vhost (changed) → notify</text>
+    <rect x="30" y="139" width="220" height="34" rx="6" fill="#21262d" stroke="#8b949e"/><text x="140" y="161" text-anchor="middle" class="svg-sub">Task: tune sysctl (ok) → no notify</text>
+    <rect x="330" y="97" width="160" height="52" rx="8" fill="#21262d" stroke="#d2a8ff" stroke-width="2"/>
+    <text x="410" y="119" text-anchor="middle" class="svg-label" fill="#d2a8ff">notify set</text>
+    <text x="410" y="137" text-anchor="middle" class="svg-sub">{Restart nginx} — deduped</text>
+    <rect x="570" y="97" width="220" height="52" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="680" y="119" text-anchor="middle" class="svg-label" fill="#ff6b6b">Handler runs ONCE</text>
+    <text x="680" y="137" text-anchor="middle" class="svg-sub">at end of play · restart nginx</text>
+    <g stroke="#58a6ff" stroke-width="2">
+      <line x1="250" y1="72" x2="328" y2="112" marker-end="url(#ans-hn)"/>
+      <line x1="250" y1="114" x2="328" y2="120" marker-end="url(#ans-hn)"/>
+      <line x1="490" y1="123" x2="568" y2="123" marker-end="url(#ans-hn)"/>
+    </g>
+    <text x="410" y="205" text-anchor="middle" class="svg-sub">Two tasks notified the same handler — it still fires exactly once. The "ok" task never notified at all.</text>
+  </g>
+  <defs><marker id="ans-hn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Notifications collect into a set (so duplicates collapse), and the handler executes once at the play's end — unless <code>meta: flush_handlers</code> forces it earlier.</figcaption>
+</figure>
+
+<h3>Why these three constructs exist</h3>
+<p><strong>Loops</strong> exist because you constantly repeat the same task over a list — ten packages, five users, three config files. Without loops you'd copy-paste a task ten times. <strong>Conditionals</strong> (<code>when:</code>) exist because one playbook runs across heterogeneous hosts — a Debian apt task must be skipped on RHEL. <strong>Handlers</strong> exist to solve the "restart only if something changed, and only once" problem elegantly, decoupling <em>what changed</em> from <em>the reaction to the change</em>.</p>
+
+<h4>How handlers, loops, and conditionals are evaluated</h4>
+<p><strong>Handlers</strong> are queued, not run inline: when a task reports <code>changed</code> and has a <code>notify</code>, Ansible adds the named handler to a per-play notification set (a set, so duplicates collapse to one). Handlers run at the <em>end</em> of the play, in the order the handlers are <em>defined</em> (not the order notified). If a task fails mid-play, pending handlers don't run unless you <code>--force-handlers</code>. <strong>Loops</strong> run the task body once per <code>item</code>, and the task's <code>changed</code>/<code>failed</code> is aggregated across iterations. <strong><code>when:</code></strong> is a raw Jinja2 expression evaluated per host — if false, the task shows <code>skipping</code> and never ships a module.</p>
+
+<div class="code-label label-yaml">Worked example combining all three, with flush_handlers</div>
+<pre><code>- hosts: web
+  become: true
+  tasks:
+    - name: Install packages (loop)
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nginx
+        - git
+        - curl
+
+    - name: Deploy vhost only for the prod environment (conditional)
+      ansible.builtin.template:
+        src: vhost.conf.j2
+        dest: /etc/nginx/conf.d/app.conf
+      when: env == "prod"
+      notify: Restart nginx
+
+    - name: Force pending handlers to run NOW, before the smoke test
+      ansible.builtin.meta: flush_handlers
+
+    - name: Smoke test (only meaningful after the restart happened)
+      ansible.builtin.uri:
+        url: "http://localhost/health"
+        status_code: 200
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted</code></pre>
+<div class="code-label label-output">Run showing skip, single handler fire, and loop</div>
+<pre><code>TASK [Install packages (loop)] *************************************
+changed: [web-1] =&gt; (item=nginx)
+ok:      [web-1] =&gt; (item=git)
+ok:      [web-1] =&gt; (item=curl)
+
+TASK [Deploy vhost only for the prod environment] ******************
+skipping: [web-2]        # web-2 is env=staging
+changed:  [web-1]
+
+RUNNING HANDLER [Restart nginx] ************************************
+changed: [web-1]         # fired ONCE, only on web-1 which changed</code></pre>
+
+<div class="box tip">
+  <span class="box-title"><code>meta: flush_handlers</code> when order matters</span>
+  <p>Handlers normally wait until the play's end — but sometimes you must restart the service <em>before</em> a later task (like a health check) runs. <code>meta: flush_handlers</code> forces all pending handlers to run immediately at that point. Use it to sequence "change config → restart → verify" correctly within one play.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Loop and conditional gotchas</span>
+  <p><strong>Old <code>with_items</code></strong> is superseded by <code>loop:</code> — prefer <code>loop</code>. <strong>Looping a package module is slow</strong> if it installs one at a time; many modules (like <code>apt</code>) accept a list directly (<code>name: "{{ list }}"</code>) and do it in one transaction — much faster. <strong><code>when</code> with a bare variable</strong> should not be wrapped in <code>{{ }}</code> (it's already an expression). <strong>Handlers silently don't run</strong> if the notifying task didn't report <code>changed</code>, or if the play failed earlier — this confuses newcomers who expect an unconditional restart.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Sticky notes on the fridge</span>
+  <p>A handler is a sticky note: every time you finish a chore that dirties a pan, you slap a "wash the pan" note on the fridge. It doesn't matter if you cooked three dishes — there's one note, and you wash the pan once, at the end. If you cooked nothing that dirtied it, there's no note and you don't wash a clean pan. Loops are "do this chore for each item on the shopping list," and <code>when:</code> is "only do this chore if it's actually a weekday."</p>
+</div>
+
+<h2 id="roles">11. Roles — Reusable Structure</h2>
+<p class="section-intro">A role packages tasks, handlers, templates, variables, and defaults into a standard directory layout — the module/package of Ansible.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Ansible role directory structure">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">A role's standard layout</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="300" y="45" width="220" height="40" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="410" y="70" text-anchor="middle" class="svg-label" fill="#ff6b6b">roles/nginx/</text>
+    <rect x="40" y="120" width="140" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="110" y="146" text-anchor="middle" class="svg-sub">tasks/main.yml</text>
+    <rect x="200" y="120" width="140" height="42" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="270" y="146" text-anchor="middle" class="svg-sub">handlers/</text>
+    <rect x="360" y="120" width="140" height="42" rx="6" fill="#21262d" stroke="#d2a8ff"/><text x="430" y="146" text-anchor="middle" class="svg-sub">templates/</text>
+    <rect x="520" y="120" width="140" height="42" rx="6" fill="#21262d" stroke="#f0883e"/><text x="590" y="146" text-anchor="middle" class="svg-sub">defaults/main.yml</text>
+    <rect x="680" y="120" width="100" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="730" y="146" text-anchor="middle" class="svg-sub">vars/ files/</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="410" y1="85" x2="110" y2="118"/><line x1="410" y1="85" x2="270" y2="118"/><line x1="410" y1="85" x2="430" y2="118"/><line x1="410" y1="85" x2="590" y2="118"/><line x1="410" y1="85" x2="730" y2="118"/></g>
+    <text x="410" y="200" text-anchor="middle" class="svg-sub">Include it in a play with just: roles: [nginx] — Ansible finds each folder automatically.</text>
+  </g>
+</svg>
+<figcaption>Roles enforce a consistent structure so any team member instantly knows where tasks, templates, and defaults live.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Create &amp; use a role</div>
+<pre><code>ansible-galaxy role init roles/nginx     # scaffold the directory structure
+
+# playbook using the role:
+# - hosts: web
+#   become: true
+#   roles:
+#     - nginx
+#     - { role: app, app_version: "1.4.2" }</code></pre>
+<div class="box best"><span class="box-title">Put sane values in <code>defaults/</code></span><p>Role <code>defaults/main.yml</code> has the <em>lowest</em> precedence, so consumers can easily override them. Ship every role with working defaults so it runs out of the box, and document the variables in the role's README.</p></div>
+
+<h3>Why roles exist</h3>
+<p>A single big playbook works until it doesn't: it grows to hundreds of lines, tasks and templates and vars tangle together, and you can't reuse "the nginx setup" in another project without copy-pasting. Roles are Ansible's answer to modularity — the equivalent of a library or package. A role bundles everything one concern needs (its tasks, handlers, templates, files, defaults, and metadata) into a conventional directory layout, so it can be dropped into any playbook, shared on Galaxy, versioned, and tested (with Molecule, §26) in isolation.</p>
+
+<h4>How role loading works — convention over configuration</h4>
+<p>When a play lists <code>roles: [nginx]</code>, Ansible looks in <code>roles/nginx/</code> and auto-loads by <em>filename convention</em>, no wiring required: <code>tasks/main.yml</code> becomes the role's tasks, <code>handlers/main.yml</code> its handlers, <code>defaults/main.yml</code> and <code>vars/main.yml</code> its variables, <code>templates/</code> and <code>files/</code> its assets (referenced by bare filename, since the role search path knows to look there), and <code>meta/main.yml</code> its dependencies on other roles. Roles listed under <code>roles:</code> run <em>before</em> the play's <code>tasks:</code>; to control ordering precisely, use <code>import_role</code>/<code>include_role</code> inside <code>tasks:</code> instead.</p>
+
+<div class="code-label label-cmd">Scaffold and inspect a role</div>
+<pre><code>ansible-galaxy role init roles/nginx
+find roles/nginx -maxdepth 2 -type f</code></pre>
+<div class="code-label label-output">Generated structure</div>
+<pre><code>roles/nginx/defaults/main.yml     # overridable variables (lowest precedence)
+roles/nginx/vars/main.yml         # internal vars (high precedence)
+roles/nginx/tasks/main.yml        # the work
+roles/nginx/handlers/main.yml     # restart/reload handlers
+roles/nginx/templates/            # *.j2 files
+roles/nginx/files/                # static files to copy
+roles/nginx/meta/main.yml         # role deps + Galaxy metadata
+roles/nginx/README.md</code></pre>
+
+<div class="code-label label-yaml">tasks/main.yml + a play consuming the role with overrides</div>
+<pre><code># roles/nginx/tasks/main.yml
+- name: Install nginx
+  ansible.builtin.apt: { name: nginx, state: present }
+- name: Configure
+  ansible.builtin.template:
+    src: nginx.conf.j2            # found automatically in templates/
+    dest: /etc/nginx/nginx.conf
+  notify: Restart nginx           # handler lives in handlers/main.yml
+
+# site.yml — thin playbook, roles do the work
+- hosts: web
+  become: true
+  roles:
+    - role: nginx
+      vars:
+        nginx_worker_processes: 8   # override a default for this play</code></pre>
+
+<div class="box best">
+  <span class="box-title">Keep playbooks thin, roles fat</span>
+  <p>A mature Ansible codebase has short playbooks that mostly just map host groups to a list of roles. All logic lives in reusable, independently-testable roles. One role = one responsibility (nginx, postgres, the app). This is the single biggest structural improvement most teams make.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Role gotchas</span>
+  <p><strong><code>vars/</code> vs <code>defaults/</code>:</strong> <code>vars/main.yml</code> has <em>high</em> precedence and is hard to override — put only true constants there; put anything a user might tune in <code>defaults/</code>. <strong>Referencing files by full path</strong> defeats the role search path — use bare filenames so the role stays relocatable. <strong>Hidden coupling:</strong> a role that reads a variable it doesn't declare in <code>defaults/</code> will mysteriously fail when used elsewhere — document and default every input. <strong><code>roles:</code> ordering vs <code>tasks:</code></strong> confuses people; use <code>import_role</code> in <code>tasks</code> when you need a role to run at a specific point.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">IKEA furniture kits</span>
+  <p>A role is a flat-pack furniture kit: one box with all the parts (tasks), the screws (templates/files), and an instruction sheet with sensible defaults. You don't need to know how the shelf is built — you just say "add the BILLY bookcase" and optionally tweak "make it white." Your playbook becomes a short shopping list of kits, and anyone can grab the same kit for their own room.</p>
+</div>
+
+<h2 id="galaxy">12. Ansible Galaxy &amp; Collections</h2>
+<p class="section-intro">Don't reinvent common roles. Galaxy is the public hub; Collections bundle modules, roles, and plugins together.</p>
+<div class="code-label label-cmd">Install shared content</div>
+<pre><code>ansible-galaxy collection install community.docker amazon.aws
+ansible-galaxy role install geerlingguy.nginx
+# requirements.yml pins versions for reproducibility (commit this):
+#   collections: [ { name: amazon.aws, version: "7.0.0" } ]
+ansible-galaxy install -r requirements.yml</code></pre>
+
+<h3>Why Galaxy and Collections exist</h3>
+<p>Most infrastructure problems are not unique — thousands of teams install nginx, configure PostgreSQL, or manage AWS resources. Rewriting that from scratch is wasted effort and bugs. <strong>Galaxy</strong> is the shared marketplace of community roles and collections so you can stand on others' work. <strong>Collections</strong> exist because the old model (everything bundled into Ansible core) couldn't scale: modules were tied to Ansible's slow release cycle. Splitting content into independently-versioned collections lets the AWS modules ship on their own schedule, decoupled from <code>ansible-core</code>.</p>
+
+<h4>How collections are namespaced and resolved</h4>
+<p>A collection has a two-part name: <code>namespace.name</code> (e.g. <code>amazon.aws</code>, <code>community.docker</code>). Inside it live modules, roles, and plugins referenced by fully-qualified name — <code>amazon.aws.ec2_instance</code>. Ansible searches installed collections in <code>~/.ansible/collections</code> and any paths in <code>collections_paths</code>. This namespacing is why FQCNs matter: <code>community.docker.docker_container</code> and a hypothetical <code>mycorp.docker.docker_container</code> can coexist with no collision. Roles installed from Galaxy (the older, standalone kind) land in <code>~/.ansible/roles</code> and are referenced by their Galaxy name.</p>
+
+<div class="code-label label-yaml">requirements.yml — pin everything, commit it</div>
+<pre><code>---
+collections:
+  - name: amazon.aws
+    version: "7.0.0"          # exact pin for reproducibility
+  - name: community.docker
+    version: "&gt;=3.4.0,&lt;4.0.0" # allow patches, block breaking majors
+roles:
+  - name: geerlingguy.nginx
+    version: "3.1.4"</code></pre>
+<div class="code-label label-cmd">Install pinned content and verify</div>
+<pre><code>ansible-galaxy install -r requirements.yml
+ansible-galaxy collection list        # show installed collections + versions
+ansible-doc amazon.aws.ec2_instance   # read a module's docs offline</code></pre>
+<div class="code-label label-output">collection list</div>
+<pre><code># /home/you/.ansible/collections/ansible_collections
+Collection        Version
+----------------- -------
+amazon.aws        7.0.0
+community.docker  3.4.11</code></pre>
+
+<div class="box best">
+  <span class="box-title">Pin versions and vet community content</span>
+  <p>Unpinned Galaxy content means a fresh CI checkout can silently pull a new major version and break your pipeline. <strong>Always pin</strong> in a committed <code>requirements.yml</code>. Before adopting a community role, check its maintenance status, stars, and open issues — you're inheriting its bugs and its security posture. For regulated environments, mirror trusted content into a private <strong>Automation Hub</strong> rather than pulling from the public Galaxy at runtime.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Galaxy gotchas</span>
+  <p><strong>Roles ≠ collections:</strong> <code>ansible-galaxy role install</code> and <code>ansible-galaxy collection install</code> use different paths and syntaxes; a single <code>requirements.yml</code> can list both under <code>roles:</code> and <code>collections:</code>. <strong>Short module names may resolve to the wrong collection</strong> once multiple are installed — use FQCNs. <strong>Community quality varies wildly</strong> — a five-year-stale role may not support your OS. And <strong>installing without pinning</strong> is the top cause of "it worked yesterday" pipeline failures.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">An app store for automation</span>
+  <p>Galaxy is an app store; collections are the apps (bundles of features), and roles are simpler single-purpose apps. Instead of coding a nginx installer yourself, you "download the app" someone already polished. And just like phone apps, you pin the version — you don't want an app to auto-update to a version that suddenly breaks your workflow the morning of a deploy.</p>
+</div>
+
+<h2 id="vault">13. Ansible Vault — Secrets</h2>
+<p class="section-intro">Store passwords, keys, and certs encrypted <em>inside</em> your repo, decrypted only at runtime.</p>
+<div class="code-label label-cmd">Encrypt secrets</div>
+<pre><code>ansible-vault create secrets.yml          # create new encrypted file
+ansible-vault edit secrets.yml            # edit it
+ansible-vault encrypt_string 's3cr3t' --name db_password   # inline encrypted var
+ansible-playbook site.yml --ask-vault-pass                 # prompt for the key
+ansible-playbook site.yml --vault-password-file ~/.vault   # or read from a file</code></pre>
+<div class="box danger"><span class="box-title">Vault protects at rest, not from your CI logs</span><p>Vault encrypts files in Git, but a careless <code>debug</code> task can print the decrypted value into pipeline logs. Use <code>no_log: true</code> on tasks that handle secrets. For dynamic secrets, integrate HashiCorp Vault or your cloud secrets manager instead of static vaulted files.</p></div>
+
+<h3>Why Ansible Vault exists</h3>
+<p>Automation needs secrets — DB passwords, API keys, TLS private keys, join tokens. But your playbooks live in Git, and plaintext secrets in Git are a breach waiting to happen (they persist in history forever, get cloned onto every laptop, and leak in CI). Vault lets you keep secrets <em>in the same repo, next to the code that uses them</em>, but encrypted at rest with AES-256. You get the convenience of everything-in-one-place without the exposure. The tradeoff versus a dedicated secrets manager: Vault secrets are static and rotate only when you re-encrypt them.</p>
+
+<h4>How Vault encryption and runtime decryption work</h4>
+<p>Vault encrypts a file's contents with AES-256 using a key derived from your vault password; an encrypted file starts with the header <code>$ANSIBLE_VAULT;1.1;AES256</code> followed by the ciphertext as hex. At runtime you supply the password (<code>--ask-vault-pass</code> or <code>--vault-password-file</code>), Ansible decrypts the file <em>in memory only</em>, and the plaintext never touches disk on the control node or the target. You can encrypt whole files (like <code>group_vars/prod/vault.yml</code>) or just individual values inline with <code>encrypt_string</code>. Multiple keys are supported via <strong>vault IDs</strong>, so prod and dev secrets can use different passwords.</p>
+
+<div class="code-label label-cmd">Encrypt a single value and see the ciphertext</div>
+<pre><code>ansible-vault encrypt_string 'S3cr3tP@ss' --name db_password</code></pre>
+<div class="code-label label-output">Paste this straight into a vars file</div>
+<pre><code>db_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66386439653236336462...&lt;hex ciphertext&gt;...3462
+          3961393832...</code></pre>
+<div class="code-label label-yaml">Use it safely — note no_log</div>
+<pre><code>- name: Configure DB connection (secret must not leak to logs)
+  ansible.builtin.template:
+    src: db.conf.j2               # references {{ db_password }}
+    dest: /etc/app/db.conf
+    mode: "0600"
+  no_log: true                    # suppress task output entirely</code></pre>
+<div class="code-label label-cmd">Run with the vault key, and set up vault IDs per env</div>
+<pre><code>ansible-playbook site.yml --vault-password-file ~/.vault_prod
+# Multiple environments with distinct keys:
+ansible-playbook site.yml \
+  --vault-id dev@~/.vault_dev \
+  --vault-id prod@prompt</code></pre>
+
+<div class="box best">
+  <span class="box-title">Keep the vault password out of the repo</span>
+  <p>Encrypting secrets is pointless if the password sits next to them. Store the vault password file outside the repo (e.g. <code>~/.vault_prod</code>, <code>chmod 600</code>), inject it in CI via a masked secret variable, and rotate it if anyone leaves the team. Separate keys per environment via vault IDs so a leaked dev key can't decrypt prod. For anything requiring rotation or auditing, graduate to HashiCorp Vault or a cloud secrets manager and pull secrets at runtime via a lookup.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Vault gotchas</span>
+  <p><strong>Leaking via <code>debug</code>/loops:</strong> the biggest risk isn't the file, it's a task printing the decrypted value — add <code>no_log: true</code>. <strong>Merge conflicts on encrypted files</strong> are unresolvable (it's ciphertext) — encrypt values inline or keep vaulted files small and single-owner. <strong>Lost password = lost secrets</strong>, permanently — back up the key securely. <strong><code>git diff</code> is useless</strong> on vaulted files; review the plaintext before encrypting. And <strong>check-mode/diff can still reveal secrets</strong> for templated files unless the task uses <code>no_log</code>.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A locked diary in your backpack</span>
+  <p>Vault is a locked diary you carry in the same backpack as your notebooks (the repo). Anyone who grabs the backpack sees a locked book, not your secrets. You open it only when you need it, using a key you keep <em>separately</em> — not tucked inside the same backpack. And if you shout the secret out loud after opening it (a <code>debug</code> task), the lock didn't help — that's why you stay quiet with <code>no_log</code>.</p>
+</div>
+
+<h2 id="patterns">14. Advanced Patterns</h2>
+<table>
+  <tr><th>Pattern</th><th>What / why</th></tr>
+  <tr><td><strong>Rolling updates</strong></td><td><code>serial: 2</code> updates hosts in small batches for zero-downtime deploys</td></tr>
+  <tr><td><strong>Delegation</strong></td><td><code>delegate_to: localhost</code> runs a task somewhere else (e.g., pull a host out of a load balancer before updating it)</td></tr>
+  <tr><td><strong>Blocks + rescue</strong></td><td><code>block/rescue/always</code> = try/catch/finally for error handling</td></tr>
+  <tr><td><strong>Async &amp; polling</strong></td><td>Run long tasks in the background without blocking</td></tr>
+  <tr><td><strong>Tags</strong></td><td>Run only parts of a big playbook (<code>--tags</code>/<code>--skip-tags</code>)</td></tr>
+</table>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Rolling update with serial batches for zero downtime">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Rolling update with serial: 2 (zero-downtime batches)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="90" y="58" text-anchor="middle" class="svg-sub" fill="#f0883e">Batch 1</text>
+    <rect x="30" y="70" width="120" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="90" y="94" text-anchor="middle" class="svg-sub">web-1 · updating</text>
+    <rect x="30" y="118" width="120" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="90" y="142" text-anchor="middle" class="svg-sub">web-2 · updating</text>
+    <text x="330" y="58" text-anchor="middle" class="svg-sub" fill="#8b949e">Batch 2 (waiting)</text>
+    <rect x="270" y="70" width="120" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="330" y="94" text-anchor="middle" class="svg-sub">web-3 · serving</text>
+    <rect x="270" y="118" width="120" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="330" y="142" text-anchor="middle" class="svg-sub">web-4 · serving</text>
+    <rect x="500" y="90" width="150" height="60" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="575" y="114" text-anchor="middle" class="svg-label" fill="#58a6ff">Load balancer</text>
+    <text x="575" y="132" text-anchor="middle" class="svg-sub">drains batch 1</text>
+    <rect x="690" y="90" width="100" height="60" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="740" y="114" text-anchor="middle" class="svg-label" fill="#7ee787">Users</text>
+    <text x="740" y="132" text-anchor="middle" class="svg-sub">no outage</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="390" y1="94" x2="498" y2="112" marker-end="url(#ans-roll)"/><line x1="390" y1="138" x2="498" y2="128" marker-end="url(#ans-roll)"/><line x1="650" y1="120" x2="688" y2="120" marker-end="url(#ans-roll)"/></g>
+    <text x="410" y="200" text-anchor="middle" class="svg-sub">delegate_to: localhost pulls batch 1 out of the LB, deploys, re-adds — then batch 2 repeats.</text>
+    <text x="410" y="222" text-anchor="middle" class="svg-sub" fill="#ff6b6b">A failure in batch 1 halts the rollout before it reaches batch 2 (max_fail_percentage).</text>
+  </g>
+  <defs><marker id="ans-roll" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>With <code>serial</code>, the entire play completes on a small batch before the next begins, so capacity stays online and a bad deploy stops early instead of taking down the whole tier.</figcaption>
+</figure>
+
+<div class="code-label label-yaml">Zero-downtime rolling update</div>
+<pre><code>- hosts: web
+  serial: 2                        # 2 hosts at a time
+  tasks:
+    - name: Remove from load balancer
+      community.aws.elb_target: { state: absent, target: "{{ inventory_hostname }}" }
+      delegate_to: localhost
+    - name: Deploy new version
+      ansible.builtin.apt: { name: "myapp={{ app_version }}", state: present }
+    - name: Add back to load balancer
+      community.aws.elb_target: { state: present, target: "{{ inventory_hostname }}" }
+      delegate_to: localhost</code></pre>
+
+<h3>Why these patterns exist</h3>
+<p>Basic playbooks assume a happy path: all hosts, all at once, everything succeeds. Production breaks those assumptions. You can't restart every web server simultaneously (that's an outage) — hence <strong>rolling updates</strong> with <code>serial</code>. You can't take a host out of rotation from the host itself while it's serving traffic — hence <strong>delegation</strong>. Long-running tasks would block the whole play — hence <strong>async</strong>. These patterns are how you go from "works in a demo" to "safe on a live fleet."</p>
+
+<h4>How serial, delegation, and async work under the hood</h4>
+<p><strong><code>serial</code></strong> changes the play's batching: instead of running all tasks across all hosts, Ansible splits the host list into batches (e.g. 2 hosts, or 25%) and runs the <em>entire play</em> on batch 1 before starting batch 2 — so a failure in the first batch halts the rollout before it spreads. <strong><code>delegate_to</code></strong> runs a task's module on a <em>different</em> host than the one being configured, while keeping that host's variables (<code>inventory_hostname</code> still refers to the target) — perfect for "call the load balancer's API from localhost on behalf of this host." <strong><code>async</code> + <code>poll</code></strong> launches the module in the background on the target and returns a job ID; with <code>poll: 0</code> it's fire-and-forget, and you check status later with the <code>async_status</code> module.</p>
+
+<div class="code-label label-yaml">Async fire-and-forget + block/rescue rollback</div>
+<pre><code>- hosts: batch
+  serial: "20%"                    # 20% of hosts per wave
+  max_fail_percentage: 10          # abort the whole rollout if &gt;10% fail
+  tasks:
+    - name: Kick off a long migration without blocking
+      ansible.builtin.command: /opt/migrate.sh
+      async: 3600                  # allow up to 1h
+      poll: 0                      # don't wait — fire and forget
+      register: migration
+
+    - name: Do other work while it runs...
+      ansible.builtin.debug: { msg: "migration launched as {{ migration.ansible_job_id }}" }
+
+    - name: Now wait for it, checking every 15s
+      ansible.builtin.async_status:
+        jid: "{{ migration.ansible_job_id }}"
+      register: job
+      until: job.finished
+      retries: 240
+      delay: 15</code></pre>
+<div class="code-label label-output">Rolling batches visible in the recap</div>
+<pre><code>PLAY [batch] *******************  (hosts 1-2 of 10)
+...
+PLAY [batch] *******************  (hosts 3-4 of 10)
+...    # each wave completes fully before the next starts</code></pre>
+
+<div class="box tip">
+  <span class="box-title"><code>run_once</code> for cluster-wide singletons</span>
+  <p>Some actions should happen exactly once across the whole batch, not per host — running a DB schema migration, or registering a deployment marker. Combine <code>run_once: true</code> with <code>delegate_to</code> so a single designated host performs it while the fact is available to all. This prevents the classic "10 hosts each ran the migration" disaster.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Pattern gotchas</span>
+  <p><strong><code>serial</code> resets fact scope per batch</strong> — facts gathered in a later batch aren't available to an earlier one. <strong>Delegation confuses variable context</strong>: <code>inventory_hostname</code> is still the target, but <code>ansible_host</code>/facts may reflect the delegate; use <code>delegate_facts</code> deliberately. <strong>Async without <code>async_status</code></strong> leaves you blind to failures — a fire-and-forget task that dies is silently ignored unless you poll it. And <strong><code>max_fail_percentage</code> is per-batch</strong>, evaluated after each wave.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Renovating a hotel one floor at a time</span>
+  <p>You don't shut the whole hotel to renovate (that's an outage). You do it floor by floor (<code>serial</code>): move guests off floor 3, renovate, move them back, then start floor 4. If a floor's renovation goes badly wrong, you stop before touching the rest (<code>max_fail_percentage</code>). Telling the front desk to reroute guests is done from the lobby, not from inside the room being painted (<code>delegate_to</code>). And a long paint job can dry overnight while you work elsewhere (<code>async</code>).</p>
+</div>
+
+<h2 id="cicd">15. Ansible in CI/CD</h2>
+<div class="code-label label-config">Lint + run in a pipeline</div>
+<pre><code># Lint every change (catches bad practices, not just syntax)
+ansible-lint site.yml
+# Dry-run against staging on PR, real run on merge:
+ansible-playbook -i inventories/staging site.yml --check --diff
+ansible-playbook -i inventories/prod    site.yml --vault-password-file "$VAULT_FILE"</code></pre>
+<div class="box best"><span class="box-title">Test with Molecule</span><p><strong>Molecule</strong> spins up a container/VM, applies your role, and asserts the result — then checks idempotency by running twice and confirming zero changes on the second pass. Run it in CI so roles are proven before they touch real servers.</p></div>
+
+<h3>Why run Ansible from CI/CD at all</h3>
+<p>Running <code>ansible-playbook</code> from an engineer's laptop has three problems: it's unaudited (who ran what, when?), it's unreproducible (their laptop has a different Ansible version and stray local vars), and it's a bottleneck (only people with the vault password and SSH keys can deploy). Moving execution into a pipeline makes every change go through the same reviewed, version-controlled path: lint → dry-run → approval → apply, with logs and identity attached. The playbook becomes the deploy mechanism <em>and</em> the audit record.</p>
+
+<h4>How the pipeline stages map to Ansible features</h4>
+<p>A solid pipeline layers Ansible's own safety features into gates: <strong>syntax-check</strong> (<code>--syntax-check</code>) catches YAML/structure errors instantly; <strong>ansible-lint</strong> catches anti-patterns (bare <code>command</code>, missing names, deprecated syntax) that syntax-check misses; <strong>Molecule</strong> proves roles converge and are idempotent in a throwaway container; <strong>check-mode against staging</strong> (<code>--check --diff</code>) previews real changes on a PR without applying them; and only on merge does the pipeline run the real apply, reading the vault password from a masked CI secret. Idempotency is what makes re-running on every merge safe.</p>
+
+<div class="code-label label-config">.gitlab-ci.yml — a staged Ansible pipeline</div>
+<pre><code>stages: [lint, test, dry-run, deploy]
+
+lint:
+  stage: lint
+  script:
+    - ansible-playbook site.yml --syntax-check
+    - ansible-lint site.yml
+
+molecule:
+  stage: test
+  script:
+    - cd roles/nginx &amp;&amp; molecule test    # converge + idempotence + verify
+
+staging-plan:
+  stage: dry-run
+  script:
+    - ansible-playbook -i inventories/staging site.yml --check --diff
+  rules: [ { if: '$CI_PIPELINE_SOURCE == "merge_request_event"' } ]
+
+prod-deploy:
+  stage: deploy
+  script:
+    - echo "$VAULT_PASS" &gt; .vault &amp;&amp; chmod 600 .vault
+    - ansible-playbook -i inventories/prod site.yml --vault-password-file .vault
+  when: manual                               # require a human to click deploy
+  rules: [ { if: '$CI_COMMIT_BRANCH == "main"' } ]</code></pre>
+<div class="code-label label-output">ansible-lint catching a real problem</div>
+<pre><code>site.yml:14: [command-instead-of-module] Use the 'service' module instead of 'command'
+site.yml:22: [risky-file-permissions] File permissions unset or incorrect
+Failed: 2 failure(s) — pipeline stops before deploy</code></pre>
+
+<div class="box best">
+  <span class="box-title">Gate prod behind check-mode and a manual approval</span>
+  <p>The strongest, cheapest safety net: run <code>--check --diff</code> against staging on every merge request so reviewers see the exact diff, then require a <code>when: manual</code> click to apply to prod. This mirrors Terraform's plan/apply discipline. Inject the vault password from a masked CI variable, never commit it, and scope SSH keys to the CI runner only.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">CI/CD gotchas</span>
+  <p><strong>Secrets in logs:</strong> a failing task can echo secrets into the pipeline log — combine <code>no_log</code> with CI log masking. <strong>Non-deterministic runs:</strong> unpinned collections make CI diverge from local — pin in <code>requirements.yml</code>. <strong>Check-mode false positives:</strong> tasks depending on earlier real changes may report inaccurately in <code>--check</code>; mark read-only tasks <code>check_mode: false</code>. And <strong>host-key prompts</strong> hang non-interactive runners — pre-seed <code>known_hosts</code> or set the policy explicitly.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">An assembly line with quality gates</span>
+  <p>Doing deploys from your laptop is like a chef tasting and shipping food straight from a home kitchen — no records, no second opinion. A CI pipeline is a restaurant line: the dish passes an inspector (lint), a test kitchen (Molecule), a "show the manager the plan" gate (check-mode on staging), and only then, with a manager's nod (manual approval), does it go out to customers (prod). Every plate is logged.</p>
+</div>
+
+<h2 id="terraform">16. Ansible + Terraform — Better Together</h2>
+<p class="section-intro">A common, powerful pairing: Terraform builds the infrastructure, Ansible configures it.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 180" role="img" aria-label="Terraform provisions, Ansible configures">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Provision (Terraform) → Configure (Ansible)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="90" y="70" width="240" height="60" rx="10" fill="#21262d" stroke="#7b42bc" stroke-width="2"/>
+    <text x="210" y="96" text-anchor="middle" class="svg-label" fill="#b083e0">Terraform</text>
+    <text x="210" y="114" text-anchor="middle" class="svg-sub">creates VMs, network, LB</text>
+    <rect x="490" y="70" width="240" height="60" rx="10" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="610" y="96" text-anchor="middle" class="svg-label" fill="#ff6b6b">Ansible</text>
+    <text x="610" y="114" text-anchor="middle" class="svg-sub">installs &amp; configures software</text>
+    <line x1="330" y1="100" x2="488" y2="100" stroke="#7ee787" stroke-width="2.5" marker-end="url(#at2)"/>
+    <text x="409" y="90" text-anchor="middle" class="svg-sub">dynamic inventory picks up new hosts</text>
+  </g>
+  <defs><marker id="at2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7ee787"/></marker></defs>
+</svg>
+<figcaption>Terraform outputs the new servers; Ansible's <code>aws_ec2</code> dynamic inventory discovers them by tag and configures them. Clean separation of concerns.</figcaption>
+</figure>
+<div class="box note"><span class="box-title">In a container world, configuration shifts left</span><p>With Docker/Kubernetes, most "configuration" moves into the <a href="docker-complete-guide.html">image build</a> and Kubernetes manifests, so Ansible's role shrinks to bootstrapping nodes, managing non-containerized systems, and orchestration. It remains invaluable for the many workloads that aren't containerized.</p></div>
+
+<div class="box best">
+  <span class="box-title">Let each tool own its half — don't blur the boundary</span>
+  <p>The clean split is: Terraform owns <em>what exists</em> (VMs, VPCs, load balancers, DNS) and Ansible owns <em>what's on it</em> (packages, config files, services). Resist the temptation to shell out to Ansible from Terraform's <code>provisioner "local-exec"</code> for anything non-trivial — it couples the two lifecycles and makes <code>terraform apply</code> fail for configuration reasons. Instead, let Terraform tag instances, and let Ansible's dynamic inventory discover them on its own run. Two commands, two responsibilities, cleanly composable in CI.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Builders vs. movers</span>
+  <p>Terraform is the construction crew that pours the foundation and puts up the walls — it makes the house <em>exist</em>. Ansible is the moving crew that comes afterward to install the appliances, hang the pictures, and set the thermostat — it makes the house <em>livable</em>. You wouldn't ask the bricklayers to also arrange your furniture; each crew does the job it's good at, in order.</p>
+</div>
+
+<h2 id="execution">17. Execution Strategies &amp; Forks</h2>
+<p class="section-intro">By default Ansible runs each task on all hosts before moving to the next task (the <code>linear</code> strategy). How it parallelizes and orders work is tunable — critical for large fleets and rolling deploys.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Linear versus free execution strategy">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">linear (lockstep) vs free (as-fast-as-possible)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="205" y="52" text-anchor="middle" class="svg-label" fill="#58a6ff">linear (default)</text>
+    <rect x="60" y="65" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="105" y="85" text-anchor="middle" class="svg-sub">task1 all</text>
+    <rect x="60" y="100" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="105" y="120" text-anchor="middle" class="svg-sub">task2 all</text>
+    <rect x="60" y="135" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="105" y="155" text-anchor="middle" class="svg-sub">task3 all</text>
+    <text x="205" y="120" class="svg-sub">wait for slowest</text>
+    <text x="205" y="138" class="svg-sub">host each step</text>
+
+    <text x="615" y="52" text-anchor="middle" class="svg-label" fill="#f0883e">free</text>
+    <rect x="470" y="65" width="90" height="90" rx="5" fill="#21262d" stroke="#f0883e"/><text x="515" y="115" text-anchor="middle" class="svg-sub">host A: 1→2→3</text>
+    <rect x="600" y="65" width="90" height="60" rx="5" fill="#21262d" stroke="#f0883e"/><text x="645" y="100" text-anchor="middle" class="svg-sub">host B: 1→2</text>
+    <text x="615" y="175" text-anchor="middle" class="svg-sub">each host races ahead</text>
+    <text x="410" y="215" text-anchor="middle" class="svg-sub">linear = predictable, good for ordered rollouts. free = fastest, no cross-host ordering.</text>
+  </g>
+</svg>
+<figcaption>The <code>linear</code> strategy keeps hosts in lockstep (needed for rolling updates); <code>free</code> lets each host finish as fast as it can. <code>forks</code> controls how many hosts run in parallel.</figcaption>
+</figure>
+
+<div class="code-label label-yaml">Strategy, forks, serial &amp; throttle</div>
+<pre><code>- hosts: web
+  strategy: free            # or linear (default), or host_pinned
+  serial: "25%"             # roll out to 25% of hosts at a time
+  tasks:
+    - name: Heavy task, but cap concurrency
+      ansible.builtin.command: /opt/migrate.sh
+      throttle: 2           # never run this task on more than 2 hosts at once
+
+# Global parallelism (ansible.cfg): how many hosts in parallel
+# [defaults]
+# forks = 50               # default is only 5 — raise it for big fleets</code></pre>
+<div class="box tip"><span class="box-title">The default <code>forks = 5</code> is the #1 speed limiter</span><p>Out of the box Ansible touches only 5 hosts at a time. On a 200-host fleet that's painfully slow. Raise <code>forks</code> (50–100 is common) in <code>ansible.cfg</code> — bounded by the control node's CPU/RAM and target SSH capacity. Combine with <code>serial</code> for safe, batched rollouts.</p></div>
+
+<h3>Why strategies and forks are tunable</h3>
+<p>The default lockstep-with-5-forks behavior is a safe, conservative choice for small fleets, but it's the wrong default for two opposite extremes. For <em>large</em> fleets you want more parallelism (raise forks) and often don't care about cross-host ordering (the <code>free</code> strategy). For <em>sensitive rollouts</em> you want <em>less</em> blast radius and strict ordering (<code>serial</code> batches on the <code>linear</code> strategy). Ansible exposes these knobs because "how fast and in what order" is a policy decision that differs per playbook, not something the engine can guess.</p>
+
+<h4>How strategy, forks, serial, and throttle interact</h4>
+<p>These four operate at different layers and compose:</p>
+<ul>
+  <li><strong><code>forks</code></strong> (global, in <code>ansible.cfg</code>) — the size of the worker pool on the control node; the maximum number of hosts touched in parallel at any instant.</li>
+  <li><strong><code>strategy</code></strong> (per play) — <em>how</em> those workers advance: <code>linear</code> keeps all hosts on the same task (barrier after each task); <code>free</code> lets each host sprint through all tasks independently; <code>host_pinned</code> keeps a host on one worker to reduce reconnects.</li>
+  <li><strong><code>serial</code></strong> (per play) — batches the host list; the whole play completes on a batch before the next batch starts (independent of, and layered on top of, the strategy).</li>
+  <li><strong><code>throttle</code></strong> (per task) — caps concurrency for one specific task below the global fork count, for tasks that hammer a shared resource (a license server, a shared DB).</li>
+</ul>
+
+<div class="code-label label-cmd">Measure the impact of forks with the timer callback</div>
+<pre><code># Slow: default 5 forks on 40 hosts
+time ansible all -i inv -m ping
+# Fast: bump forks for this run
+time ANSIBLE_FORKS=50 ansible all -i inv -m ping</code></pre>
+<div class="code-label label-output">Difference is dramatic on wide fleets</div>
+<pre><code># forks=5  : real  0m22.5s   (8 waves of 5)
+# forks=50 : real  0m3.1s    (all 40 in one wave)</code></pre>
+
+<div class="box note">
+  <span class="box-title">linear vs free — pick by whether ordering matters</span>
+  <p>Use <strong><code>linear</code></strong> (the default) whenever cross-host coordination matters: rolling updates, "don't start task N until all hosts finished task N-1," or gating on a health check. Use <strong><code>free</code></strong> for embarrassingly-parallel, independent work (patch 500 unrelated hosts as fast as possible) where one slow host shouldn't hold up the rest. <code>free</code> can finish far sooner but gives up any guarantee about relative ordering across hosts.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Execution gotchas</span>
+  <p><strong>Cranking <code>forks</code> too high</strong> can exhaust control-node memory/CPU or trip target <code>MaxStartups</code>/SSH rate limits — scale up gradually and watch both ends. <strong><code>free</code> + handlers</strong> is subtle: handler timing is no longer synchronized across hosts. <strong><code>serial</code> multiplies runtime</strong> (each batch pays full play overhead) — balance safety against speed. And <strong><code>throttle</code> only limits one task</strong>, not the play, so a shared resource can still be overwhelmed by another unthrottled task.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A group tour vs. a scavenger hunt</span>
+  <p><code>linear</code> is a guided group tour: everyone stays together and the guide won't move to the next room until the whole group has seen this one. <code>free</code> is a scavenger hunt: each person races ahead at their own pace and finishes when they finish. <code>forks</code> is how many people you let into the museum at once, and <code>serial</code> is admitting the crowd in small groups so the museum never gets dangerously packed.</p>
+</div>
+
+<h2 id="jinja-deep">18. Advanced Jinja2 &amp; Filters</h2>
+<p class="section-intro">Jinja2 is Ansible's expression engine. Filters transform data inline; tests check conditions; lookups pull external data. This is where dynamic playbooks come alive.</p>
+
+<div class="code-label label-yaml">Filters, tests, and defaults</div>
+<pre><code># Filters (piped transforms)
+{{ users | map(attribute='name') | join(', ') }}      # extract & join
+{{ config | to_nice_yaml }}                            # pretty YAML
+{{ password | password_hash('sha512') }}              # hash a secret
+{{ mylist | select('match', '^web') | list }}         # regex filter
+{{ some_var | default('fallback') }}                   # safe default
+{{ item | ternary('enabled', 'disabled') }}            # bool -> string
+
+# Tests (in when:)
+when: ansible_distribution_version is version('20.04', '&gt;=')
+when: my_var is defined and my_var is not none
+
+# Lookups (pull external data at runtime)
+{{ lookup('env', 'HOME') }}
+{{ lookup('file', '/etc/hostname') }}
+{{ lookup('aws_secret', 'prod/db/password') }}</code></pre>
+
+<div class="box eli5"><span class="box-title">Filters = an assembly line for data</span><p>A Jinja2 filter pipeline is like a factory line: raw data enters on the left, and each <code>|</code> is a station that transforms it — extract a field, filter rows, join into a string, hash it. By the time it reaches the right end, you've shaped raw variables into exactly the value a task needs, without writing procedural code.</p></div>
+
+<h3>Why Jinja2 is central to Ansible</h3>
+<p>Ansible's YAML is declarative and deliberately not a programming language — there are no <code>for</code> loops or <code>if</code> statements in the YAML itself. Jinja2 is the escape hatch that provides just enough computation to make playbooks dynamic without turning them into code: shape data with filters, branch with tests, and pull in external values with lookups. This keeps the <em>structure</em> declarative while letting <em>values</em> be computed. Almost every <code>{{ }}</code> you write is Jinja2, so mastering filters is the difference between rigid and adaptable playbooks.</p>
+
+<h4>How filters, tests, and lookups differ mechanically</h4>
+<p><strong>Filters</strong> (<code>value | filter</code>) transform data and are evaluated on the control node during templating — they're pure functions of their input. <strong>Tests</strong> (<code>value is test</code>) return a boolean and are used in <code>when:</code> and conditionals. <strong>Lookups</strong> (<code>lookup('plugin', args)</code>) reach <em>outside</em> the playbook to fetch data at runtime — a file, an environment variable, a secrets manager — and, importantly, they run on the <em>control node</em>, not the target, which matters for security and for what paths/credentials are available. Filters and tests are stateless transforms; lookups have side effects (I/O).</p>
+
+<div class="code-label label-yaml">A realistic data-shaping example</div>
+<pre><code>vars:
+  servers:
+    - { name: web-1, env: prod, cpu: 4 }
+    - { name: web-2, env: prod, cpu: 8 }
+    - { name: dev-1, env: dev,  cpu: 2 }
+
+tasks:
+  - name: Build a comma list of prod hostnames only
+    ansible.builtin.debug:
+      msg: &gt;-
+        {{ servers | selectattr('env','equalto','prod')
+                   | map(attribute='name') | join(', ') }}
+
+  - name: Total CPUs across all servers
+    ansible.builtin.debug:
+      msg: "{{ servers | map(attribute='cpu') | sum }}"
+
+  - name: Safe default when an optional var is missing
+    ansible.builtin.debug:
+      msg: "{{ feature_flag | default(false) | ternary('on','off') }}"</code></pre>
+<div class="code-label label-output">Rendered results</div>
+<pre><code>ok: [localhost] =&gt; { "msg": "web-1, web-2" }
+ok: [localhost] =&gt; { "msg": "14" }
+ok: [localhost] =&gt; { "msg": "off" }</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Debug complex expressions before embedding them</span>
+  <p>A gnarly filter chain that fails inside a template gives a cryptic error. Prototype it in a standalone <code>debug</code> task first (as above) until the output is exactly right, then drop it into the real template. For truly hairy logic, <code>ansible-console</code> lets you evaluate expressions interactively against a host.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Jinja2 gotchas</span>
+  <p><strong><code>default(omit)</code> vs <code>default('')</code>:</strong> use <code>| default(omit)</code> to drop an optional module argument entirely rather than passing an empty string. <strong>Type surprises:</strong> everything from the CLI arrives as a string — <code>"3" &gt; "20"</code> is <em>true</em> lexically; cast with <code>| int</code>. <strong>Lookups run control-side</strong>, so <code>lookup('file', ...)</code> reads a file on <em>your</em> machine, not the target (use the <code>slurp</code> module for target files). <strong>Chained filters short-circuit on undefined</strong> unless you default early. And <strong>whitespace control</strong> (<code>{%- -%}</code>) is needed to keep rendered files clean.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A spreadsheet formula bar</span>
+  <p>Think of Jinja2 as the formula bar in a spreadsheet. The cells (variables) hold raw data; the formula (<code>= FILTER(range) | JOIN(...)</code>) turns them into the value you actually want to display, live, without you retyping it. Tests are the <code>IF()</code> that returns true/false, and lookups are like a formula that pulls a live value from another workbook.</p>
+</div>
+
+<h2 id="errors">19. Error Handling &amp; Blocks</h2>
+<p class="section-intro">Production automation must handle failure gracefully. Ansible provides <code>block/rescue/always</code> (try/catch/finally), plus fine control over what counts as failure.</p>
+<div class="code-label label-yaml">block / rescue / always + failure control</div>
+<pre><code>- name: Safe deployment with rollback
+  block:
+    - name: Deploy new version
+      ansible.builtin.command: /opt/deploy.sh {{ version }}
+  rescue:
+    - name: Roll back on any failure
+      ansible.builtin.command: /opt/deploy.sh {{ previous_version }}
+    - name: Alert
+      ansible.builtin.debug: { msg: "Deploy failed, rolled back" }
+  always:
+    - name: Always re-enable monitoring
+      ansible.builtin.command: /opt/monitoring.sh enable
+
+# Control what "failure" means:
+- ansible.builtin.command: /opt/check.sh
+  register: result
+  failed_when: "'ERROR' in result.stdout"     # custom failure condition
+  changed_when: result.rc == 2                 # custom "changed" condition
+  ignore_errors: true                          # continue even if it fails</code></pre>
+<div class="box best"><span class="box-title">Design for partial failure</span><p>In a fleet, some hosts <em>will</em> fail mid-run. Use <code>max_fail_percentage</code> to abort a rollout if too many fail, <code>any_errors_fatal: true</code> to stop everything on first error when correctness demands it, and <code>rescue</code> blocks to leave systems in a known-good state. Never leave a host half-configured.</p></div>
+
+<h3>Why explicit error handling is non-negotiable</h3>
+<p>By default a failed task removes that host from the play and continues on the others — which is sometimes fine and sometimes catastrophic. If a deploy fails halfway, the host is now in a broken, half-configured state serving traffic. Error handling exists so you can decide, per situation, what "failure" means, whether to retry, whether to roll back, and whether one host's failure should stop the entire fleet. It's the difference between "the run errored" and "the run errored <em>and left everything safe</em>."</p>
+
+<h4>How Ansible decides success, failure, and change</h4>
+<p>Every task result carries flags the engine acts on: <code>failed</code>, <code>changed</code>, <code>rc</code>, <code>stdout</code>. By default a nonzero return code means failure. You override this with <strong><code>failed_when</code></strong> (a Jinja expression that redefines failure — e.g. treat rc=2 as OK, or fail on a string in stdout) and <strong><code>changed_when</code></strong> (redefine what counts as a change, crucial for making shell tasks honest). <strong><code>register</code></strong> captures the whole result dict for later tasks to inspect. <strong><code>block/rescue/always</code></strong> mirrors try/catch/finally: a failure anywhere in <code>block</code> jumps to <code>rescue</code> (where <code>ansible_failed_task</code> and <code>ansible_failed_result</code> are available), and <code>always</code> runs no matter what. <strong><code>retries</code>/<code>until</code></strong> loops a task until a condition holds.</p>
+
+<div class="code-label label-yaml">Retry-until, then block/rescue with real diagnostics</div>
+<pre><code>- hosts: web
+  any_errors_fatal: true          # one host failing aborts the whole play
+  tasks:
+    - name: Wait for the app port to come up (retry)
+      ansible.builtin.wait_for:
+        port: 8080
+        timeout: 5
+      register: portcheck
+      retries: 12
+      delay: 5
+      until: portcheck is succeeded
+
+    - name: Deploy with automatic rollback
+      block:
+        - name: Pull new release
+          ansible.builtin.command: /opt/deploy.sh {{ version }}
+        - name: Health check
+          ansible.builtin.uri: { url: "http://localhost:8080/health", status_code: 200 }
+      rescue:
+        - name: Show why it failed
+          ansible.builtin.debug:
+            msg: "Failed task: {{ ansible_failed_task.name }} — {{ ansible_failed_result.msg | default('n/a') }}"
+        - name: Roll back
+          ansible.builtin.command: /opt/deploy.sh {{ previous_version }}
+      always:
+        - name: Re-enable monitoring no matter what
+          ansible.builtin.command: /opt/monitoring.sh enable</code></pre>
+<div class="code-label label-output">Rescue path firing on a failed health check</div>
+<pre><code>TASK [Health check] ***********************************************
+fatal: [web-1]: FAILED! =&gt; {"status": 503, "msg": "Status code was 503"}
+
+TASK [Show why it failed] *****************************************
+ok: [web-1] =&gt; { "msg": "Failed task: Health check — Status code was 503" }
+
+TASK [Roll back] **************************************************
+changed: [web-1]
+
+TASK [Re-enable monitoring no matter what] ************************
+changed: [web-1]</code></pre>
+
+<div class="box tip">
+  <span class="box-title"><code>ignore_errors</code> is a blunt instrument — prefer <code>failed_when</code></span>
+  <p><code>ignore_errors: true</code> swallows <em>all</em> failures including ones you didn't anticipate, hiding real problems. When you only want to tolerate a <em>specific</em> non-fatal outcome, use <code>failed_when</code> with a precise condition instead. Reserve <code>ignore_errors</code> for genuinely best-effort tasks, and always <code>register</code> the result so a later task can react.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Error-handling gotchas</span>
+  <p><strong>Handlers don't run after a failure</strong> unless you pass <code>--force-handlers</code> — a host can fail with its restart handler never firing. <strong><code>rescue</code> that itself fails</strong> aborts hard. <strong><code>changed_when: false</code></strong> is the right fix for read-only shell tasks that shouldn't ever report changed. <strong><code>any_errors_fatal</code> vs <code>max_fail_percentage</code></strong>: the former stops on the <em>first</em> failure, the latter tolerates a threshold — don't set both carelessly. And <strong><code>until</code> loops still fail</strong> after exhausting <code>retries</code>, so wrap them if you need graceful handling.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A trapeze act with a safety net</span>
+  <p><code>block</code> is the trapeze trick you're attempting. <code>rescue</code> is the safety net — if the acrobat slips, the net catches them and puts them safely back on the platform (rollback). <code>always</code> is the stagehand who turns the house lights back on whether the trick succeeded or failed. <code>retries/until</code> is the acrobat re-attempting the catch a few times before giving up. You plan the net <em>before</em> the show, not after someone falls.</p>
+</div>
+
+<h2 id="performance">20. Performance Tuning</h2>
+<p class="section-intro">Slow playbooks kill productivity. A handful of settings can turn a 20-minute run into 2 minutes.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Forks control how many hosts run in parallel">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">forks: how many hosts run a task in parallel</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="205" y="52" text-anchor="middle" class="svg-label" fill="#ff7b72">forks = 5 (default) — 15 hosts</text>
+    <rect x="40" y="65" width="330" height="30" rx="5" fill="#21262d" stroke="#ff7b72"/><text x="205" y="85" text-anchor="middle" class="svg-sub">wave 1: 5 hosts</text>
+    <rect x="40" y="100" width="330" height="30" rx="5" fill="#21262d" stroke="#ff7b72"/><text x="205" y="120" text-anchor="middle" class="svg-sub">wave 2: 5 hosts</text>
+    <rect x="40" y="135" width="330" height="30" rx="5" fill="#21262d" stroke="#ff7b72"/><text x="205" y="155" text-anchor="middle" class="svg-sub">wave 3: 5 hosts</text>
+    <text x="205" y="188" text-anchor="middle" class="svg-sub" fill="#ff7b72">3 sequential waves — slow</text>
+    <text x="615" y="52" text-anchor="middle" class="svg-label" fill="#7ee787">forks = 50 — 15 hosts</text>
+    <rect x="450" y="65" width="330" height="65" rx="5" fill="#21262d" stroke="#7ee787"/><text x="615" y="102" text-anchor="middle" class="svg-sub">wave 1: all 15 hosts at once</text>
+    <text x="615" y="188" text-anchor="middle" class="svg-sub" fill="#7ee787">one wave — biggest single win</text>
+    <text x="410" y="220" text-anchor="middle" class="svg-sub">Raise forks to cover your batch size — but watch control-node RAM and SSH MaxStartups.</text>
+  </g>
+</svg>
+<figcaption>The default <code>forks = 5</code> processes large fleets in slow sequential waves. Raising it lets more hosts run each task simultaneously — usually the single biggest speedup, bounded by control-node resources and the SSH server's session limits.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Setting</th><th>Effect</th></tr>
+  <tr><td><code>forks = 50</code></td><td>More hosts in parallel (biggest single win)</td></tr>
+  <tr><td><code>pipelining = true</code></td><td>Fewer SSH round-trips per task (needs no <code>requiretty</code>)</td></tr>
+  <tr><td>SSH <code>ControlPersist</code></td><td>Reuse SSH connections instead of reconnecting each task</td></tr>
+  <tr><td><code>gather_facts: false</code></td><td>Skip fact-gathering when you don't need facts</td></tr>
+  <tr><td>Fact caching (redis/jsonfile)</td><td>Reuse gathered facts across runs</td></tr>
+  <tr><td><code>async</code> + <code>poll: 0</code></td><td>Fire-and-forget long tasks; check later</td></tr>
+  <tr><td><code>free</code> strategy</td><td>Don't wait for the slowest host each step</td></tr>
+</table>
+<div class="code-label label-config">A fast ansible.cfg</div>
+<pre><code>[defaults]
+forks = 50
+gathering = smart
+fact_caching = jsonfile
+fact_caching_connection = /tmp/ansible_facts
+[ssh_connection]
+pipelining = true
+ssh_args = -o ControlMaster=auto -o ControlPersist=60s</code></pre>
+
+<h3>Why Ansible playbooks get slow</h3>
+<p>Ansible's simplicity has a cost: every task is a round-trip over SSH, and by default it only talks to 5 hosts at a time. On a big fleet with a long playbook, that's thousands of serialized SSH operations. The slowness isn't the modules doing work — it's the <em>connection overhead</em> (opening SSH, copying the module, waiting) repeated over and over, plus fact-gathering on every play. Nearly all tuning targets one of two things: <strong>do more in parallel</strong>, or <strong>do fewer/cheaper round-trips</strong>.</p>
+
+<h4>How each lever reduces overhead</h4>
+<ul>
+  <li><strong><code>forks</code></strong> attacks serialization — more hosts in flight at once (the single biggest win on wide fleets).</li>
+  <li><strong><code>pipelining</code></strong> attacks per-task round-trips — it pipes the module into the remote Python over the existing connection, removing the separate "copy file then execute" step (can cut task time 2–3×).</li>
+  <li><strong><code>ControlPersist</code></strong> attacks reconnection — it keeps the SSH socket open between tasks so you pay the TCP/auth handshake once, not per task.</li>
+  <li><strong>Fact caching</strong> attacks the <code>setup</code> tax — gathered facts are stored (jsonfile/redis) and reused across runs, so you skip re-gathering on every play.</li>
+  <li><strong><code>gather_facts: false</code></strong> skips fact-gathering entirely when a play doesn't reference any facts.</li>
+</ul>
+
+<div class="code-label label-cmd">Profile first — you can't optimize what you don't measure</div>
+<pre><code># Enable timing callbacks, then run the playbook
+ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer \
+  ansible-playbook -i inv site.yml</code></pre>
+<div class="code-label label-output">profile_tasks names your slowest tasks</div>
+<pre><code>Gathering Facts --------------------------------------- 18.44s
+Install packages -------------------------------------- 12.10s
+Deploy config ----------------------------------------- 1.02s
+...
+Playbook run took 0 days, 0 hours, 0 minutes, 41 seconds</code></pre>
+<p>Here fact-gathering (18s) and one package task (12s) dominate — so enabling fact caching and pipelining, and raising forks, will help far more than micro-optimizing the 1-second tasks. Always profile before tuning.</p>
+
+<div class="box tip">
+  <span class="box-title">The high-leverage trio</span>
+  <p>For most fleets, three changes deliver 80% of the speedup: <strong>(1)</strong> <code>forks = 50</code>, <strong>(2)</strong> <code>pipelining = true</code>, <strong>(3)</strong> <code>ControlPersist=60s</code>. Add <strong>fact caching</strong> if you gather facts and run frequently. Verify each change with the <code>timer</code> callback so you know it actually helped rather than assuming.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Performance gotchas</span>
+  <p><strong>Pipelining needs no <code>requiretty</code></strong> in sudoers or it errors — check target defaults. <strong>Over-high <code>forks</code></strong> can exhaust control-node RAM or hit SSH server limits (<code>MaxSessions</code>, <code>MaxStartups</code>). <strong>Stale fact cache</strong> can make a play act on outdated facts after hardware changes — set a sensible TTL. <strong>Looping single-package installs</strong> is a classic slow spot — pass the whole list to the package module instead. And <strong><code>free</code> strategy speeds runs but sacrifices ordering</strong> — don't use it where sequencing matters.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Checkout lines at a store</span>
+  <p>A slow playbook is a store with one open register (<code>forks=5</code>) serving a huge queue. Open more registers (raise forks) and the line moves in parallel. Keep each customer's lane open between items instead of re-scanning their loyalty card every time (<code>ControlPersist</code>). Skip re-asking regulars for their whole life story every visit (fact caching). And profile first — count where the line actually backs up before rearranging the store.</p>
+</div>
+
+<h2 id="dynamic-inv">21. Dynamic Inventory Deep Dive</h2>
+<p class="section-intro">Static inventory files don't work when servers autoscale. Dynamic inventory plugins query the source of truth (cloud API, CMDB) live and group hosts automatically.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Dynamic inventory queries cloud API">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Dynamic inventory: hosts discovered live by tag</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="75" width="180" height="55" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/><text x="130" y="100" text-anchor="middle" class="svg-label" fill="#ff6b6b">ansible</text><text x="130" y="118" text-anchor="middle" class="svg-sub">aws_ec2 plugin</text>
+    <rect x="320" y="75" width="180" height="55" rx="8" fill="#21262d" stroke="#ff9900" stroke-width="2"/><text x="410" y="100" text-anchor="middle" class="svg-label" fill="#ff9900">AWS API</text><text x="410" y="118" text-anchor="middle" class="svg-sub">describe instances</text>
+    <rect x="600" y="55" width="180" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="690" y="80" text-anchor="middle" class="svg-sub">group: tag_env_prod</text>
+    <rect x="600" y="105" width="180" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="690" y="130" text-anchor="middle" class="svg-sub">group: tag_role_web</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="220" y1="102" x2="318" y2="102" marker-end="url(#di)"/><line x1="500" y1="95" x2="598" y2="80" marker-end="url(#di)"/><line x1="500" y1="110" x2="598" y2="125" marker-end="url(#di)"/></g>
+  </g>
+  <defs><marker id="di" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>The plugin asks the cloud "which instances exist?" every run and auto-groups them by tag — so a freshly-autoscaled instance is instantly manageable with no file edits.</figcaption>
+</figure>
+
+<div class="code-label label-config">aws_ec2 dynamic inventory (inventory.aws_ec2.yml)</div>
+<pre><code>plugin: amazon.aws.aws_ec2
+regions: [us-east-1]
+keyed_groups:
+  - key: tags.Environment       # creates groups like tag_Environment_prod
+    prefix: env
+  - key: tags.Role
+    prefix: role
+filters:
+  instance-state-name: running
+compose:
+  ansible_host: private_ip_address
+# use it: ansible-inventory -i inventory.aws_ec2.yml --graph</code></pre>
+
+<h3>Why dynamic inventory is essential in the cloud</h3>
+<p>A static <code>hosts.ini</code> assumes the fleet is fixed and you know every IP. The cloud breaks both assumptions: autoscaling groups create and destroy instances continuously, IPs are ephemeral, and nobody hand-maintains a list of 200 machines that changes hourly. Dynamic inventory makes the <em>cloud itself</em> the source of truth — Ansible asks the provider "what exists right now?" at the start of every run, so a machine that autoscaled into existence five minutes ago is instantly manageable, and one that was terminated simply disappears from the inventory. No file edits, no drift between the list and reality.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Dynamic inventory refresh loop with an autoscaling group">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Dynamic inventory tracks an autoscaling fleet — every run</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="95" width="160" height="60" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="120" y="120" text-anchor="middle" class="svg-label" fill="#ff6b6b">Each run</text>
+    <text x="120" y="138" text-anchor="middle" class="svg-sub">refresh inventory</text>
+    <rect x="290" y="95" width="180" height="60" rx="8" fill="#21262d" stroke="#ff9900" stroke-width="2"/>
+    <text x="380" y="120" text-anchor="middle" class="svg-label" fill="#ff9900">Cloud API</text>
+    <text x="380" y="138" text-anchor="middle" class="svg-sub">what's running now?</text>
+    <rect x="560" y="45" width="230" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="675" y="67" text-anchor="middle" class="svg-sub">i-aaa (scaled up 5m ago) → managed</text>
+    <rect x="560" y="88" width="230" height="34" rx="6" fill="#21262d" stroke="#7ee787"/><text x="675" y="110" text-anchor="middle" class="svg-sub">i-bbb (steady) → managed</text>
+    <rect x="560" y="131" width="230" height="34" rx="6" fill="#21262d" stroke="#8b949e" stroke-dasharray="4 3"/><text x="675" y="153" text-anchor="middle" class="svg-sub">i-ccc (terminated) → gone</text>
+    <g stroke="#58a6ff" stroke-width="2">
+      <line x1="200" y1="125" x2="288" y2="125" marker-end="url(#ans-dyn)"/>
+      <line x1="470" y1="115" x2="558" y2="70" marker-end="url(#ans-dyn)"/>
+      <line x1="470" y1="125" x2="558" y2="105" marker-end="url(#ans-dyn)"/>
+      <line x1="470" y1="135" x2="558" y2="148" marker-end="url(#ans-dyn)"/>
+    </g>
+    <text x="410" y="205" text-anchor="middle" class="svg-sub">No file edits: the inventory equals reality at run time, grouped by tag (env, role, region).</text>
+    <text x="410" y="227" text-anchor="middle" class="svg-sub" fill="#d2a8ff">Cache with a TTL to avoid hammering the API on rapid successive runs.</text>
+  </g>
+  <defs><marker id="ans-dyn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Because the list is regenerated live, autoscaled-in hosts are managed immediately and terminated hosts vanish — the static-file drift problem disappears entirely.</figcaption>
+</figure>
+
+<h4>How an inventory plugin resolves hosts at runtime</h4>
+<p>An inventory plugin (configured by a YAML file ending in a recognized suffix like <code>.aws_ec2.yml</code>) runs when Ansible starts. It authenticates to the source API, queries for resources matching your <code>filters</code>, and then builds the inventory dynamically: <strong><code>keyed_groups</code></strong> auto-creates groups from attributes (every instance tagged <code>Environment=prod</code> lands in a <code>env_prod</code> group), <strong><code>compose</code></strong> sets host variables from instance attributes (e.g. <code>ansible_host</code> = the private IP), and <strong><code>groups</code></strong> can define conditional group membership. The result is the same host/group/variable structure a static file would produce — just computed live instead of typed by hand. Caching (<code>cache: true</code>) avoids hammering the API on rapid successive runs.</p>
+
+<div class="code-label label-cmd">Verify the live-discovered inventory before running against it</div>
+<pre><code>ansible-inventory -i inventory.aws_ec2.yml --graph
+ansible-inventory -i inventory.aws_ec2.yml --host i-0abc123 | head</code></pre>
+<div class="code-label label-output">Groups built live from tags</div>
+<pre><code>@all:
+  |--@aws_ec2:
+  |  |--i-0abc123
+  |  |--i-0def456
+  |--@env_prod:          # from keyed_groups on tags.Environment
+  |  |--i-0abc123
+  |--@role_web:          # from keyed_groups on tags.Role
+  |  |--i-0abc123
+  |  |--i-0def456</code></pre>
+<div class="code-label label-yaml">Target a live-discovered group in a play</div>
+<pre><code>- hosts: role_web        # this group didn't exist in any file — it came from tags
+  become: true
+  tasks:
+    - ansible.builtin.apt: { name: nginx, state: present }
+# ansible-playbook -i inventory.aws_ec2.yml site.yml</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Tags become your inventory — so tag deliberately</span>
+  <p>With dynamic inventory, your cloud tagging strategy <em>is</em> your inventory design. Standardize tags like <code>Environment</code>, <code>Role</code>, and <code>App</code> across all instances, and <code>keyed_groups</code> will hand you clean, automatic groups (<code>env_prod</code>, <code>role_web</code>). Enforce the tags at provisioning time (in Terraform) so no instance is ever untargetable.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Dynamic inventory gotchas</span>
+  <p><strong>Credentials &amp; permissions:</strong> the plugin needs read access to the cloud API (an IAM role/keys) — missing perms yield a silently empty inventory. <strong>Plugin must be enabled</strong> in <code>ansible.cfg</code> under <code>[inventory] enable_plugins</code>. <strong>The file must end with the right suffix</strong> (<code>*.aws_ec2.yml</code>) and start with <code>plugin:</code> or Ansible treats it as a static file. <strong>Stale cache</strong> can hide brand-new instances — disable caching for deploy pipelines that must see the latest. And <strong>public vs private IP</strong>: set <code>compose: ansible_host</code> to the address you can actually reach.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A live guest list vs. a printed one</span>
+  <p>A static inventory is a guest list printed last week — useless when people keep arriving and leaving. Dynamic inventory is a doorman with a live headcount: every time the party needs a decision, he looks around the room and reports exactly who's here right now, sorted into groups by the badges (tags) they're wearing. New arrivals are counted automatically; people who left are simply no longer on the list.</p>
+</div>
+
+<h2 id="custom-modules">22. Custom Modules &amp; Plugins</h2>
+<p class="section-intro">When no existing module fits, write your own. Modules are the "verbs"; plugins extend Ansible's core behavior (lookups, filters, callbacks, connections).</p>
+<div class="code-label label-yaml">A minimal custom module (Python) — library/my_check.py</div>
+<pre><code>#!/usr/bin/python
+from ansible.module_utils.basic import AnsibleModule
+
+def main():
+    module = AnsibleModule(argument_spec=dict(
+        path=dict(type='str', required=True),
+    ))
+    import os
+    exists = os.path.exists(module.params['path'])
+    # modules communicate via JSON on stdout; changed= drives idempotency
+    module.exit_json(changed=False, exists=exists)
+
+if __name__ == '__main__':
+    main()</code></pre>
+<table>
+  <tr><th>Plugin type</th><th>Extends</th></tr>
+  <tr><td>Lookup</td><td>Pull external data (<code>lookup('mysource', ...)</code>)</td></tr>
+  <tr><td>Filter</td><td>New Jinja2 filters</td></tr>
+  <tr><td>Callback</td><td>React to events (custom logging, Slack notifications, timing)</td></tr>
+  <tr><td>Connection</td><td>New ways to reach hosts (beyond SSH/WinRM)</td></tr>
+  <tr><td>Action</td><td>Controller-side logic wrapping a module</td></tr>
+</table>
+<div class="box tip"><span class="box-title">Callback plugins for visibility</span><p>The <code>profile_tasks</code> callback shows how long each task took (find your slow spots); <code>timer</code> shows total runtime. Community callbacks can post results to Slack or write JSON logs. Enable in <code>ansible.cfg</code>: <code>callbacks_enabled = profile_tasks, timer</code>.</p></div>
+
+<h3>Why write custom modules and plugins</h3>
+<p>Ansible ships thousands of modules, but your organization has systems no public module knows about — an internal API, a bespoke appliance, a proprietary database. You <em>could</em> shell out to a CLI with the <code>command</code> module, but you'd lose idempotency, check-mode support, and clean error reporting. A custom module lets that internal system be a first-class Ansible citizen: idempotent, describable in YAML, supporting <code>--check</code>, and returning structured data. Plugins extend a different axis — not "new things to do" but "new ways Ansible itself behaves" (how it connects, how it templates, how it reports).</p>
+
+<h4>How a module communicates with the engine</h4>
+<p>A module is just a program Ansible ships to the target and runs. The contract is entirely over <strong>stdin/stdout as JSON</strong>: Ansible passes the task arguments in, and the module must print a JSON result and exit. <code>AnsibleModule</code> (from <code>module_utils.basic</code>) handles the boilerplate — parsing arguments against an <code>argument_spec</code> (with types, required, defaults, and validation), supporting check mode, and providing <code>exit_json(changed=..., ...)</code> and <code>fail_json(msg=...)</code>. The critical field is <strong><code>changed</code></strong>: the module itself must implement the check-then-act pattern and report whether it actually changed anything — that's what makes <em>your</em> module idempotent and what drives handler notifications.</p>
+
+<div class="code-label label-yaml">An idempotent, check-mode-aware module — library/manage_flag.py</div>
+<pre><code>#!/usr/bin/python
+from ansible.module_utils.basic import AnsibleModule
+import os
+
+def main():
+    module = AnsibleModule(
+        argument_spec=dict(
+            path=dict(type='str', required=True),
+            state=dict(type='str', default='present',
+                       choices=['present', 'absent']),
+        ),
+        supports_check_mode=True,          # honor --check
+    )
+    path = module.params['path']
+    want_present = module.params['state'] == 'present'
+    exists = os.path.exists(path)
+
+    # check-then-act: only "change" if reality differs from desired state
+    changed = (want_present and not exists) or (not want_present and exists)
+
+    if changed and not module.check_mode:
+        if want_present:
+            open(path, 'a').close()        # create the flag file
+        else:
+            os.remove(path)                # remove it
+
+    module.exit_json(changed=changed, path=path, state=module.params['state'])
+
+if __name__ == '__main__':
+    main()</code></pre>
+<div class="code-label label-cmd">Test it standalone, then use it in a task</div>
+<pre><code># Ansible auto-discovers modules in ./library/ next to your playbook
+ansible localhost -M ./library -m manage_flag -a "path=/tmp/deployed state=present"
+ansible localhost -M ./library -m manage_flag -a "path=/tmp/deployed state=present"  # run twice</code></pre>
+<div class="code-label label-output">Idempotency proven: changed then unchanged</div>
+<pre><code>localhost | CHANGED =&gt; { "changed": true,  "path": "/tmp/deployed", "state": "present" }
+localhost | SUCCESS =&gt; { "changed": false, "path": "/tmp/deployed", "state": "present" }</code></pre>
+
+<div class="box best">
+  <span class="box-title">Support check mode and return structured data</span>
+  <p>A production-grade custom module <strong>declares <code>supports_check_mode=True</code></strong> and skips side effects when <code>module.check_mode</code> is set, so it works with <code>--check --diff</code> like built-ins. It validates inputs via <code>argument_spec</code> (never trust raw params), reports an accurate <code>changed</code>, fails with a clear <code>fail_json(msg=...)</code>, and returns useful data other tasks can <code>register</code>. Add a <code>DOCUMENTATION</code>/<code>EXAMPLES</code> block so <code>ansible-doc</code> works.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Custom module gotchas</span>
+  <p><strong>Blindly reporting <code>changed=True</code></strong> defeats the whole point — implement real state checking. <strong>Printing anything but the final JSON to stdout</strong> corrupts the result parsing (debug to stderr or via the module's return data). <strong>Runs in remote Python</strong>, so any third-party library it imports must exist on the <em>target</em>, not just the control node. <strong>Prefer a module over a plugin</strong> unless you're truly changing Ansible's behavior — new lookups/filters/callbacks are for extending the engine, not for doing configuration work.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Teaching a robot a new chore</span>
+  <p>Built-in modules are chores the robot already knows ("install a package," "copy a file"). A custom module teaches it a brand-new chore for your household's quirky appliance. The key lesson you must include: "before you act, <em>check</em> whether it's already done." A well-taught robot glances first and only acts if needed — so telling it twice is harmless. Plugins, by contrast, don't teach new chores; they change how the robot <em>gets around the house</em> or <em>writes its report</em>.</p>
+</div>
+
+<h2 id="collections-deep">23. Building &amp; Publishing Collections</h2>
+<p class="section-intro">Collections are the modern packaging unit — bundling roles, modules, and plugins with versioning. Your organization should package its reusable automation as internal collections.</p>
+<div class="code-label label-cmd">Scaffold, build, publish a collection</div>
+<pre><code>ansible-galaxy collection init mycompany.infra
+# structure: roles/, plugins/{modules,filter,lookup}/, galaxy.yml
+ansible-galaxy collection build              # -&gt; mycompany-infra-1.0.0.tar.gz
+ansible-galaxy collection publish mycompany-infra-1.0.0.tar.gz \
+  --server https://your-automation-hub
+# consume with a pinned requirements.yml (commit this):
+#   collections: [ { name: mycompany.infra, version: "1.0.0" } ]</code></pre>
+
+<h3>Why package your own collections</h3>
+<p>Once you have more than a handful of roles and custom modules, copy-pasting them between repos creates drift: three teams end up with three slightly-different "nginx" roles and no way to ship a fix to all of them. Packaging your reusable automation as an internal, versioned <strong>collection</strong> solves this the way a private library solves code reuse. Teams declare a dependency on <code>mycompany.infra:1.2.0</code>, get a tested, documented bundle, and upgrade deliberately. It turns tribal automation knowledge into a governed, shareable product.</p>
+
+<h4>How a collection is structured, built, and versioned</h4>
+<p>A collection is a directory tree with a <code>galaxy.yml</code> manifest (namespace, name, version, dependencies) and conventional subdirectories: <code>roles/</code>, <code>plugins/modules/</code>, <code>plugins/filter/</code>, <code>plugins/lookup/</code>, and <code>docs/</code>. <code>ansible-galaxy collection build</code> packages the tree into a versioned tarball (<code>mycompany-infra-1.0.0.tar.gz</code>) using the version from <code>galaxy.yml</code>. That tarball is published to a Galaxy server or a private <strong>Automation Hub</strong>, and consumers install it by name+version. Semantic versioning is the contract: bump the patch for fixes, minor for backward-compatible additions, major for breaking changes — so consumers know whether an upgrade is safe.</p>
+
+<div class="code-label label-config">galaxy.yml — the collection manifest</div>
+<pre><code>namespace: mycompany
+name: infra
+version: 1.2.0
+readme: README.md
+authors: [ "Platform Team &lt;platform@mycompany.com&gt;" ]
+dependencies:
+  "amazon.aws": "&gt;=7.0.0,&lt;8.0.0"    # collections this one relies on
+build_ignore:
+  - "*.tar.gz"
+  - "tests/output"</code></pre>
+<div class="code-label label-cmd">Full lifecycle: build, verify, install locally, use</div>
+<pre><code>ansible-galaxy collection build --force            # -&gt; mycompany-infra-1.2.0.tar.gz
+ansible-galaxy collection install mycompany-infra-1.2.0.tar.gz -p ./collections
+ansible-doc mycompany.infra.my_module              # confirm docs render
+# reference content by fully-qualified name in a play:
+#   - hosts: web
+#     roles: [ mycompany.infra.nginx ]
+#     tasks:
+#       - mycompany.infra.my_module: { ... }</code></pre>
+<div class="code-label label-output">Build output</div>
+<pre><code>Created collection for mycompany.infra at
+  /home/you/mycompany-infra-1.2.0.tar.gz</code></pre>
+
+<div class="box best">
+  <span class="box-title">Version with SemVer and gate releases with tests</span>
+  <p>Treat a collection like any published library: <strong>SemVer</strong> the version, keep a CHANGELOG, run <code>ansible-lint</code> and Molecule (§26) in CI on every change, and only publish a new version when tests pass. Host it on a private Automation Hub so builds don't depend on the public internet, and pin exact versions in consumers' <code>requirements.yml</code> so an internal release never surprises a downstream pipeline.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Collection-building gotchas</span>
+  <p><strong>Forgetting to bump <code>version</code></strong> means <code>build</code> overwrites the same tarball and caches serve stale content. <strong>Breaking changes on a minor bump</strong> violate SemVer and break consumers who allowed <code>&gt;=</code> ranges. <strong>Missing <code>DOCUMENTATION</code> blocks</strong> leave <code>ansible-doc</code> empty. <strong>Wrong namespace/name</strong> in <code>galaxy.yml</code> makes FQCN references fail confusingly. And <strong>bundling untested roles</strong> just distributes bugs faster — test before you publish.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Shipping your recipes as a published cookbook</span>
+  <p>Your team's roles and modules are handwritten recipe cards passed around the kitchen — some copies have errors, nobody knows which is current. A collection is publishing them as a proper cookbook with an edition number (version). When you fix a recipe, you release a new edition; other kitchens choose when to buy it. Everyone cooks from the same tested, numbered book instead of a drawer of conflicting index cards.</p>
+</div>
+
+<h2 id="molecule">24. Testing Roles with Molecule</h2>
+<p class="section-intro">Untested roles break in production. Molecule spins up a real container/VM, applies your role, verifies the result, and — crucially — checks idempotency.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Molecule test loop">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The Molecule test sequence</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="75" width="130" height="50" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="85" y="98" text-anchor="middle" class="svg-sub">create</text><text x="85" y="114" text-anchor="middle" class="svg-sub">container</text>
+    <rect x="170" y="75" width="130" height="50" rx="8" fill="#21262d" stroke="#7ee787"/><text x="235" y="98" text-anchor="middle" class="svg-sub">converge</text><text x="235" y="114" text-anchor="middle" class="svg-sub">apply role</text>
+    <rect x="320" y="75" width="150" height="50" rx="8" fill="#21262d" stroke="#f0883e"/><text x="395" y="98" text-anchor="middle" class="svg-sub">idempotence</text><text x="395" y="114" text-anchor="middle" class="svg-sub">run again = 0 chg</text>
+    <rect x="490" y="75" width="130" height="50" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="555" y="98" text-anchor="middle" class="svg-sub">verify</text><text x="555" y="114" text-anchor="middle" class="svg-sub">assertions</text>
+    <rect x="640" y="75" width="130" height="50" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="705" y="98" text-anchor="middle" class="svg-sub">destroy</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="150" y1="100" x2="168" y2="100" marker-end="url(#mo)"/><line x1="300" y1="100" x2="318" y2="100" marker-end="url(#mo)"/><line x1="470" y1="100" x2="488" y2="100" marker-end="url(#mo)"/><line x1="620" y1="100" x2="638" y2="100" marker-end="url(#mo)"/></g>
+  </g>
+  <defs><marker id="mo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Molecule automates the full lifecycle. The <em>idempotence</em> step is the killer feature — it runs your role twice and fails if the second run reports any changes, proving your role is truly idempotent.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Molecule workflow</div>
+<pre><code>pip install molecule molecule-plugins[docker]
+cd roles/nginx
+molecule init scenario                # scaffold molecule/default/
+molecule test                         # full sequence: create→converge→idempotence→verify→destroy
+molecule converge                     # just apply (fast dev loop)
+molecule login                        # shell into the test container to debug</code></pre>
+
+<h3>Why role testing needs Molecule specifically</h3>
+<p>You can eyeball a role and think it works, but three things routinely break silently: it fails on a different OS than you developed on, it isn't actually idempotent (reports changes on the second run), and a refactor quietly breaks a previously-working path. Manual testing on a real server is slow, pollutes that server, and doesn't get run consistently. Molecule turns role testing into a repeatable, automated pipeline that spins up a <em>clean, disposable</em> environment every time — so tests are reproducible and can run in CI on every commit, catching regressions before they reach real hosts.</p>
+
+<h4>How the Molecule test sequence works</h4>
+<p><code>molecule test</code> runs a fixed lifecycle, and each phase checks something specific:</p>
+<ol>
+  <li><strong>create</strong> — provisions a fresh container/VM from a clean image (the <em>driver</em>, usually Docker).</li>
+  <li><strong>converge</strong> — runs a small playbook that applies your role to that instance. This proves the role <em>runs</em>.</li>
+  <li><strong>idempotence</strong> — runs converge <em>again</em> and <strong>fails the test if the second run reports any <code>changed</code></strong>. This is the phase you can't easily do by hand and the reason Molecule exists.</li>
+  <li><strong>verify</strong> — runs assertions (Ansible <code>assert</code> tasks, or Testinfra) to check the resulting state: the service is running, the config contains the right line, the port is open.</li>
+  <li><strong>destroy</strong> — tears the instance down, leaving no residue.</li>
+</ol>
+
+<div class="code-label label-yaml">molecule/default/verify.yml — assert the end state</div>
+<pre><code>- name: Verify nginx role produced the right state
+  hosts: all
+  tasks:
+    - name: nginx service is running and enabled
+      ansible.builtin.service_facts:
+    - ansible.builtin.assert:
+        that:
+          - "'nginx.service' in ansible_facts.services"
+          - "ansible_facts.services['nginx.service'].state == 'running'"
+
+    - name: config contains the tuned worker count
+      ansible.builtin.command: grep -q "worker_processes 4" /etc/nginx/nginx.conf
+      changed_when: false</code></pre>
+<div class="code-label label-output">The idempotence phase catching a non-idempotent role</div>
+<pre><code>--&gt; Scenario: 'default'
+--&gt; Action: 'converge'   ... changed=3   ok
+--&gt; Action: 'idempotence'
+    Idempotence test failed because of the following tasks:
+    * [instance] =&gt; Deploy config      # reported changed on the 2nd run!
+--&gt; ERROR: Idempotence test failed.</code></pre>
+<p>That failure is Molecule earning its keep: a <code>command</code> task with no <code>changed_when</code> reported <code>changed</code> on the second pass, so the role isn't truly idempotent — a bug you'd never notice by running it once.</p>
+
+<div class="box tip">
+  <span class="box-title">Fast dev loop: <code>converge</code> then <code>login</code></span>
+  <p>Don't run the full <code>molecule test</code> on every edit — it destroys and recreates the container each time. While developing, use <code>molecule converge</code> to re-apply the role to the <em>existing</em> instance (fast), and <code>molecule login</code> to shell in and inspect what actually happened. Run the full <code>test</code> sequence (which includes destroy/recreate and idempotence) before you commit and in CI.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Molecule gotchas</span>
+  <p><strong>Containers ≠ full VMs:</strong> systemd, kernel modules, and some services behave differently in a container — test on an image close to production, or use a VM driver for systemd-heavy roles. <strong>Skipping the idempotence phase</strong> (or <code>molecule converge</code> only) defeats the main benefit. <strong>Verify with assertions, not just "it didn't error"</strong> — a role can converge cleanly yet produce the wrong config. And <strong>test the OSes you actually run</strong> by defining multiple platforms in <code>molecule.yml</code>, not just your laptop's distro.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A crash-test lab for your role</span>
+  <p>Molecule is a crash-test facility for cars (your role). It builds a fresh test car (create), drives it (converge), then drives the <em>same</em> car again to prove the second drive changes nothing new (idempotence), inspects the dashboard against a checklist (verify), and finally scraps the test car so the next test starts fresh (destroy). You'd never ship a car design tested only once in your driveway — you run it through the lab, repeatedly and automatically.</p>
+</div>
+
+<h2 id="network-cloud">25. Network &amp; Cloud Automation</h2>
+<p class="section-intro">Ansible isn't just for servers — it manages network devices (Cisco, Juniper, Arista) and orchestrates cloud resources through provider collections.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Ansible connection plugins for Linux WinRM network devices and cloud APIs">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">One control node, many connection types</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="320" y="45" width="180" height="52" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/><text x="410" y="67" text-anchor="middle" class="svg-label" fill="#ff6b6b">Control node</text><text x="410" y="85" text-anchor="middle" class="svg-sub">picks connection per host</text>
+    <rect x="20" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#7ee787"/><text x="110" y="174" text-anchor="middle" class="svg-label" fill="#7ee787">Linux/Unix</text><text x="110" y="192" text-anchor="middle" class="svg-sub">connection: ssh</text><text x="110" y="208" text-anchor="middle" class="svg-sub">remote python module</text>
+    <rect x="215" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="305" y="174" text-anchor="middle" class="svg-label" fill="#58a6ff">Windows</text><text x="305" y="192" text-anchor="middle" class="svg-sub">connection: winrm</text><text x="305" y="208" text-anchor="middle" class="svg-sub">powershell module</text>
+    <rect x="410" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="500" y="174" text-anchor="middle" class="svg-label" fill="#f0883e">Network device</text><text x="500" y="192" text-anchor="middle" class="svg-sub">network_cli / netconf</text><text x="500" y="208" text-anchor="middle" class="svg-sub">no remote python</text>
+    <rect x="605" y="150" width="190" height="70" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="700" y="174" text-anchor="middle" class="svg-label" fill="#d2a8ff">Cloud API</text><text x="700" y="192" text-anchor="middle" class="svg-sub">connection: local</text><text x="700" y="208" text-anchor="middle" class="svg-sub">runs on control node</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="380" y1="97" x2="120" y2="148" marker-end="url(#ans-conn)"/>
+      <line x1="400" y1="97" x2="305" y2="148" marker-end="url(#ans-conn)"/>
+      <line x1="420" y1="97" x2="500" y2="148" marker-end="url(#ans-conn)"/>
+      <line x1="440" y1="97" x2="700" y2="148" marker-end="url(#ans-conn)"/>
+    </g>
+  </g>
+  <defs><marker id="ans-conn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Same playbook engine, different transports. Servers get Python over SSH, Windows gets PowerShell over WinRM, switches use <code>network_cli</code> (no remote Python), and cloud modules run locally against provider APIs.</figcaption>
+</figure>
+
+<div class="code-label label-yaml">Network device + cloud orchestration</div>
+<pre><code># Configure a Cisco switch (agentless, over SSH/API)
+- hosts: switches
+  gather_facts: false
+  tasks:
+    - cisco.ios.ios_config:
+        lines: ["vlan 100", "name web-tier"]
+
+# Orchestrate AWS (Ansible can provision too, though Terraform is preferred for that)
+- hosts: localhost
+  tasks:
+    - amazon.aws.ec2_instance:
+        name: web-1
+        instance_type: t3.micro
+        image_id: ami-0abc123
+        tags: { Environment: prod }</code></pre>
+<div class="box note"><span class="box-title">Provision vs configure — the right tool</span><p>For <em>provisioning</em> cloud infra, <a href="terraform-complete-guide.html">Terraform</a> is usually the better choice (state, plan, drift detection). Ansible shines at <em>configuring</em> what runs on those resources and at network device automation where it's a leader. Many teams use both: Terraform builds, Ansible configures (see §16).</p></div>
+
+<h3>Why Ansible reaches beyond servers</h3>
+<p>The same agentless model that makes Ansible great for servers makes it uniquely suited to network gear: you can't install an agent on a Cisco switch or a firewall, but you <em>can</em> reach its SSH/API. Before automation, network changes were typed by hand into each device's CLI — error-prone, unauditable, and impossible to do consistently across a hundred switches. Ansible brings the same "declare the desired config, apply it everywhere, keep it in Git" discipline to network and cloud resources that it brings to servers. It became a leader in network automation precisely because it needs nothing installed on the device.</p>
+
+<h4>How network and cloud modules differ from server modules</h4>
+<p>Two important mechanical differences. <strong>Network modules</strong> use special connection types — <code>network_cli</code> (drives the device's CLI over SSH) or <code>httpapi</code>/<code>netconf</code> (drives its API) instead of the normal SSH-and-ship-Python model, because network OSes don't have a general-purpose Python you can run modules on. You typically set <code>gather_facts: false</code> and run the play against the device from the control node. <strong>Cloud modules</strong> mostly run on <code>localhost</code> (or a bastion) and call the provider's <em>API</em> — the "managed host" is the cloud API endpoint, not a server. Both are still idempotent: the module reads current device/cloud state and only pushes changes that are needed.</p>
+
+<div class="code-label label-yaml">Network config with the right connection + idempotency</div>
+<pre><code>- name: Manage switch VLANs
+  hosts: switches
+  gather_facts: false
+  connection: ansible.netcommon.network_cli    # CLI over SSH, not module-shipping
+  vars:
+    ansible_network_os: cisco.ios.ios
+  tasks:
+    - name: Ensure VLAN 100 exists (idempotent — no change if already present)
+      cisco.ios.ios_vlans:
+        config:
+          - name: web-tier
+            vlan_id: 100
+        state: merged
+
+    - name: Save running-config to startup-config
+      cisco.ios.ios_command:
+        commands: ["write memory"]</code></pre>
+<div class="code-label label-cmd">Run it and confirm idempotency</div>
+<pre><code>ansible-playbook -i network.ini switch-vlans.yml
+ansible-playbook -i network.ini switch-vlans.yml   # second run</code></pre>
+<div class="code-label label-output">Second run makes no changes</div>
+<pre><code>PLAY RECAP ********************************************************
+sw-core-1 : ok=2  changed=0  unreachable=0  failed=0
+# VLAN 100 already existed -&gt; the module recognized it and changed nothing</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Use the resource modules and <code>merged</code>/<code>replaced</code> states</span>
+  <p>Modern network collections provide <em>resource modules</em> (like <code>ios_vlans</code>, <code>ios_interfaces</code>) that model config as structured data with explicit states: <code>merged</code> (add/update), <code>replaced</code> (make this section exactly match), <code>overridden</code> (make the whole config match), <code>deleted</code>. Prefer these over raw <code>ios_command</code> — they're idempotent and let you manage config declaratively instead of sending blind CLI lines.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Network/cloud gotchas</span>
+  <p><strong>Wrong connection type</strong> is the #1 error: forgetting <code>connection: network_cli</code>/<code>ansible_network_os</code> makes Ansible try to ship Python to a switch and fail. <strong><code>gather_facts: true</code> on network devices</strong> errors (no remote Python) — set it false. <strong>Raw <code>ios_command</code> is not idempotent</strong> — it re-sends lines every run; use resource modules. <strong>Cloud API rate limits and credentials</strong> bite when running on <code>localhost</code> — throttle and scope IAM. And <strong>"config applied" ≠ "config saved"</strong> — many devices need an explicit save (<code>write memory</code>) to survive reboot.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">One universal remote for the whole building</span>
+  <p>Servers, switches, firewalls, and cloud accounts all speak different "languages," but Ansible is a universal remote that knows the right buttons for each. It doesn't need to install anything inside the TV, the thermostat, or the garage door — it just needs to reach each one and speak its protocol (SSH CLI for switches, API calls for the cloud). You describe the setting you want once, and it presses the correct buttons on every device.</p>
+</div>
+
+<h2 id="awx">26. AWX / Ansible Automation Platform</h2>
+<p class="section-intro">Running playbooks from laptops doesn't scale or audit. AWX (open source) and Ansible Automation Platform (Red Hat's supported product) add a web UI, RBAC, scheduling, secrets, and an API.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="AWX architecture with projects inventories credentials job templates and execution environments">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">AWX / Automation Platform architecture</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="45" width="180" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="120" y="70" text-anchor="middle" class="svg-sub">UI · REST API · webhooks</text>
+    <rect x="30" y="100" width="180" height="150" rx="8" fill="#21262d" stroke="#ee0000" stroke-width="2"/>
+    <text x="120" y="122" text-anchor="middle" class="svg-label" fill="#ff6b6b">AWX control plane</text>
+    <text x="120" y="145" text-anchor="middle" class="svg-sub">RBAC · scheduling</text>
+    <text x="120" y="163" text-anchor="middle" class="svg-sub">audit log</text>
+    <text x="120" y="181" text-anchor="middle" class="svg-sub">encrypted credentials</text>
+    <rect x="290" y="55" width="200" height="38" rx="6" fill="#21262d" stroke="#7ee787"/><text x="390" y="79" text-anchor="middle" class="svg-sub">Project (playbooks ← Git)</text>
+    <rect x="290" y="103" width="200" height="38" rx="6" fill="#21262d" stroke="#7ee787"/><text x="390" y="127" text-anchor="middle" class="svg-sub">Inventory (static/dynamic)</text>
+    <rect x="290" y="151" width="200" height="38" rx="6" fill="#21262d" stroke="#7ee787"/><text x="390" y="175" text-anchor="middle" class="svg-sub">Credentials (SSH/vault/cloud)</text>
+    <rect x="290" y="199" width="200" height="46" rx="6" fill="#21262d" stroke="#d2a8ff" stroke-width="2"/><text x="390" y="221" text-anchor="middle" class="svg-label" fill="#d2a8ff">Job Template</text><text x="390" y="238" text-anchor="middle" class="svg-sub">= project+inv+creds+vars</text>
+    <rect x="560" y="120" width="230" height="60" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="675" y="145" text-anchor="middle" class="svg-label" fill="#f0883e">Execution Environment</text>
+    <text x="675" y="163" text-anchor="middle" class="svg-sub">container: pinned ansible + collections</text>
+    <rect x="600" y="215" width="150" height="44" rx="6" fill="#21262d" stroke="#7ee787"/><text x="675" y="242" text-anchor="middle" class="svg-sub">managed nodes (SSH)</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="210" y1="120" x2="288" y2="74" marker-end="url(#ans-awx)"/>
+      <line x1="210" y1="150" x2="288" y2="122" marker-end="url(#ans-awx)"/>
+      <line x1="210" y1="180" x2="288" y2="170" marker-end="url(#ans-awx)"/>
+      <line x1="490" y1="222" x2="558" y2="160" marker-end="url(#ans-awx)"/>
+      <line x1="675" y1="180" x2="675" y2="213" marker-end="url(#ans-awx)"/>
+    </g>
+  </g>
+  <defs><marker id="ans-awx" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A job template binds a project, inventory, credentials and vars into a runnable unit. Launching it spins up an execution environment (pinned container) that connects to managed nodes — with every run audited and secrets never leaving the control plane.</figcaption>
+</figure>
+<table>
+  <tr><th>Feature</th><th>Why it matters</th></tr>
+  <tr><td>Web UI + RBAC</td><td>Non-experts can run approved jobs safely; who-ran-what is audited</td></tr>
+  <tr><td>Job templates</td><td>Parameterized, reusable runs with surveys</td></tr>
+  <tr><td>Scheduling</td><td>Run playbooks on a cron (patching windows, compliance)</td></tr>
+  <tr><td>Credential vault</td><td>Central, encrypted secrets — not on anyone's laptop</td></tr>
+  <tr><td>REST API + webhooks</td><td>Trigger automation from <a href="cicd-complete-guide.html">CI/CD</a> or events</td></tr>
+  <tr><td>Workflows</td><td>Chain job templates with branching/approval gates</td></tr>
+</table>
+<div class="box best"><span class="box-title">Graduate from CLI to a control plane</span><p>Ad-hoc CLI runs are fine for learning and small teams. Once multiple people, environments, and schedules are involved, move to AWX/AAP so automation is centralized, audited, access-controlled, and API-driven — the same maturity jump as going from laptop <code>terraform apply</code> to CI-driven applies.</p></div>
+
+<h3>Why a control plane replaces laptop runs</h3>
+<p>Running playbooks from laptops fails in predictable ways as a team grows: SSH keys and vault passwords get copied onto every engineer's machine (a security liability), there's no record of who ran what against prod, everyone's laptop has slightly different Ansible versions and local vars (non-reproducible), and only "the Ansible people" can deploy (a bottleneck). AWX (the open-source upstream) and <strong>Ansible Automation Platform</strong> (Red Hat's supported edition) solve this by making a <em>server</em> the single place automation runs — with a UI, an API, centralized credentials, role-based access control, and a full audit trail.</p>
+
+<h4>How AWX executes jobs</h4>
+<p>AWX ties together four concepts. A <strong>project</strong> syncs your playbooks from Git. An <strong>inventory</strong> is static or dynamically synced from the cloud. <strong>Credentials</strong> (SSH keys, vault passwords, cloud tokens) are stored encrypted in AWX and injected into runs at execution time — so they never live on a laptop. A <strong>job template</strong> binds a playbook + inventory + credentials + variables into a runnable, parameterized unit; running it launches a job inside an isolated <strong>execution environment</strong> (a container image with pinned Ansible and collections), streams live output to the UI, and records the result. <strong>Workflows</strong> chain job templates with success/failure branching and approval gates. Everything is also exposed over a REST API, so CI systems and webhooks can trigger jobs programmatically.</p>
+
+<div class="code-label label-cmd">Launch a job template via the AWX REST API</div>
+<pre><code># Trigger a deploy from CI/CD without SSH keys on the runner
+curl -s -X POST \
+  -H "Authorization: Bearer $AWX_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"extra_vars": {"app_version": "1.4.2"}, "limit": "role_web"}' \
+  https://awx.example.com/api/v2/job_templates/42/launch/</code></pre>
+<div class="code-label label-output">AWX returns a job id you can poll for status</div>
+<pre><code>{ "job": 137, "status": "pending",
+  "url": "/api/v2/jobs/137/" }
+# GET /api/v2/jobs/137/  -&gt; status transitions to running, then successful/failed</code></pre>
+
+<div class="box best">
+  <span class="box-title">Store credentials in AWX, not on runners</span>
+  <p>The biggest security win of AWX/AAP is centralized credential management: SSH keys, vault passwords, and cloud tokens live encrypted in the platform and are injected into jobs at runtime, scoped by RBAC. CI runners and engineers trigger jobs by <em>reference</em> (a job template id + a token) and never handle the secrets themselves. Combine with surveys for safe, parameterized self-service and with schedules for unattended patching windows.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">AWX/AAP gotchas</span>
+  <p><strong>AWX is the unsupported upstream</strong> — fast-moving and self-managed; production shops that need support run Red Hat AAP. <strong>Execution environments must include your collections</strong> — a job fails if the EE image lacks a collection your playbook imports (build a custom EE with <code>ansible-builder</code>). <strong>RBAC misconfiguration</strong> can let the wrong team run prod jobs — scope organizations, teams, and job-template permissions deliberately. And <strong>project sync must be triggered</strong> (or set to auto-update) or AWX runs stale playbooks from its last sync.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">An air-traffic control tower for automation</span>
+  <p>Running from laptops is like every pilot taking off whenever they feel like it, with no log and their own private runway. AWX is the control tower: one authority that holds the keys, schedules the flights, records every takeoff, and lets approved people request a flight through a form (job template) without ever touching the cockpit controls directly. Same planes (playbooks), but now coordinated, logged, and safe.</p>
+</div>
+
+<div class="box eli5"><span class="box-title">You now know Ansible at depth</span>
+<p>From inventory and playbooks through idempotency, roles, and vault, to execution strategies, advanced Jinja2, error handling, performance tuning, dynamic inventory, custom modules/plugins, collections, Molecule testing, network/cloud automation, and AWX. That's the full toolkit for automating a real fleet at scale.</p></div>
+
+<h2 id="best-practices">27. Best Practices — the checklist</h2>
+<div class="box best"><span class="box-title">Production Ansible checklist</span><ul>
+  <li>Prefer real modules over <code>shell</code>/<code>command</code>; keep everything idempotent.</li>
+  <li>Structure everything as <strong>roles</strong>; keep playbooks thin.</li>
+  <li>Encrypt all secrets with Vault; add <code>no_log: true</code> on sensitive tasks.</li>
+  <li>Pin collection/role versions in <code>requirements.yml</code>.</li>
+  <li><code>ansible-lint</code> + <code>--check --diff</code> in CI; test roles with Molecule.</li>
+  <li>Use <code>serial</code> + LB delegation for zero-downtime rolling updates.</li>
+  <li>Name every task clearly — names are your logs and documentation.</li>
+  <li>Separate inventories per environment (staging/prod).</li>
+</ul></div>
+
+<h3>Why these practices matter, not just what they are</h3>
+<p>Each checklist item exists because a real failure taught the community a lesson. <strong>Modules over shell</strong> preserves idempotency and check-mode; a fleet of shell tasks can't be safely re-run or dry-run. <strong>Thin playbooks, fat roles</strong> is how automation stays reusable and testable as it grows past one project. <strong>Vault + <code>no_log</code></strong> keeps secrets out of both Git and CI logs — leaking either is a breach. <strong>Pinning versions</strong> is what makes a run today reproduce next month. <strong>Lint + check-mode + Molecule</strong> catch mistakes before they touch production. <strong>Serial + LB delegation</strong> turns a risky big-bang deploy into a safe, reversible rollout. <strong>Named tasks</strong> turn opaque logs into readable audit trails. <strong>Per-environment inventories</strong> prevent the worst incident of all: running a staging change against prod.</p>
+
+<div class="code-label label-config">A production project layout tying the practices together</div>
+<pre><code>ansible.cfg                 # forks, pipelining, ControlPersist (perf)
+requirements.yml            # pinned collections + roles (reproducible)
+inventories/
+  staging/hosts.ini
+  prod/hosts.ini            # separate per environment
+group_vars/
+  all/vault.yml             # encrypted secrets
+site.yml                    # thin: maps host groups -&gt; roles
+roles/
+  nginx/{tasks,handlers,templates,defaults,molecule}/   # tested role
+.gitlab-ci.yml              # lint -&gt; molecule -&gt; check-mode -&gt; manual apply</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Adopt incrementally — don't boil the ocean</span>
+  <p>You don't need every practice on day one. A pragmatic order: <strong>(1)</strong> get everything into Git and name your tasks; <strong>(2)</strong> replace shell tasks with real modules for idempotency; <strong>(3)</strong> refactor into roles; <strong>(4)</strong> add Vault for secrets; <strong>(5)</strong> add lint + check-mode to CI; <strong>(6)</strong> add Molecule tests; <strong>(7)</strong> move execution to AWX. Each step pays off on its own, so you can stop and stabilize at any point.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A pilot's preflight checklist</span>
+  <p>These best practices are a preflight checklist. Each item looks minor, but every one was added to the list because skipping it once caused a crash somewhere. Experienced pilots don't skip items because they're experienced — they run the list <em>because</em> they know how the accidents happen. Treat your Ansible checklist the same way.</p>
+</div>
+
+<h2 id="troubleshooting">28. Troubleshooting Playbook</h2>
+<div class="trouble"><h4>"UNREACHABLE" / SSH failures</h4><p>Check connectivity and auth: <code>ansible host -m ping -vvv</code>. Verify <code>ansible_user</code>, the SSH key, and that the host is in the inventory. First connection may need host-key acceptance.</p></div>
+<div class="trouble"><h4>"changed" every run on a shell task</h4><p>The task isn't idempotent. Add <code>creates=</code>/<code>removes=</code>, a <code>when:</code> guard, or <code>changed_when:</code> — or switch to a proper module.</p></div>
+<div class="trouble"><h4>Variable has an unexpected value</h4><p>It's variable precedence. Run with <code>-e</code> to force, or trace with a <code>debug</code> task. Consolidate where the var is defined (defaults vs group_vars).</p></div>
+<div class="trouble"><h4>"Missing sudo password"</h4><p>Add <code>--ask-become-pass</code> (or <code>-K</code>), or configure passwordless sudo for the ansible user on managed nodes.</p></div>
+
+<h3>Why a systematic debugging method beats guessing</h3>
+<p>Ansible failures usually come from one of a few layers — connectivity, privilege, variables, or idempotency — and each has a distinct signature in the output. Guessing wastes time; reading the failure signature points you straight at the layer. The two highest-value tools are <strong>verbosity</strong> (<code>-v</code> through <code>-vvvv</code>, which progressively reveals the SSH command, the module arguments, and the raw JSON result) and <strong><code>debug</code></strong> (to print a variable's actual value at the moment of failure). Almost every mystery resolves once you can see the exact command Ansible ran and the exact value a variable held.</p>
+
+<div class="code-label label-cmd">A debugging toolkit for the common failure layers</div>
+<pre><code># Connectivity layer: see the actual SSH invocation and auth
+ansible host -m ping -vvvv
+
+# Variable layer: print what a var really resolves to, and where vars came from
+ansible-playbook site.yml -e debug_var=app_port --tags never   # or add a debug task
+ansible-inventory -i inventories/prod --host web-1
+
+# Structure layer: validate before running
+ansible-playbook site.yml --syntax-check
+ansible-lint site.yml
+
+# Idempotency layer: run twice; the second run should be changed=0
+ansible-playbook site.yml &amp;&amp; ansible-playbook site.yml
+
+# Step through interactively, or start at a specific task
+ansible-playbook site.yml --step
+ansible-playbook site.yml --start-at-task "Deploy site config"</code></pre>
+<div class="code-label label-yaml">Drop-in debug task to inspect state mid-play</div>
+<pre><code>- name: Show a variable and a registered result
+  ansible.builtin.debug:
+    var: app_port
+
+- name: Fail loudly with context if a precondition isn't met
+  ansible.builtin.assert:
+    that: app_port | int &gt; 0
+    fail_msg: "app_port resolved to '{{ app_port }}' — check group_vars precedence"</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Read the failure output bottom-up, then raise verbosity</span>
+  <p>The most useful line is usually the <code>fatal:</code> message and the <code>msg</code>/<code>stderr</code> in the JSON right above the recap. If that's not enough, re-run the single failing host with <code>--limit host -vvv</code> to see the exact remote command and its raw output. Escalate verbosity only as needed — <code>-vvvv</code> is noisy but shows the full connection plumbing when nothing else explains an UNREACHABLE.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Debugging gotchas</span>
+  <p><strong>Verbose output can leak secrets</strong> — avoid <code>-vvvv</code> on tasks handling vaulted data, and keep <code>no_log</code> on. <strong><code>--check</code> can mislead</strong> for tasks that depend on earlier real changes — a "failure" in check-mode may be a false alarm. <strong>An empty/odd variable</strong> is almost always precedence (§8) — trace it with <code>ansible-inventory --host</code> rather than guessing. And <strong>UNREACHABLE ≠ failed</strong>: it means Ansible never got in (SSH/DNS/key), so debug the connection, not the task.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A doctor's differential diagnosis</span>
+  <p>Troubleshooting Ansible is like a doctor narrowing down symptoms. "UNREACHABLE" is like "the patient never showed up" — check the door (SSH), not the treatment. "Changed every run" is a chronic condition (non-idempotent shell). "Wrong variable value" is a lab-result mix-up (precedence). You don't prescribe randomly; you read the symptom, order the right test (<code>-vvv</code>, <code>debug</code>, <code>ansible-inventory</code>), and treat the actual cause.</p>
+</div>
+
+<div class="box note"><span class="box-title">Where to go next</span><p>Combine with the <a href="terraform-complete-guide.html">Terraform guide</a> (provisioning), the <a href="linux-complete-guide.html">Linux guide</a> (what you're configuring), and the <a href="cicd-complete-guide.html">CI/CD guide</a> (automation). Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>

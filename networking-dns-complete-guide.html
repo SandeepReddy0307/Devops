@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking &amp; DNS Complete Guide — Basics to Advanced</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #3fb950; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #052; font-size: 13px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(63,185,80,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: #052; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(63,185,80,0.06); } .best .box-title { color: var(--brand); } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: #052; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">NET</span> Networking &amp; DNS</h1>
+    <p>From packets to global traffic — basics to advanced</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;background:linear-gradient(90deg,var(--brand,#3fb950),#2d9c44);color:#04210c;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">🌐 Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Fundamentals</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#why">1. Why Networking Matters</a>
+    <a href="#models">2. OSI &amp; TCP/IP Models</a>
+    <a href="#packets">3. Packets, Frames &amp; Encapsulation</a>
+
+    <div class="nav-group-title">Part 2 — Addressing</div>
+    <a href="#ip">4. IP Addressing &amp; Subnetting</a>
+    <a href="#cidr">5. CIDR &amp; Subnet Math</a>
+    <a href="#ipv6">6. IPv6</a>
+    <a href="#nat">7. NAT &amp; Private Networks</a>
+
+    <div class="nav-group-title">Part 3 — Transport &amp; Routing</div>
+    <a href="#tcp-udp">8. TCP vs UDP</a>
+    <a href="#routing">9. Routing &amp; Switching</a>
+    <a href="#ports">10. Ports &amp; Sockets</a>
+
+    <div class="nav-group-title">Part 4 — DNS Deep Dive</div>
+    <a href="#dns-what">11. What is DNS?</a>
+    <a href="#dns-resolution">12. Resolution Walkthrough</a>
+    <a href="#dns-records">13. Record Types</a>
+    <a href="#dns-advanced">14. Advanced DNS &amp; Routing</a>
+
+    <div class="nav-group-title">Part 5 — Application Layer</div>
+    <a href="#http">15. HTTP/HTTPS &amp; HTTP/2/3</a>
+    <a href="#tls">16. TLS &amp; Certificates</a>
+    <a href="#loadbalancing">17. Load Balancing</a>
+    <a href="#cdn-proxy">18. CDNs &amp; Proxies</a>
+
+    <div class="nav-group-title">Part 6 — Operate</div>
+    <a href="#troubleshoot-tools">19. Diagnostic Tools</a>
+    <a href="#security">20. Network Security</a>
+    <a href="#field-skills">21. Packet Analysis, Scaling &amp; Storage</a>
+    <a href="#best-practices">22. Best Practices</a>
+    <a href="#troubleshooting">23. Troubleshooting Playbook</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Networking &amp; DNS: The Complete Guide</h1>
+<p class="lead">Every distributed system is networking underneath. Understand it from the ground up — packets, IP, TCP/UDP, routing, DNS, HTTP, TLS, and load balancing — so you can design and debug any system with confidence.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>Each concept: <strong>what it is</strong> (plain English), <strong>why it exists</strong>, <strong>how it works</strong> (with diagrams), and <strong>★ best practice</strong>. This underpins the <a href="linux-complete-guide.html">Linux</a>, <a href="cloud-aws-complete-guide.html">Cloud/AWS</a>, <a href="kubernetes-complete-guide.html">Kubernetes</a>, and <a href="security-devsecops-guide.html">Security</a> guides — networking is the common thread through all of them.</p>
+</div>
+
+<h2 id="why">1. Why Networking Matters</h2>
+<p class="section-intro">Every API call, container-to-container message, database query, and user request travels over a network. When something is "slow" or "can't connect," the answer is usually in the network layer — so networking is a debugging superpower.</p>
+<div class="box eli5">
+  <span class="box-title">Networking = the postal system for computers</span>
+  <p>When you send a letter, you don't think about the trucks, sorting centers, and routes — but they all must work for it to arrive. Computer networking is the same: your app hands over data, and layers of addressing (IP), delivery guarantees (TCP), and name lookups (DNS) get it to the right machine and back. Learning these layers means when a "letter" gets lost, you know exactly which sorting center to check.</p>
+</div>
+
+<p><strong>Why this matters in practice.</strong> Networking exists because computers are useless in isolation — value comes from them cooperating. Every microservice call, every database read, every page load is a negotiated conversation across shared infrastructure you don't own and can't see. When you understand how that conversation is structured, "the API is flaky" stops being a mystery and becomes a set of measurable, checkable stages: name lookup, connection setup, data transfer, response.</p>
+<p><strong>How a request actually flows (the 30-second mental model).</strong> Type <code>curl https://api.example.com/users</code> and this happens in order: (1) DNS turns the name into an IP; (2) the OS opens a TCP connection to that IP on port 443 (three-way handshake); (3) TLS negotiates encryption; (4) your HTTP request bytes are sent, wrapped in TCP segments, wrapped in IP packets, wrapped in Ethernet frames, hopping router to router; (5) the server processes it and the reply retraces the path. Every guide section below is one stage of this single flow.</p>
+<div class="code-label label-cmd">See every stage of one request, timed</div>
+<pre><code>curl -w 'dns:%{time_namelookup}s connect:%{time_connect}s tls:%{time_appconnect}s ttfb:%{time_starttransfer}s total:%{time_total}s\n' \
+  -o /dev/null -s https://api.example.com/users</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>dns:0.021s connect:0.043s tls:0.121s ttfb:0.198s total:0.205s</code></pre>
+<div class="box note"><span class="box-title">Reading that output</span><p>Each number is cumulative from the start. Subtract to isolate a stage: TLS handshake here took <code>0.121 - 0.043 = 0.078s</code>; the server's think time (TTFB minus TLS) took <code>0.198 - 0.121 = 0.077s</code>. If <code>time_namelookup</code> is high, blame DNS; if <code>time_connect</code> is high, blame the network/routing; if TTFB is high, blame the application or database. One command localizes a "slow site" to a layer.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes</span><p>Blaming "the network" for what is really slow DNS or a slow backend — always time the stages first. Testing with <code>ping</code> and concluding the service works (ping is L3/ICMP and says nothing about whether port 443 or the app is healthy). Assuming a working local <code>curl</code> means production works — different DNS, firewalls, and routes apply there.</p></div>
+
+<h2 id="models">2. The OSI &amp; TCP/IP Models</h2>
+<p class="section-intro">Networking is organized into layers, each handling one job and talking to the layer above and below. The OSI model has 7 layers; the practical TCP/IP model collapses them into 4.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 320" role="img" aria-label="OSI and TCP/IP layer models side by side">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The layers: what each does &amp; example</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="45" width="340" height="34" rx="5" fill="#21262d" stroke="#3fb950"/><text x="230" y="67" text-anchor="middle" class="svg-sub">7. Application — HTTP, DNS, SSH (your app's data)</text>
+    <rect x="60" y="83" width="340" height="34" rx="5" fill="#21262d" stroke="#3fb950"/><text x="230" y="105" text-anchor="middle" class="svg-sub">6. Presentation — TLS, encoding</text>
+    <rect x="60" y="121" width="340" height="34" rx="5" fill="#21262d" stroke="#3fb950"/><text x="230" y="143" text-anchor="middle" class="svg-sub">5. Session — connections</text>
+    <rect x="60" y="159" width="340" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="230" y="181" text-anchor="middle" class="svg-sub">4. Transport — TCP/UDP (ports, reliability)</text>
+    <rect x="60" y="197" width="340" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="230" y="219" text-anchor="middle" class="svg-sub">3. Network — IP (addressing, routing)</text>
+    <rect x="60" y="235" width="340" height="34" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="230" y="257" text-anchor="middle" class="svg-sub">2. Data Link — Ethernet, MAC (local delivery)</text>
+    <rect x="60" y="273" width="340" height="34" rx="5" fill="#21262d" stroke="#8b949e"/><text x="230" y="295" text-anchor="middle" class="svg-sub">1. Physical — cables, wifi, signals</text>
+
+    <text x="600" y="40" text-anchor="middle" class="svg-label" fill="#7ee787">TCP/IP (practical)</text>
+    <rect x="470" y="45" width="260" height="72" rx="6" fill="#161b22" stroke="#3fb950"/><text x="600" y="86" text-anchor="middle" class="svg-sub">Application (5-7)</text>
+    <rect x="470" y="159" width="260" height="34" rx="6" fill="#161b22" stroke="#58a6ff"/><text x="600" y="181" text-anchor="middle" class="svg-sub">Transport (4)</text>
+    <rect x="470" y="197" width="260" height="34" rx="6" fill="#161b22" stroke="#f0883e"/><text x="600" y="219" text-anchor="middle" class="svg-sub">Internet (3)</text>
+    <rect x="470" y="235" width="260" height="72" rx="6" fill="#161b22" stroke="#d2a8ff"/><text x="600" y="276" text-anchor="middle" class="svg-sub">Link (1-2)</text>
+  </g>
+</svg>
+<figcaption>Each layer adds its own header and trusts the layer below to deliver. When debugging, work up the stack: is it physical/link (cable, interface up?), network (routing/IP), transport (port open?), or application (the app itself)?</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Data flowing down the sender stack and up the receiver stack">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">A message travels down one stack and up the other</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="150" y="48" text-anchor="middle" class="svg-label" fill="#7ee787">SENDER (encapsulate ↓)</text>
+    <rect x="60" y="60"  width="180" height="30" rx="5" fill="#21262d" stroke="#3fb950"/><text x="150" y="80"  text-anchor="middle" class="svg-sub">App: HTTP data</text>
+    <rect x="60" y="98"  width="180" height="30" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="150" y="118" text-anchor="middle" class="svg-sub">Transport: +TCP hdr</text>
+    <rect x="60" y="136" width="180" height="30" rx="5" fill="#21262d" stroke="#f0883e"/><text x="150" y="156" text-anchor="middle" class="svg-sub">Network: +IP hdr</text>
+    <rect x="60" y="174" width="180" height="30" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="150" y="194" text-anchor="middle" class="svg-sub">Link: +Eth frame</text>
+    <text x="670" y="48" text-anchor="middle" class="svg-label" fill="#58a6ff">RECEIVER (decapsulate ↑)</text>
+    <rect x="580" y="60"  width="180" height="30" rx="5" fill="#21262d" stroke="#3fb950"/><text x="670" y="80"  text-anchor="middle" class="svg-sub">App reads HTTP data</text>
+    <rect x="580" y="98"  width="180" height="30" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="670" y="118" text-anchor="middle" class="svg-sub">strip TCP hdr</text>
+    <rect x="580" y="136" width="180" height="30" rx="5" fill="#21262d" stroke="#f0883e"/><text x="670" y="156" text-anchor="middle" class="svg-sub">strip IP hdr</text>
+    <rect x="580" y="174" width="180" height="30" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="670" y="194" text-anchor="middle" class="svg-sub">strip Eth frame</text>
+    <line x1="240" y1="189" x2="578" y2="189" stroke="#8b949e" stroke-width="2" marker-end="url(#net-flow)"/>
+    <text x="410" y="182" text-anchor="middle" class="svg-sub">bits on the wire →</text>
+  </g>
+  <defs><marker id="net-flow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Going down, each layer <em>adds</em> its header (encapsulation); going up, each layer <em>removes</em> exactly its own header (decapsulation) and hands the rest to the layer above. The peers on each side "speak" to their opposite layer even though every byte physically travels the full stack.</figcaption>
+</figure>
+
+<div class="box tip"><span class="box-title">Use the layers to debug systematically</span><p>"Can't reach the service" → check each layer: is the interface up (L1/2, <code>ip link</code>)? Can you route to the IP (L3, <code>ping</code>/<code>traceroute</code>)? Is the port open (L4, <code>nc</code>/<code>ss</code>)? Does the app respond (L7, <code>curl</code>)? Isolating the failing layer turns a vague problem into a specific one.</p></div>
+
+<p><strong>Why layers exist.</strong> The layer model is a contract: each layer only needs to do its one job and talk to its immediate neighbors. That means Ethernet can be replaced by Wi-Fi without changing IP; IP can carry TCP or UDP without caring which; HTTP can run over TCP (HTTP/1.1, HTTP/2) or over QUIC/UDP (HTTP/3) without rewriting the network. This separation is why the internet could evolve for 40 years without a rewrite — you swap one layer's implementation while the others stay put.</p>
+<p><strong>How data moves through the layers (encapsulation preview).</strong> Going down the stack on the sender, each layer <em>prepends its own header</em> to whatever the layer above handed it: the app produces data → Transport adds a TCP/UDP header (ports, sequence numbers) making a <em>segment</em> → Network adds an IP header (source/dest IP) making a <em>packet</em> → Link adds an Ethernet header + trailer (source/dest MAC, checksum) making a <em>frame</em>. On the receiver, each layer strips its own header and hands the payload up. A layer never inspects the layers above it — a router reads only the IP header and forwards; it neither knows nor cares that it's carrying HTTP.</p>
+<div class="code-label label-cmd">Map real tools to layers</div>
+<pre><code>ip link show          # L1/L2 — is the interface up? MAC address, link state
+ip addr show          # L3   — what IP(s) are assigned?
+ping 1.1.1.1          # L3   — ICMP reachability (no ports involved)
+ss -tlnp              # L4   — which TCP ports are listening
+curl -v https://x     # L7   — application request/response</code></pre>
+<div class="code-label label-output">output (ip link show, trimmed)</div>
+<pre><code>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 ...
+    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff</code></pre>
+<div class="box note"><span class="box-title">Reading that: UP vs LOWER_UP</span><p><code>UP</code> means the interface is administratively enabled; <code>LOWER_UP</code> means the physical link (cable/carrier) is actually present. Seeing <code>UP</code> without <code>LOWER_UP</code> means "the OS turned it on but there's no signal" — a classic L1 problem. <code>mtu 1500</code> is the max frame payload; mismatched MTUs across a path cause mysterious hangs on large transfers.</p></div>
+<div class="box eli5"><span class="box-title">The layers = a company shipping department</span><p>The app is the person who wrote the letter. Transport is the assistant who numbers the pages so nothing is lost or out of order. Network is the mailroom that writes the destination city on the envelope. Link is the courier who carries it to the next building. Each only does their job and trusts the next — nobody re-reads the letter to deliver it.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes</span><p>Treating OSI's 7 layers as literal running software — real stacks use the 4-layer TCP/IP model; layers 5–7 are merged into "the application." Debugging top-down when bottom-up is faster (confirm the interface and route before suspecting the app). Forgetting that a router operating at L3 will silently drop frames whose L2 details it can't handle — so "ping works but nothing else" often means an MTU or MSS mismatch two layers down.</p></div>
+
+<h2 id="packets">3. Packets, Frames &amp; Encapsulation</h2>
+<p class="section-intro">Data doesn't travel as one blob — it's split into packets, each wrapped with headers from each layer. This wrapping is called encapsulation.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 150" role="img" aria-label="Encapsulation nesting headers">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Encapsulation: each layer wraps the one above</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="55" width="740" height="55" rx="6" fill="none" stroke="#d2a8ff"/><text x="90" y="87" text-anchor="middle" class="svg-sub">Eth</text>
+    <rect x="120" y="63" width="620" height="39" rx="5" fill="none" stroke="#f0883e"/><text x="160" y="87" text-anchor="middle" class="svg-sub">IP</text>
+    <rect x="195" y="70" width="470" height="25" rx="4" fill="none" stroke="#58a6ff"/><text x="230" y="87" text-anchor="middle" class="svg-sub">TCP</text>
+    <rect x="270" y="74" width="330" height="17" rx="3" fill="#21262d" stroke="#3fb950"/><text x="435" y="87" text-anchor="middle" class="svg-sub">HTTP data (your request)</text>
+  </g>
+</svg>
+<figcaption>Your HTTP data gets a TCP header (ports), then an IP header (addresses), then an Ethernet frame (MAC addresses) — like nesting envelopes. Each hop reads the outer layer it needs and passes the rest on.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="IPv4 packet header structure by 32-bit rows">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">IPv4 header layout — 20 bytes in 32-bit rows</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="45" width="90"  height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="85"  y="66" text-anchor="middle" class="svg-sub">Ver+IHL</text>
+    <rect x="132" y="45" width="90"  height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="177" y="66" text-anchor="middle" class="svg-sub">DSCP/ECN</text>
+    <rect x="224" y="45" width="556" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="502" y="66" text-anchor="middle" class="svg-sub">Total Length</text>
+    <rect x="40" y="83" width="370" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="225" y="104" text-anchor="middle" class="svg-sub">Identification</text>
+    <rect x="412" y="83" width="120" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="472" y="104" text-anchor="middle" class="svg-sub">Flags</text>
+    <rect x="534" y="83" width="246" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="657" y="104" text-anchor="middle" class="svg-sub">Fragment Offset</text>
+    <rect x="40" y="121" width="120" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="100" y="142" text-anchor="middle" class="svg-sub">TTL</text>
+    <rect x="162" y="121" width="120" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="222" y="142" text-anchor="middle" class="svg-sub">Protocol</text>
+    <rect x="284" y="121" width="496" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="532" y="142" text-anchor="middle" class="svg-sub">Header Checksum</text>
+    <rect x="40" y="159" width="740" height="34" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="410" y="180" text-anchor="middle" class="svg-sub">Source IP address (32 bits)</text>
+    <rect x="40" y="197" width="740" height="34" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="410" y="218" text-anchor="middle" class="svg-sub">Destination IP address (32 bits)</text>
+  </g>
+</svg>
+<figcaption>Every row is 32 bits wide. The fields you touch most in debugging: <strong>TTL</strong> (hop limit — traceroute exploits it), <strong>Protocol</strong> (6=TCP, 17=UDP, 1=ICMP), and the <strong>source/destination IP</strong>. The header is 20 bytes with no options — overhead added to every single packet.</figcaption>
+</figure>
+
+<p><strong>Why encapsulation exists.</strong> Splitting data into packets and wrapping each independently means the network can route around failures (each packet can take a different path), share a link fairly (packets from many conversations interleave), and detect corruption per-hop (checksums). If we sent one giant blob, a single lost bit would ruin everything and one big transfer would monopolize the wire.</p>
+<p><strong>How the headers stack, byte by byte.</strong> Say you send a 100-byte HTTP request. Transport prepends a 20-byte TCP header (source port, dest port 443, sequence number, ACK number, flags, window size) → 120-byte segment. Network prepends a 20-byte IPv4 header (version, TTL, protocol=6 for TCP, source IP, dest IP, header checksum) → 140-byte packet. Link prepends a 14-byte Ethernet header (dest MAC, source MAC, ethertype 0x0800 for IPv4) and appends a 4-byte CRC trailer → 158-byte frame on the wire. At the receiver, each layer removes exactly its own bytes and hands the rest up. This is why real throughput is always less than link speed — headers are overhead on every packet.</p>
+<div class="code-label label-cmd">Watch encapsulation live with tcpdump</div>
+<pre><code>sudo tcpdump -i any -n -v -X -c 1 'tcp port 443 and tcp[tcpflags] &amp; tcp-syn != 0'</code></pre>
+<div class="code-label label-output">output (annotated)</div>
+<pre><code>10:15:02.331 IP (tos 0x0, ttl 64, id 44201, proto TCP (6), length 60)   &lt;- IP header
+    192.168.1.20.51544 &gt; 93.184.216.34.443: Flags [S], seq 981..., win 64240,   &lt;- TCP header (SYN)
+      options [mss 1460,sackOK,TS...,nop,wscale 7], length 0
+    0x0000:  4500 003c ac69 4000 4006 ...   &lt;- raw bytes: 45=IPv4+20B header, 06=TCP
+    0x0010:  c0a8 0114 5db8 d822 c958 01bb   &lt;- c0a80114 = 192.168.1.20, ...01bb = port 443</code></pre>
+<div class="box note"><span class="box-title">Decoding the hex</span><p><code>45</code> = IP version 4, header length 5×4=20 bytes. <code>06</code> in the protocol field = TCP. <code>c0a8 0114</code> is <code>192.168.1.20</code> in hex (192=0xc0, 168=0xa8, 1=0x01, 20=0x14). <code>01bb</code> = 443. The <code>[S]</code> flag is the SYN — this is literally the first packet of the handshake, captured before any data flows. <code>mss 1460</code> is the largest TCP payload this host will accept in one segment (1500 MTU − 20 IP − 20 TCP).</p></div>
+<div class="box eli5"><span class="box-title">Encapsulation = Russian nesting dolls of envelopes</span><p>Your message goes in a small envelope labeled with the door number (port). That goes in a bigger envelope labeled with the street address (IP). That goes in a shipping box labeled with the local depot handoff (MAC). Each handler opens only the layer they're responsible for and passes the rest along untouched.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p><strong>MTU/MSS mismatch:</strong> if a packet is larger than a link's MTU and the "don't fragment" bit is set, it's dropped — causing transfers that hang after the handshake succeeds (small packets pass, big ones vanish). This is the classic VPN/tunnel bug; the fix is MSS clamping. <strong>Fragmentation:</strong> IP can fragment oversized packets, but fragments hurt performance and confuse some firewalls. <strong>Assuming packet order:</strong> IP makes no ordering guarantee — packets can arrive out of order; TCP reassembles them, UDP does not.</p></div>
+
+<h2 id="ip">4. IP Addressing &amp; Subnetting</h2>
+<p class="section-intro">Every device on a network has an IP address — its unique location. Subnetting divides a network into smaller logical segments.</p>
+<table>
+  <tr><th>Range</th><th>Type</th><th>Use</th></tr>
+  <tr><td>10.0.0.0/8</td><td>Private</td><td>Large private networks (clouds love this)</td></tr>
+  <tr><td>172.16.0.0/12</td><td>Private</td><td>Medium private networks</td></tr>
+  <tr><td>192.168.0.0/16</td><td>Private</td><td>Home/small networks</td></tr>
+  <tr><td>127.0.0.0/8</td><td>Loopback</td><td>localhost (this machine)</td></tr>
+  <tr><td>Everything else</td><td>Public</td><td>Routable on the internet</td></tr>
+</table>
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="Subnet mask splitting an IP into network and host portions">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Subnet mask splits an address: network vs host</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="60" y="62" class="svg-label">IP  10.0.3.47</text>
+    <rect x="220" y="45" width="200" height="30" rx="4" fill="#21262d" stroke="#f0883e"/><text x="320" y="65" text-anchor="middle" class="svg-sub">10.0.3</text>
+    <rect x="420" y="45" width="120" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="480" y="65" text-anchor="middle" class="svg-sub">.47</text>
+    <text x="60" y="112" class="svg-label">Mask /24</text>
+    <rect x="220" y="95" width="200" height="30" rx="4" fill="#161b22" stroke="#f0883e"/><text x="320" y="115" text-anchor="middle" class="svg-sub">1111 1111 · 1111 1111 · 1111 1111</text>
+    <rect x="420" y="95" width="120" height="30" rx="4" fill="#161b22" stroke="#7ee787"/><text x="480" y="115" text-anchor="middle" class="svg-sub">0000 0000</text>
+    <text x="320" y="158" text-anchor="middle" class="svg-label" fill="#f0883e">NETWORK (fixed 24 bits)</text>
+    <text x="480" y="158" text-anchor="middle" class="svg-label" fill="#7ee787">HOST (8 bits)</text>
+    <rect x="220" y="175" width="200" height="30" rx="4" fill="#21262d" stroke="#f0883e"/><text x="320" y="195" text-anchor="middle" class="svg-sub">10.0.3.0 = network id</text>
+    <rect x="420" y="175" width="360" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="600" y="195" text-anchor="middle" class="svg-sub">.1–.254 usable · .255 broadcast</text>
+  </g>
+</svg>
+<figcaption>The mask's 1-bits mark the network portion; the 0-bits mark the host portion. Two hosts share a subnet only if their addresses match across every network bit — that AND comparison is exactly how a host decides "local or remote" below.</figcaption>
+</figure>
+
+<div class="box eli5"><span class="box-title">IP address = a building address; subnet = the neighborhood</span><p>An IP like <code>10.0.3.47</code> is a specific building. The subnet mask decides how much of that address is the "neighborhood" (network) versus the "house number" (host). Devices in the same neighborhood can talk directly; to reach another neighborhood, traffic goes through a gateway (the router — the neighborhood exit).</p></div>
+
+<p><strong>Why subnetting exists.</strong> Without subnets, every device would have to be on one giant flat network — broadcasts would swamp it, and there'd be no natural security boundary. Subnetting lets you carve address space into segments that map to purpose (web tier, DB tier), location (AZ, office), or trust level, and firewalls/routes then control what crosses between them. It also keeps broadcast domains small so ARP traffic doesn't drown the network.</p>
+<p><strong>How a host decides "local or remote."</strong> When your machine wants to send to an IP, it ANDs its own IP and the destination IP with its subnet mask. If the resulting network portions match, the destination is on the same subnet → deliver directly via ARP (find its MAC, send the frame). If they differ, the destination is remote → send the frame to the <em>default gateway's</em> MAC instead, and let the router forward it. Example: host <code>10.0.3.47/24</code> (mask <code>255.255.255.0</code>) talking to <code>10.0.3.90</code> → both are <code>10.0.3.x</code> → local. Talking to <code>10.0.9.5</code> → different third octet → remote → goes to the gateway.</p>
+<div class="code-label label-cmd">Inspect addressing and test local vs remote</div>
+<pre><code>ip -brief addr                 # concise: interface, state, IP/prefix
+ip route get 10.0.3.90         # same subnet? -&gt; delivered directly (dev eth0)
+ip route get 8.8.8.8           # remote?     -&gt; goes via the default gateway
+ip neigh                       # the ARP table: IP -&gt; MAC for local neighbors</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>$ ip route get 10.0.3.90
+10.0.3.90 dev eth0 src 10.0.3.47 uid 1000        &lt;- direct, no gateway = same subnet
+$ ip route get 8.8.8.8
+8.8.8.8 via 10.0.3.1 dev eth0 src 10.0.3.47 uid 1000   &lt;- "via 10.0.3.1" = through gateway</code></pre>
+<div class="box note"><span class="box-title">The tell: "via" or not</span><p>If <code>ip route get</code> shows <code>via &lt;ip&gt;</code>, the kernel decided the target is remote and will hand the packet to that gateway. If there's no <code>via</code>, it's directly connected on that subnet. This single command answers "why can't these two hosts talk" faster than any ping — it shows the routing decision itself.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Confusing the network address (<code>10.0.3.0</code>, all-host-bits-zero) and broadcast address (<code>10.0.3.255</code>, all-host-bits-one) with usable host addresses — neither can be assigned to a device. Putting two hosts on overlapping-but-different masks (<code>/24</code> vs <code>/25</code>) so each thinks the other is remote → one-way connectivity. Forgetting the loopback <code>127.0.0.1</code> only ever reaches the same machine — a service bound only to <code>127.0.0.1</code> is invisible to the network no matter how open the firewall is.</p></div>
+
+<h2 id="cidr">5. CIDR &amp; Subnet Math</h2>
+<p class="section-intro">CIDR notation (<code>/24</code>) is how we express subnet size. The number is how many bits are fixed for the network — the rest are available for hosts.</p>
+<table>
+  <tr><th>CIDR</th><th>Subnet mask</th><th>Usable hosts</th><th>Common use</th></tr>
+  <tr><td>/24</td><td>255.255.255.0</td><td>254</td><td>A typical subnet</td></tr>
+  <tr><td>/16</td><td>255.255.0.0</td><td>65,534</td><td>A whole VPC</td></tr>
+  <tr><td>/28</td><td>255.255.255.240</td><td>14</td><td>Small subnet (a few servers)</td></tr>
+  <tr><td>/32</td><td>255.255.255.255</td><td>1</td><td>A single host (firewall rules)</td></tr>
+</table>
+<div class="code-label label-cmd">Subnet math quickly</div>
+<pre><code># Hosts in a /N (IPv4): 2^(32-N) minus 2 (network + broadcast)
+#   /24 -&gt; 2^8 - 2 = 254
+# Use ipcalc to see everything:
+ipcalc 10.0.3.0/24
+#   Network:   10.0.3.0/24
+#   HostMin:   10.0.3.1   HostMax: 10.0.3.254   Broadcast: 10.0.3.255</code></pre>
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="A /24 block splitting into smaller CIDR blocks">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">CIDR: each extra bit halves the block</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="45" width="700" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="410" y="67" text-anchor="middle" class="svg-sub">10.0.3.0/24 — 256 addresses</text>
+    <rect x="60"  y="90" width="345" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="232" y="112" text-anchor="middle" class="svg-sub">10.0.3.0/25 (.0–.127)</text>
+    <rect x="415" y="90" width="345" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="587" y="112" text-anchor="middle" class="svg-sub">10.0.3.128/25 (.128–.255)</text>
+    <rect x="60"  y="135" width="167" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="143" y="157" text-anchor="middle" class="svg-sub">/26 .0–.63</text>
+    <rect x="238" y="135" width="167" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="321" y="157" text-anchor="middle" class="svg-sub">/26 .64–.127</text>
+    <rect x="415" y="135" width="167" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="498" y="157" text-anchor="middle" class="svg-sub">/26 .128–.191</text>
+    <rect x="593" y="135" width="167" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="676" y="157" text-anchor="middle" class="svg-sub">/26 .192–.255</text>
+    <text x="410" y="192" text-anchor="middle" class="svg-sub">magic number for a /26 = 256 − 192 = 64 → blocks start at .0 .64 .128 .192</text>
+  </g>
+</svg>
+<figcaption>Borrowing one host bit for the network doubles the number of subnets and halves each one. Longer prefix = smaller block. The "magic number" (256 − last mask octet) is the step between subnet boundaries.</figcaption>
+</figure>
+
+<div class="box tip"><span class="box-title">Plan VPC CIDRs before you build</span><p>Pick non-overlapping ranges up front (e.g. prod <code>10.0.0.0/16</code>, staging <code>10.1.0.0/16</code>). Overlapping CIDRs make VPC peering and VPN connections impossible without painful re-addressing later. See the <a href="cloud-aws-complete-guide.html#vpc-deep">Cloud VPC section</a>.</p></div>
+
+<p><strong>Why CIDR exists.</strong> The old "classful" system (Class A/B/C) wasted enormous space — if you needed 300 addresses you had to take a whole Class B (65k) because a Class C (254) was too small. CIDR ("classless") lets the prefix length be <em>any</em> number of bits, so you allocate exactly what you need and can aggregate many small routes into one big advertisement (route summarization), which keeps the internet's routing tables manageable.</p>
+<p><strong>How the math works, in binary.</strong> The <code>/N</code> means "the first N bits are the network; the remaining 32−N are host bits." A <code>/24</code> fixes the first 24 bits, leaving 8 host bits → 2⁸ = 256 addresses, minus 2 (network + broadcast) = 254 usable. To split a <code>/24</code> into two <code>/25</code>s, you borrow one host bit for the network: <code>10.0.3.0/25</code> covers <code>.0–.127</code> and <code>10.0.3.128/25</code> covers <code>.128–.255</code>. Each halving of the block adds one to the prefix. The "magic number" for the last significant octet is <code>256 − maskvalue</code>: a <code>/26</code> mask is <code>255.255.255.192</code>, and <code>256−192=64</code>, so subnets start at <code>.0, .64, .128, .192</code>.</p>
+<div class="code-label label-cmd">Split and verify subnets</div>
+<pre><code>ipcalc -b 10.0.3.0/26          # first /26 block: .0 network, .1-.62 hosts, .63 broadcast
+python3 -c 'import ipaddress as i; print(list(i.ip_network("10.0.3.0/24").subnets(new_prefix=26)))'</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>[IPv4Network('10.0.3.0/26'), IPv4Network('10.0.3.64/26'),
+ IPv4Network('10.0.3.128/26'), IPv4Network('10.0.3.192/26')]</code></pre>
+<div class="box note"><span class="box-title">Fast field arithmetic</span><p>Memorize the mask→count table for the last octet: <code>/25</code>=128 addrs, <code>/26</code>=64, <code>/27</code>=32, <code>/28</code>=16, <code>/29</code>=8, <code>/30</code>=4. A <code>/30</code> gives 4 addresses = 2 usable — exactly right for a point-to-point link between two routers. A <code>/31</code> (RFC 3021) gives 2 addresses both usable for point-to-point, saving space.</p></div>
+<div class="box eli5"><span class="box-title">CIDR = how big a plot of land you're fenced off</span><p>The <code>/N</code> is the length of your fence in bits. A small number like <code>/8</code> fences off a huge territory (millions of addresses); a big number like <code>/30</code> fences off a tiny plot (just 4). More bits fixed = smaller neighborhood.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Cloud providers reserve extra addresses per subnet — AWS reserves <em>5</em> (network, VPC router, DNS, future use, broadcast), so a <code>/28</code> gives you 11 usable, not 14. Off-by-one on broadcast/network when hand-assigning IPs. Choosing a <code>/16</code> "to be safe" for every subnet and exhausting the VPC's address space. Overlapping CIDRs between environments make peering/VPN impossible — plan the whole address plan on paper first.</p></div>
+
+<h2 id="ipv6">6. IPv6</h2>
+<p class="section-intro">IPv4 ran out of addresses; IPv6 provides an effectively unlimited supply (128-bit addresses). Increasingly required for modern, global systems.</p>
+<div class="box note"><span class="box-title">IPv6 essentials</span><ul><li>Addresses look like <code>2001:db8::1</code> (hex, <code>::</code> compresses zeros).</li><li>No NAT needed — every device can have a globally-routable address.</li><li>Dual-stack (run IPv4 + IPv6 together) is the common migration path.</li><li>Cloud load balancers and CDNs handle IPv6 at the edge even if your backend is IPv4.</li></ul></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="IPv6 128-bit address structure with prefix and interface ID">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">IPv6: 128 bits = /64 network prefix + 64-bit interface ID</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60"  y="55" width="360" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="240" y="80" text-anchor="middle" class="svg-sub">2001:0db8:85a3:0000</text>
+    <rect x="420" y="55" width="340" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="590" y="80" text-anchor="middle" class="svg-sub">0000:8a2e:0370:7334</text>
+    <text x="240" y="120" text-anchor="middle" class="svg-label" fill="#f0883e">/64 routing prefix (from router)</text>
+    <text x="590" y="120" text-anchor="middle" class="svg-label" fill="#7ee787">interface ID (host, SLAAC)</text>
+    <rect x="60" y="140" width="700" height="34" rx="5" fill="#161b22" stroke="#58a6ff"/>
+    <text x="410" y="162" text-anchor="middle" class="svg-sub">compressed: 2001:db8:85a3::8a2e:370:7334  ·  fe80::… = link-local (on-wire only)</text>
+  </g>
+</svg>
+<figcaption>Leading zeros in a group are dropped and one run of all-zero groups becomes <code>::</code> (only once). The top /64 is the network the router advertises; the host generates its own interface ID (SLAAC) — no DHCP needed. Every interface also gets an <code>fe80::</code> link-local address for on-segment talk.</figcaption>
+</figure>
+
+<p><strong>Why IPv6 exists.</strong> IPv4's 32 bits give ~4.3 billion addresses — fewer than there are phones on Earth. We stretched it with NAT and private ranges, but NAT breaks end-to-end connectivity and adds state/complexity. IPv6's 128 bits give 3.4×10³⁸ addresses — enough that every device can have its own globally-routable address, restoring the internet's original peer-to-peer design without NAT.</p>
+<p><strong>How addressing works under the hood.</strong> An IPv6 address is 128 bits, written as eight 16-bit hex groups. Rules: leading zeros in a group can be dropped (<code>0db8</code> → <code>db8</code>), and one run of all-zero groups can be replaced with <code>::</code> (only once, to stay unambiguous). A typical unicast address splits into a <code>/64</code> network prefix and a 64-bit interface ID. Hosts can autoconfigure (SLAAC): the router advertises the <code>/64</code> prefix, and the host generates its own interface ID — no DHCP needed. Every interface also has a link-local address starting <code>fe80::</code> used for on-link talk (like ARP's role, handled by NDP — Neighbor Discovery Protocol, which replaces ARP).</p>
+<div class="code-label label-cmd">Work with IPv6</div>
+<pre><code>ip -6 addr show                     # your IPv6 addresses (note fe80:: link-local)
+ping6 2606:4700:4700::1111          # ping Cloudflare's IPv6 resolver
+ip -6 neigh                         # NDP neighbor cache (IPv6's ARP table)
+dig AAAA example.com +short         # look up the IPv6 (AAAA) record
+curl -6 -sI https://example.com     # force the request over IPv6</code></pre>
+<div class="code-label label-output">output (ip -6 addr, trimmed)</div>
+<pre><code>2: eth0: ...
+    inet6 2001:db8:85a3::8a2e:370:7334/64 scope global   &lt;- routable, from router's prefix
+    inet6 fe80::42:acff:fe11:2/64 scope link             &lt;- link-local, on-wire only</code></pre>
+<div class="box note"><span class="box-title">scope global vs scope link</span><p><code>scope global</code> is internet-routable. <code>scope link</code> (<code>fe80::</code>) works only on the local segment and needs a zone index to use (<code>ping6 fe80::1%eth0</code>). If you only have a link-local address and no global one, the router isn't advertising a prefix (no SLAAC/DHCPv6) — that's why you can reach neighbors but not the internet.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Configuring firewall rules only for IPv4 and leaving IPv6 wide open — dual-stack hosts are reachable over <em>both</em>; secure both. Assuming <code>localhost</code> is <code>127.0.0.1</code> when the app actually binds to <code>::1</code> (IPv6 loopback) first, causing "connection refused" on the v4 address. Forgetting that <code>::</code> can appear only once in an address. Hardcoding <code>/32</code> host masks (IPv4 thinking) — single IPv6 hosts are typically <code>/128</code>.</p></div>
+
+<h2 id="nat">7. NAT &amp; Private Networks</h2>
+<p class="section-intro">Network Address Translation lets many private devices share one public IP — and is why your laptop's <code>192.168.x.x</code> can reach the internet.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 190" role="img" aria-label="NAT translating private to public IP">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">NAT: many private IPs → one public IP</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="55" width="150" height="35" rx="5" fill="#21262d" stroke="#7ee787"/><text x="115" y="78" text-anchor="middle" class="svg-sub">10.0.0.5</text>
+    <rect x="40" y="100" width="150" height="35" rx="5" fill="#21262d" stroke="#7ee787"/><text x="115" y="123" text-anchor="middle" class="svg-sub">10.0.0.6</text>
+    <rect x="330" y="78" width="160" height="45" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="410" y="105" text-anchor="middle" class="svg-sub">NAT gateway</text>
+    <rect x="620" y="78" width="160" height="45" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="700" y="105" text-anchor="middle" class="svg-sub">internet (1 public IP)</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="190" y1="72" x2="328" y2="95" marker-end="url(#na)"/><line x1="190" y1="117" x2="328" y2="105" marker-end="url(#na)"/><line x1="490" y1="100" x2="618" y2="100" marker-end="url(#na)"/></g>
+  </g>
+  <defs><marker id="na" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>NAT rewrites the source address of outbound packets to the gateway's public IP and tracks the mapping so replies return correctly. It's why private-subnet servers can reach out but aren't reachable inbound.</figcaption>
+</figure>
+
+<p><strong>Why NAT exists.</strong> There aren't enough public IPv4 addresses for every device, so NAT lets an entire private network share one (or a few) public IPs. As a side effect it provides a crude firewall: because inbound packets have no existing mapping, unsolicited connections from the internet are dropped — private hosts can initiate outbound but aren't directly reachable inbound.</p>
+<p><strong>How NAT rewrites packets (PAT / "NAT overload").</strong> The common form is Port Address Translation. When <code>10.0.0.5:51000</code> sends to <code>93.184.216.34:443</code>, the NAT gateway: (1) rewrites the source to its public IP and a chosen port, e.g. <code>203.0.113.9:40001</code>; (2) stores a mapping <code>203.0.113.9:40001 ↔ 10.0.0.5:51000</code> in its translation table with the destination and a timeout; (3) recomputes the IP/TCP checksums (they cover the addresses/ports) and forwards. When the reply comes back to <code>203.0.113.9:40001</code>, the gateway looks up the table, rewrites the destination back to <code>10.0.0.5:51000</code>, and delivers. The port is the key that distinguishes which internal host each conversation belongs to — that's how many hosts share one IP.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="NAT translation table mapping inside to outside sockets">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">NAT translation table: the port is the key</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40"  y="45" width="330" height="28" rx="4" fill="#161b22" stroke="#7ee787"/><text x="205" y="64" text-anchor="middle" class="svg-label" fill="#7ee787">INSIDE (private)</text>
+    <rect x="450" y="45" width="330" height="28" rx="4" fill="#161b22" stroke="#58a6ff"/><text x="615" y="64" text-anchor="middle" class="svg-label" fill="#58a6ff">OUTSIDE (public)</text>
+    <rect x="40"  y="80"  width="330" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="205" y="100" text-anchor="middle" class="svg-sub">10.0.0.5:51000</text>
+    <rect x="450" y="80"  width="330" height="30" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="615" y="100" text-anchor="middle" class="svg-sub">203.0.113.9:40001</text>
+    <rect x="40"  y="115" width="330" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="205" y="135" text-anchor="middle" class="svg-sub">10.0.0.6:51000</text>
+    <rect x="450" y="115" width="330" height="30" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="615" y="135" text-anchor="middle" class="svg-sub">203.0.113.9:40002</text>
+    <rect x="40"  y="150" width="330" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="205" y="170" text-anchor="middle" class="svg-sub">10.0.0.5:51001</text>
+    <rect x="450" y="150" width="330" height="30" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="615" y="170" text-anchor="middle" class="svg-sub">203.0.113.9:40003</text>
+    <g stroke="#f0883e" stroke-width="1.5">
+      <line x1="370" y1="95"  x2="448" y2="95"  marker-end="url(#net-nat)"/>
+      <line x1="370" y1="130" x2="448" y2="130" marker-end="url(#net-nat)"/>
+      <line x1="370" y1="165" x2="448" y2="165" marker-end="url(#net-nat)"/>
+    </g>
+  </g>
+  <defs><marker id="net-nat" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0883e"/></marker></defs>
+</svg>
+<figcaption>Two different hosts can even reuse the same source port (51000) inside, because the gateway assigns each a unique outside port (40001 vs 40002). When a reply arrives for <code>:40002</code>, the table sends it back to <code>10.0.0.6</code> — this mapping is exactly the conntrack entry below.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">See NAT rules and the live translation table (Linux)</div>
+<pre><code>sudo iptables -t nat -L -n -v            # show NAT rules (look for MASQUERADE)
+sudo nft list ruleset                    # nftables equivalent
+sudo conntrack -L                        # live connection-tracking / translation table
+curl -s ifconfig.me                      # what public IP does the world see? (post-NAT)</code></pre>
+<div class="code-label label-output">output (conntrack -L, one line)</div>
+<pre><code>tcp 6 431999 ESTABLISHED src=10.0.0.5 dst=93.184.216.34 sport=51000 dport=443 \
+  src=93.184.216.34 dst=203.0.113.9 sport=443 dport=40001 [ASSURED]</code></pre>
+<div class="box note"><span class="box-title">Reading the conntrack entry</span><p>The first <code>src/dst</code> pair is the <em>original</em> direction (inside view); the second is the <em>reply</em> direction (outside view). Here internal <code>10.0.0.5:51000</code> is presented to the world as <code>203.0.113.9:40001</code>. <code>431999</code> is the seconds until this idle mapping expires. When that timer lapses on a quiet connection, the mapping is dropped and replies stop arriving — the root cause of "long-lived idle connections mysteriously die behind NAT."</p></div>
+<div class="box eli5"><span class="box-title">NAT = a receptionist with one public phone number</span><p>The whole office shares one external number. When you call out, the receptionist notes "extension 12 is talking to the bank" and puts your call on an outside line. When the bank calls back on that line, she knows to transfer it to extension 12. Outsiders can't dial your extension directly — they can only reply to calls you started.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Expecting inbound connections to a NATed host without a port-forward/DNAT rule — they can't work by design. Idle timeouts killing long-lived connections (databases, SSH, websockets); fix with TCP keepalives shorter than the NAT timeout. Protocols that embed IPs in their payload (FTP active mode, SIP) break because NAT rewrites headers, not payload — needs an ALG. Two sites behind NAT with the same private range can't be peered without double-NAT. Losing the real client IP at the app — behind NAT/LB you must read <code>X-Forwarded-For</code>.</p></div>
+
+<h2 id="tcp-udp">8. TCP vs UDP</h2>
+<p class="section-intro">The two transport protocols make opposite tradeoffs: TCP is reliable but has overhead; UDP is fast but makes no guarantees.</p>
+<table>
+  <tr><th></th><th>TCP</th><th>UDP</th></tr>
+  <tr><td>Connection</td><td>Yes (3-way handshake)</td><td>No (fire and forget)</td></tr>
+  <tr><td>Reliability</td><td>Guaranteed delivery + order</td><td>Best-effort, may drop/reorder</td></tr>
+  <tr><td>Speed</td><td>Slower (acks, retransmits)</td><td>Faster (no overhead)</td></tr>
+  <tr><td>Use for</td><td>Web, APIs, DB, SSH, email</td><td>DNS, video/voice, gaming, metrics</td></tr>
+</table>
+<figure class="diagram">
+<svg viewBox="0 0 820 180" role="img" aria-label="TCP three-way handshake">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">TCP's 3-way handshake establishes a reliable connection</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="80" y="50" width="120" height="35" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="140" y="73" text-anchor="middle" class="svg-sub">client</text>
+    <rect x="620" y="50" width="120" height="35" rx="5" fill="#21262d" stroke="#7ee787"/><text x="680" y="73" text-anchor="middle" class="svg-sub">server</text>
+    <line x1="200" y1="100" x2="620" y2="100" stroke="#8b949e" stroke-width="1.5" marker-end="url(#tc)"/><text x="410" y="94" text-anchor="middle" class="svg-sub">1. SYN (can we talk?)</text>
+    <line x1="620" y1="128" x2="200" y2="128" stroke="#8b949e" stroke-width="1.5" marker-end="url(#tc)"/><text x="410" y="122" text-anchor="middle" class="svg-sub">2. SYN-ACK (yes, can you?)</text>
+    <line x1="200" y1="156" x2="620" y2="156" stroke="#7ee787" stroke-width="2" marker-end="url(#tc)"/><text x="410" y="150" text-anchor="middle" class="svg-sub" fill="#7ee787">3. ACK (yes → connected)</text>
+  </g>
+  <defs><marker id="tc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>TCP's handshake (SYN → SYN-ACK → ACK) sets up a connection before data flows. This reliability costs a round trip — which is why latency-sensitive protocols like DNS and video often use UDP instead.</figcaption>
+</figure>
+
+<p><strong>Why two protocols exist.</strong> Reliability and speed trade off. TCP guarantees every byte arrives, in order, exactly once — perfect for files, APIs, and databases where a corrupted or missing byte is unacceptable. UDP does none of that; it just fires a datagram and forgets — perfect for voice/video/gaming/DNS where a slightly-late packet is worse than a lost one (you'd rather skip a video frame than pause to re-fetch it).</p>
+<p><strong>How TCP guarantees delivery (handshake, sequence numbers, ACKs, windowing).</strong> After the SYN/SYN-ACK/ACK handshake establishes agreed starting <em>sequence numbers</em>, every byte is numbered. The receiver ACKs the highest contiguous byte it has (<code>ACK 5001</code> means "I have everything up to 5000, send 5001 next"). If an ACK doesn't arrive within the retransmission timeout, the sender resends. <strong>Flow control</strong> uses the <em>receive window</em>: the receiver advertises how much buffer it has free (<code>win 64240</code>), and the sender never has more than that many unacknowledged bytes in flight — this prevents a fast sender from drowning a slow receiver. <strong>Congestion control</strong> (a separate mechanism: slow-start, then congestion avoidance) probes the <em>network's</em> capacity, shrinking the effective window on packet loss. So throughput ≈ window ÷ round-trip-time — high latency links need big windows (window scaling) to stay fast.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="TCP versus UDP side by side comparison">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">TCP (reliable, ordered) vs UDP (fast, fire-and-forget)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="45" width="345" height="150" rx="8" fill="#161b22" stroke="#58a6ff"/>
+    <text x="212" y="70" text-anchor="middle" class="svg-label" fill="#58a6ff">TCP</text>
+    <text x="212" y="96"  text-anchor="middle" class="svg-sub">handshake before data (SYN/SYN-ACK/ACK)</text>
+    <text x="212" y="120" text-anchor="middle" class="svg-sub">every byte ACKed · lost → retransmit</text>
+    <text x="212" y="144" text-anchor="middle" class="svg-sub">reordered → reassembled in order</text>
+    <text x="212" y="168" text-anchor="middle" class="svg-sub">flow + congestion control</text>
+    <text x="212" y="188" text-anchor="middle" class="svg-sub">web · APIs · DB · SSH · email</text>
+    <rect x="435" y="45" width="345" height="150" rx="8" fill="#161b22" stroke="#7ee787"/>
+    <text x="607" y="70" text-anchor="middle" class="svg-label" fill="#7ee787">UDP</text>
+    <text x="607" y="96"  text-anchor="middle" class="svg-sub">no handshake · just send datagrams</text>
+    <text x="607" y="120" text-anchor="middle" class="svg-sub">no ACK · lost packets stay lost</text>
+    <text x="607" y="144" text-anchor="middle" class="svg-sub">no ordering guarantee</text>
+    <text x="607" y="168" text-anchor="middle" class="svg-sub">tiny 8-byte header, minimal overhead</text>
+    <text x="607" y="188" text-anchor="middle" class="svg-sub">DNS · video/voice · gaming · metrics</text>
+  </g>
+</svg>
+<figcaption>TCP trades speed for guarantees; UDP trades guarantees for speed. Choose by what hurts more: a missing byte (use TCP) or a late byte (use UDP, where a stale video frame is worse than a dropped one).</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Observe TCP state, windows, and retransmits</div>
+<pre><code>ss -ti                                   # per-socket TCP internals: rtt, cwnd, retrans
+ss -tan state established                # all established connections + queues
+sudo tcpdump -i any -n 'tcp port 443'    # watch SYN/ACK/retransmissions live
+nc -u -zv 8.8.8.8 53                      # test a UDP port (DNS) — no handshake</code></pre>
+<div class="code-label label-output">output (ss -ti, one socket)</div>
+<pre><code>ESTAB 0 0 10.0.0.5:51000 93.184.216.34:443
+     cubic wscale:7,7 rto:204 rtt:3.1/1.5 mss:1460 cwnd:10 ssthresh:64
+     bytes_sent:12000 retrans:0/0 rcv_space:64240</code></pre>
+<div class="box note"><span class="box-title">Reading the TCP internals</span><p><code>rtt:3.1/1.5</code> = smoothed round-trip 3.1ms (±1.5). <code>cwnd:10</code> = congestion window of 10 segments — the sender can have ~10×1460 bytes in flight before waiting for ACKs. <code>retrans:0/0</code> = no retransmissions (a healthy path); rising retrans means packet loss. <code>rcv_space</code> is the receive window. If <code>cwnd</code> stays tiny and retrans climbs, the network is lossy/congested; if the app is slow to read, the window shrinks and throughput drops even on a clean link.</p></div>
+<div class="box eli5"><span class="box-title">TCP = registered mail, UDP = a postcard</span><p>TCP is registered mail: the recipient signs for each item, and anything not signed for is resent — nothing is lost, but it's slower and chattier. UDP is a postcard: you drop it in the box and hope it arrives. No signature, no resend — but instant and cheap. You'd use registered mail for a contract and a postcard for "having fun, wish you were here."</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Blaming bandwidth for slowness that is really the <em>bandwidth-delay product</em> — on a high-latency link, a small window caps throughput no matter how fat the pipe. Leaking sockets in <code>TIME_WAIT</code> by opening a fresh connection per request instead of reusing keep-alives. Assuming UDP "just works" — with no ACKs, you must handle loss/ordering in the app. Firewalls that allow TCP but silently drop UDP, breaking DNS/QUIC. Forgetting TCP keepalives, so dead peers linger as ESTABLISHED for hours.</p></div>
+
+<h2 id="routing">9. Routing &amp; Switching</h2>
+<p class="section-intro">Switches move traffic <em>within</em> a network (by MAC address); routers move traffic <em>between</em> networks (by IP address). Together they get a packet from anywhere to anywhere.</p>
+<div class="box eli5"><span class="box-title">Switch = office mailroom; Router = the post office</span><p>A <strong>switch</strong> delivers mail between desks in one office (local network, using MAC addresses). A <strong>router</strong> sends mail between different offices/cities (across networks, using IP addresses) and knows the routes. Your packet hops router to router across the internet, each one consulting its routing table for the next best hop toward the destination.</p></div>
+<div class="code-label label-cmd">Inspect routing on Linux</div>
+<pre><code>ip route                 # your routing table (where does traffic go?)
+ip route get 8.8.8.8     # which route/interface would reach this IP?
+traceroute example.com   # show every router hop to the destination
+mtr example.com          # live traceroute + packet loss per hop</code></pre>
+
+<p><strong>Why routing and switching are separate jobs.</strong> Within one network, delivery is simple: everyone shares a broadcast domain and can be found by MAC address — that's switching (L2). But you can't put the whole internet on one flat L2 network (broadcasts would melt it, and MAC addresses aren't hierarchical, so there'd be no way to summarize routes). Routing (L3) uses hierarchical IP addresses so a router only needs to know "which direction is that network," not where every individual host lives.</p>
+<p><strong>How ARP + routing pick the next hop.</strong> When a host sends a packet: (1) it checks its routing table for the most-specific matching route (longest-prefix match); (2) that route says either "directly connected" or "via gateway X"; (3) it now has the <em>next-hop IP</em>, but frames need a MAC — so it consults its ARP cache, and if the MAC is unknown, it broadcasts "who has 10.0.3.1?" and the owner replies with its MAC; (4) it builds a frame with that MAC as destination and sends it. Crucially, the <em>IP addresses stay the same</em> end-to-end, but the <em>MAC addresses are rewritten at every hop</em> — each router swaps in its own MAC as source and the next hop's MAC as destination. Switches, meanwhile, learn which MAC lives on which port by watching source MACs, building a MAC-address table so they forward frames only out the correct port instead of flooding.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Packet hopping across routers with a routing table">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Router hops: IP stays fixed, MAC changes each hop</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30"  y="55" width="110" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="85"  y="80" text-anchor="middle" class="svg-sub">host</text>
+    <rect x="200" y="55" width="110" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="255" y="80" text-anchor="middle" class="svg-sub">router A</text>
+    <rect x="370" y="55" width="110" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="425" y="80" text-anchor="middle" class="svg-sub">router B</text>
+    <rect x="540" y="55" width="110" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="595" y="80" text-anchor="middle" class="svg-sub">router C</text>
+    <rect x="700" y="55" width="100" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="750" y="80" text-anchor="middle" class="svg-sub">server</text>
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="140" y1="75" x2="198" y2="75" marker-end="url(#net-hop)"/>
+      <line x1="310" y1="75" x2="368" y2="75" marker-end="url(#net-hop)"/>
+      <line x1="480" y1="75" x2="538" y2="75" marker-end="url(#net-hop)"/>
+      <line x1="650" y1="75" x2="698" y2="75" marker-end="url(#net-hop)"/>
+    </g>
+    <text x="410" y="120" text-anchor="middle" class="svg-sub">dst IP 93.184.216.34 unchanged the whole way · TTL 64→63→62→61 · dst MAC rewritten each hop</text>
+    <rect x="120" y="140" width="580" height="90" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="162" text-anchor="middle" class="svg-label">router A's routing table (longest-prefix match wins)</text>
+    <text x="410" y="186" text-anchor="middle" class="svg-sub">10.0.3.0/24     → directly connected (dev eth0)</text>
+    <text x="410" y="206" text-anchor="middle" class="svg-sub">93.184.216.0/24 → via router B</text>
+    <text x="410" y="224" text-anchor="middle" class="svg-sub">0.0.0.0/0       → via default gateway (catch-all)</text>
+  </g>
+  <defs><marker id="net-hop" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Each router looks up the destination in its table, picks the most specific matching route, decrements TTL, swaps in the next hop's MAC, and forwards. No router knows the full path — only the best next step. The default route (<code>0.0.0.0/0</code>) catches everything not matched more specifically.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Trace a routing decision end to end</div>
+<pre><code>ip route                          # the routing table (longest-prefix wins)
+ip route get 93.184.216.34        # which route + next-hop + interface is chosen?
+ip neigh                          # ARP cache: next-hop IP -&gt; MAC
+arping -I eth0 10.0.3.1           # actively resolve the gateway's MAC
+traceroute -n 93.184.216.34       # each line is one router decrementing TTL</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>$ ip route
+default via 10.0.3.1 dev eth0 proto dhcp metric 100     &lt;- catch-all: send unknowns to gateway
+10.0.3.0/24 dev eth0 proto kernel scope link src 10.0.3.47   &lt;- directly connected subnet
+$ ip neigh
+10.0.3.1 dev eth0 lladdr 02:44:11:aa:bb:cc REACHABLE     &lt;- gateway's MAC, resolved via ARP</code></pre>
+<div class="box note"><span class="box-title">How traceroute works (the TTL trick)</span><p>Each IP packet has a TTL that every router decrements by 1; at 0 the router discards it and sends back an ICMP "time exceeded." Traceroute exploits this: send with TTL=1 (first router replies), then TTL=2 (second replies), and so on — each reply reveals one hop. A line of <code>* * *</code> means that hop didn't send the ICMP (often filtered), not necessarily that traffic is broken there.</p></div>
+<div class="box eli5"><span class="box-title">Routing = asking for directions at each town</span><p>You don't get one map of the whole country. At each town (router) you ask "which road toward City X?" and drive to the next town, where you ask again. Nobody knows the full route — each just knows the best next road. The town name (IP) stays your goal the whole trip; only the local road you're on (MAC) changes at each town.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Missing or wrong default route → "can reach the local subnet but nothing beyond." Asymmetric routing (reply takes a different path) breaks stateful firewalls that expect to see both directions. A stale ARP entry after a failover (IP moved to new hardware) sends traffic to the old MAC until the cache expires — gratuitous ARP fixes it. Duplicate IPs cause ARP flapping. Overlapping routes: remember longest-prefix wins, so a <code>/32</code> beats a <code>/24</code> beats the default.</p></div>
+
+<h2 id="ports">10. Ports &amp; Sockets</h2>
+<p class="section-intro">An IP address identifies a machine; a port identifies a specific service on it. Together (IP + port) they form a socket — the endpoint of a connection.</p>
+<table>
+  <tr><th>Port</th><th>Service</th></tr>
+  <tr><td>22</td><td>SSH</td></tr>
+  <tr><td>53</td><td>DNS</td></tr>
+  <tr><td>80 / 443</td><td>HTTP / HTTPS</td></tr>
+  <tr><td>5432 / 3306</td><td>PostgreSQL / MySQL</td></tr>
+  <tr><td>6379 / 9092</td><td>Redis / Kafka</td></tr>
+</table>
+<div class="code-label label-cmd">See what's listening &amp; connected</div>
+<pre><code>ss -tulpn                     # listening TCP/UDP ports + owning process
+ss -tn state established      # active connections
+nc -zv example.com 443        # test if a port is reachable
+lsof -i :8080                 # what process holds port 8080?</code></pre>
+
+<p><strong>Why ports exist.</strong> One machine (one IP) runs many services at once — web, SSH, database. The IP gets the packet to the machine; the <em>port</em> tells the OS which service should receive it. Without ports you could run only one network service per IP.</p>
+<p><strong>How a socket is actually identified.</strong> A TCP connection is uniquely keyed by a <em>4-tuple</em>: (source IP, source port, destination IP, destination port). This is why one server on port 443 can hold thousands of simultaneous connections — each client uses a different source IP/port, so every tuple is unique. Server sockets bind to a well-known port and <code>listen</code>; each accepted connection spawns a new socket sharing the same local port but distinguished by the remote end. Client sockets get an <em>ephemeral</em> port (typically 32768–60999 on Linux) chosen by the OS. Ports 0–1023 are "privileged" — binding them requires root (or a capability), which is why web servers often start as root to grab 80/443 then drop privileges.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Sockets identified by a four-tuple, many clients to one listening port">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">One listening port, many sockets — keyed by 4-tuple</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40"  y="55" width="150" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="115" y="77" text-anchor="middle" class="svg-sub">client A 1.1.1.1:51000</text>
+    <rect x="40"  y="98" width="150" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="115" y="120" text-anchor="middle" class="svg-sub">client B 2.2.2.2:44001</text>
+    <rect x="40"  y="141" width="150" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="115" y="163" text-anchor="middle" class="svg-sub">client A 1.1.1.1:51002</text>
+    <rect x="590" y="98" width="190" height="48" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="685" y="118" text-anchor="middle" class="svg-sub">server 10.0.0.9</text><text x="685" y="136" text-anchor="middle" class="svg-sub">LISTEN :443</text>
+    <g stroke="#7ee787" stroke-width="1.5">
+      <line x1="190" y1="72"  x2="588" y2="112" marker-end="url(#net-sock)"/>
+      <line x1="190" y1="115" x2="588" y2="122" marker-end="url(#net-sock)"/>
+      <line x1="190" y1="158" x2="588" y2="132" marker-end="url(#net-sock)"/>
+    </g>
+    <rect x="230" y="185" width="360" height="34" rx="5" fill="#161b22" stroke="#f0883e"/>
+    <text x="410" y="207" text-anchor="middle" class="svg-sub">socket = (srcIP, srcPort, dstIP, dstPort)</text>
+  </g>
+  <defs><marker id="net-sock" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7ee787"/></marker></defs>
+</svg>
+<figcaption>All three connections hit the same server port 443, yet each is a distinct socket because the 4-tuple differs. This is how one server holds thousands of simultaneous connections on a single listening port — the remote (IP, port) pair disambiguates every conversation.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Inspect sockets in depth</div>
+<pre><code>ss -tlnp                                  # listening sockets + PID/program
+ss -tanp '( sport = :443 )'               # every connection on local port 443
+ss -s                                     # summary counts by state
+cat /proc/sys/net/ipv4/ip_local_port_range   # the ephemeral port range
+sudo ss -tnp state time-wait | wc -l      # how many sockets stuck in TIME_WAIT</code></pre>
+<div class="code-label label-output">output (ss -tlnp)</div>
+<pre><code>State  Recv-Q Send-Q Local Address:Port  Peer Address:Port  Process
+LISTEN 0      511          0.0.0.0:443        0.0.0.0:*      users:(("nginx",pid=811,fd=6))
+LISTEN 0      4096       127.0.0.1:5432       0.0.0.0:*      users:(("postgres",pid=903,fd=5))</code></pre>
+<div class="box note"><span class="box-title">The critical difference: 0.0.0.0 vs 127.0.0.1</span><p>nginx above listens on <code>0.0.0.0:443</code> — all interfaces, reachable from the network. Postgres listens on <code>127.0.0.1:5432</code> — loopback only, reachable <em>only from the same machine</em>. This one distinction explains a huge share of "connection refused from another host but works locally" tickets: the service is bound to loopback. <code>Send-Q</code> on a LISTEN socket is the accept-queue backlog limit; a full backlog drops new connections.</p></div>
+<div class="box eli5"><span class="box-title">IP + port = building + apartment number</span><p>The IP gets mail to the right building; the port number is the apartment inside. A socket is one specific delivery conversation: <em>your</em> apartment talking to <em>their</em> apartment. Many conversations share the building's front door (the listening port) but each is a distinct pairing of apartments, so they never get mixed up.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Binding to <code>127.0.0.1</code> then wondering why remote clients can't connect (bind <code>0.0.0.0</code> or a specific interface). Ephemeral port exhaustion under high connection churn — reuse connections, widen the range, or enable <code>tcp_tw_reuse</code>. "Address already in use" on restart because the old socket is in TIME_WAIT — use <code>SO_REUSEADDR</code>. Confusing "port open" (something listening) with "port reachable" (firewall allows it) — <code>nc -zv</code> tests reachability, <code>ss -tlnp</code> tests listening.</p></div>
+
+<h2 id="dns-what">11. What is DNS?</h2>
+<p class="section-intro">DNS (Domain Name System) translates human-friendly names (<code>example.com</code>) into IP addresses (<code>93.184.216.34</code>). It's the internet's distributed phone book, and one of the most common sources of "mysterious" outages.</p>
+<div class="box eli5"><span class="box-title">DNS = contacts app for the internet</span><p>You remember "Mom," not her phone number. DNS is the internet's contacts app: you type <code>google.com</code>, and DNS looks up the actual IP address to dial. It's distributed and cached globally so it's fast — but that caching is also why DNS changes "take time to propagate" and why stale cache causes confusing bugs.</p></div>
+<div class="box warn"><span class="box-title">"It's always DNS"</span><p>An industry in-joke with much truth: a large share of baffling outages trace back to DNS — expired records, wrong TTLs, stale caches, misconfigured resolvers. When something worked yesterday and mysteriously fails today, check DNS early: <code>dig</code> the name, compare against expected, and check TTL/caching.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="DNS resolver roles: stub, recursive resolver with cache, authoritative">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Three roles: stub → recursive (cache) → authoritative</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30"  y="80" width="150" height="55" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="105" y="104" text-anchor="middle" class="svg-sub">stub resolver</text><text x="105" y="122" text-anchor="middle" class="svg-sub">(in your OS)</text>
+    <rect x="300" y="70" width="200" height="75" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="400" y="98" text-anchor="middle" class="svg-sub">recursive resolver</text><text x="400" y="116" text-anchor="middle" class="svg-sub">(8.8.8.8 / ISP)</text><text x="400" y="134" text-anchor="middle" class="svg-sub" fill="#7ee787">↺ CACHE (by TTL)</text>
+    <rect x="620" y="80" width="170" height="55" rx="8" fill="#21262d" stroke="#f0883e"/><text x="705" y="104" text-anchor="middle" class="svg-sub">authoritative</text><text x="705" y="122" text-anchor="middle" class="svg-sub">(holds real records)</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="180" y1="107" x2="298" y2="107" marker-end="url(#net-dns2)"/>
+      <line x1="500" y1="107" x2="618" y2="107" marker-end="url(#net-dns2)"/>
+    </g>
+    <text x="240" y="98" text-anchor="middle" class="svg-sub">"resolve X"</text>
+    <text x="560" y="98" text-anchor="middle" class="svg-sub">only on cache miss</text>
+    <text x="410" y="180" text-anchor="middle" class="svg-sub">most lookups stop at the cache (µs); authoritative is hit only when the cache is cold</text>
+  </g>
+  <defs><marker id="net-dns2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Your OS stub just asks a configured resolver. The recursive resolver does the real work (and caches every answer for its TTL). Authoritative servers hold the truth but are only consulted on a cache miss — which is why the same lookup is slow once, then instant.</figcaption>
+</figure>
+
+<p><strong>Why DNS exists.</strong> IP addresses change (servers move, scale, fail over) and humans can't memorize them. DNS adds a stable naming layer on top of shifting IPs: you publish <code>api.example.com</code> once, and behind it the actual addresses can change freely. It's also a level of indirection you can exploit — the same name can resolve to different IPs by geography, health, or weighting (covered in Advanced DNS).</p>
+<p><strong>How the system is structured.</strong> DNS is a distributed hierarchical database. Three roles cooperate: (1) a <em>stub resolver</em> in your OS that just asks a configured server; (2) a <em>recursive resolver</em> (your ISP's, or 8.8.8.8) that does the legwork and caches answers; (3) <em>authoritative servers</em> that hold the real records for a zone. Caching at every level is what makes it fast — most lookups are answered from cache in microseconds and never touch the authoritative servers. That same caching is why changes take time to appear (bounded by the record's TTL).</p>
+<div class="code-label label-cmd">See what your resolver is and test it</div>
+<pre><code>cat /etc/resolv.conf                 # which resolver(s) your OS uses
+resolvectl status                    # systemd-resolved: per-link DNS + DNSSEC state
+dig example.com                      # full answer incl. which server responded
+getent hosts example.com             # resolve the way the OS actually does (respects nsswitch)</code></pre>
+<div class="code-label label-output">output (dig, trimmed)</div>
+<pre><code>;; ANSWER SECTION:
+example.com.   3389   IN   A   93.184.216.34
+
+;; SERVER: 127.0.0.53#53(127.0.0.53)      &lt;- local systemd-resolved stub
+;; Query time: 1 msec                     &lt;- 1ms = served from cache</code></pre>
+<div class="box note"><span class="box-title">Why "1 msec" and "3389" matter</span><p>A 1ms query time means the answer came from cache, not a full recursive walk (which would be tens of ms). The <code>3389</code> is the remaining TTL in seconds — it counts <em>down</em> in cache; when it hits 0 the resolver re-fetches. Seeing a TTL that never changes across repeated digs means you're hitting the authoritative server each time (no caching), which is slow and unusual.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Testing with <code>dig @8.8.8.8</code> (bypasses your local resolver and <code>/etc/hosts</code>) then wondering why the app resolves differently — the app uses the OS resolver; use <code>getent hosts</code> to match it. Forgetting <code>/etc/hosts</code> overrides DNS entirely, so a stray entry masks the real record. Assuming DNS is TCP — it's UDP by default (falls back to TCP for large responses), so a firewall blocking UDP/53 breaks it. Trusting <code>ping</code> to test DNS — <code>ping</code> caches and won't show the TTL or the answering server the way <code>dig</code> does.</p></div>
+
+<h2 id="dns-resolution">12. Resolution Walkthrough</h2>
+<p class="section-intro">When you look up a name, a chain of servers cooperates to find the answer. Understanding this chain makes DNS debugging obvious.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="DNS recursive resolution steps">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Resolving www.example.com</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="90" width="120" height="45" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="90" y="112" text-anchor="middle" class="svg-sub">your device</text><text x="90" y="127" text-anchor="middle" class="svg-sub">(resolver)</text>
+    <rect x="220" y="55" width="140" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="290" y="80" text-anchor="middle" class="svg-sub">1. Root (.)</text>
+    <rect x="220" y="105" width="140" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="290" y="130" text-anchor="middle" class="svg-sub">2. TLD (.com)</text>
+    <rect x="220" y="155" width="140" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="290" y="180" text-anchor="middle" class="svg-sub">3. Authoritative</text>
+    <rect x="470" y="105" width="150" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="545" y="130" text-anchor="middle" class="svg-sub">4. → 93.184.216.34</text>
+    <g stroke="#58a6ff" stroke-width="1.5"><line x1="150" y1="105" x2="218" y2="75" marker-end="url(#dn)"/><line x1="150" y1="112" x2="218" y2="125" marker-end="url(#dn)"/><line x1="150" y1="120" x2="218" y2="175" marker-end="url(#dn)"/><line x1="360" y1="125" x2="468" y2="125" marker-end="url(#dn)"/></g>
+  </g>
+  <defs><marker id="dn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Your resolver asks a root server ("who handles .com?"), then the .com TLD server ("who handles example.com?"), then example.com's authoritative server ("what's www?"). Each answer is cached for its TTL, so most lookups skip these steps.</figcaption>
+</figure>
+<div class="code-label label-cmd">Trace resolution yourself</div>
+<pre><code>dig www.example.com              # the answer + which server gave it
+dig +trace www.example.com       # show the FULL root→TLD→authoritative chain
+dig www.example.com @8.8.8.8     # ask a specific resolver (Google's)
+dig +short example.com           # just the IP
+nslookup example.com             # simpler, cross-platform</code></pre>
+
+<p><strong>Why the hierarchy works this way.</strong> No single server could hold or serve all the world's names, and no one organization should control them all. So authority is delegated downward: the root delegates <code>.com</code> to the TLD operator, which delegates <code>example.com</code> to that domain's owner. Each level only knows how to point you one step closer — this makes DNS scalable (load spread across millions of servers) and administratively decentralized (you control your own zone).</p>
+<p><strong>How the resolver walks the tree.</strong> A recursive resolver starts knowing only the <em>root hints</em> (the 13 root server addresses). To resolve <code>www.example.com</code>: (1) ask a root server "where's <code>.com</code>?" → it returns a <em>referral</em>: the NS records for <code>.com</code> (not the answer, just "go ask these"). (2) Ask a <code>.com</code> TLD server "where's <code>example.com</code>?" → referral to example.com's authoritative nameservers. (3) Ask those "what's <code>www.example.com</code>?" → the authoritative <em>answer</em> (an A record). The resolver caches each step by its TTL, so the next lookup of anything under <code>.com</code> skips the root, and the next <code>www.example.com</code> skips everything. That's why cold lookups are slow and warm ones are instant.</p>
+<div class="code-label label-cmd">Watch the full walk happen</div>
+<pre><code>dig +trace www.example.com         # every referral from root -&gt; TLD -&gt; authoritative
+dig NS example.com +short          # who is authoritative for this zone?
+dig @a.iana-servers.net www.example.com   # ask the authoritative server directly</code></pre>
+<div class="code-label label-output">output (dig +trace, condensed)</div>
+<pre><code>.            518400 IN NS a.root-servers.net.        &lt;- step 0: roots (from hints)
+com.          172800 IN NS a.gtld-servers.net.       &lt;- step 1: root referred us to .com
+example.com.   172800 IN NS a.iana-servers.net.      &lt;- step 2: .com referred us to the zone
+www.example.com. 3600 IN A 93.184.216.34             &lt;- step 3: authoritative ANSWER</code></pre>
+<div class="box note"><span class="box-title">Referral vs answer</span><p>The first three lines are <em>referrals</em> (NS records: "ask over there"), the last is the <em>authoritative answer</em> (the A record). <code>+trace</code> makes the resolver do each step explicitly and print it — the single best tool for "which level of the hierarchy is broken." If the trace stops at <code>.com</code>, your zone's NS delegation is wrong; if it reaches the authoritative server but the record is wrong, the problem is in your zone file.</p></div>
+<div class="box eli5"><span class="box-title">Resolution = finding a person via a directory chain</span><p>You want to reach someone at a huge company. Reception (root) doesn't know them but says "try the Sales building." Sales reception (TLD) says "try the 4th floor team." The 4th floor assistant (authoritative) finally gives you the desk number (IP). Each step just points you one hop closer, and you remember (cache) the directions so next time you skip straight there.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p><strong>Lame delegation:</strong> the parent's NS records point to a server that isn't actually authoritative — intermittent failures. <strong>NS mismatch</strong> between the registrar and the zone's own NS records confuses resolvers. Negative caching: an <code>NXDOMAIN</code> is cached too (per the SOA's minimum TTL), so a just-created record can appear "missing" until the negative cache expires. Testing only your local cache and missing that a remote resolver still has the old answer for up to its TTL.</p></div>
+
+<h2 id="dns-records">13. Record Types</h2>
+<table>
+  <tr><th>Record</th><th>Maps</th><th>Example use</th></tr>
+  <tr><td><strong>A</strong></td><td>Name → IPv4</td><td><code>example.com → 93.184.216.34</code></td></tr>
+  <tr><td><strong>AAAA</strong></td><td>Name → IPv6</td><td><code>example.com → 2606:...</code></td></tr>
+  <tr><td><strong>CNAME</strong></td><td>Name → another name (alias)</td><td><code>www → example.com</code></td></tr>
+  <tr><td><strong>MX</strong></td><td>Mail servers</td><td>Where email for the domain goes</td></tr>
+  <tr><td><strong>TXT</strong></td><td>Arbitrary text</td><td>SPF/DKIM (email auth), domain verification</td></tr>
+  <tr><td><strong>NS</strong></td><td>Nameservers</td><td>Which servers are authoritative</td></tr>
+  <tr><td><strong>SRV</strong></td><td>Service location</td><td>Service discovery (host + port)</td></tr>
+</table>
+<div class="box tip"><span class="box-title">TTL controls caching — and migration speed</span><p>Every record has a TTL (time-to-live) telling resolvers how long to cache it. High TTL = fast (fewer lookups) but slow to change. Before migrating a service, <strong>lower the TTL</strong> (e.g. to 60s) a day ahead so the cutover propagates quickly; raise it again after. Forgetting this is why "I changed DNS but it still points to the old server."</p></div>
+
+<p><strong>Why so many record types.</strong> DNS isn't only name→IP; it's a general lookup system for many kinds of data keyed by name. Mail needs to know which server accepts email (MX); services need to advertise host+port (SRV); email anti-spoofing needs published policy (TXT/SPF/DKIM/DMARC); and aliases let you point one name at another without duplicating IPs (CNAME). Each type answers a different question about a name.</p>
+<p><strong>How CNAME, ALIAS, and apex differ.</strong> A CNAME says "this name is an alias for that name — go resolve <em>that</em> instead," so the resolver does a second lookup. Crucially, a CNAME can't coexist with other records at the same name, which is why you <em>can't</em> put a CNAME at the zone apex (<code>example.com</code> itself), because the apex must also hold SOA and NS records. Providers solve this with ALIAS/ANAME/flattening records that behave like a CNAME but return the target's A/AAAA directly. MX records carry a <em>priority</em> (lower = preferred) so mail can fail over to backups. SOA holds the zone's serial and timers, including the negative-cache TTL.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="DNS record types as columns of information about one name">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">One name, many record types</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="330" y="45" width="160" height="38" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="410" y="69" text-anchor="middle" class="svg-sub">example.com</text>
+    <rect x="40"  y="120" width="150" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="115" y="142" text-anchor="middle" class="svg-sub">A → IPv4</text>
+    <rect x="205" y="120" width="150" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="280" y="142" text-anchor="middle" class="svg-sub">AAAA → IPv6</text>
+    <rect x="370" y="120" width="150" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="445" y="142" text-anchor="middle" class="svg-sub">MX → mail</text>
+    <rect x="535" y="120" width="150" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="610" y="142" text-anchor="middle" class="svg-sub">TXT → SPF/verify</text>
+    <rect x="40"  y="170" width="150" height="34" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="115" y="192" text-anchor="middle" class="svg-sub">CNAME → alias</text>
+    <rect x="205" y="170" width="150" height="34" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="280" y="192" text-anchor="middle" class="svg-sub">NS → nameservers</text>
+    <rect x="370" y="170" width="150" height="34" rx="5" fill="#21262d" stroke="#d2a8ff"/><text x="445" y="192" text-anchor="middle" class="svg-sub">SRV → host+port</text>
+    <rect x="535" y="170" width="150" height="34" rx="5" fill="#21262d" stroke="#8b949e"/><text x="610" y="192" text-anchor="middle" class="svg-sub">SOA → zone timers</text>
+    <g stroke="#8b949e" stroke-width="1.2">
+      <line x1="410" y1="83" x2="115" y2="118" marker-end="url(#net-rec)"/>
+      <line x1="410" y1="83" x2="280" y2="118" marker-end="url(#net-rec)"/>
+      <line x1="410" y1="83" x2="445" y2="118" marker-end="url(#net-rec)"/>
+      <line x1="410" y1="83" x2="610" y2="118" marker-end="url(#net-rec)"/>
+    </g>
+  </g>
+  <defs><marker id="net-rec" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>DNS is a general keyed lookup, not just name→IP. Each type answers a different question about the same name — where its website is (A/AAAA), where its mail goes (MX), how to verify it (TXT), what it's an alias for (CNAME), and who's authoritative (NS).</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Query each record type</div>
+<pre><code>dig A example.com +short          # IPv4
+dig AAAA example.com +short       # IPv6
+dig MX example.com +short         # mail servers (with priorities)
+dig TXT example.com +short        # SPF/DKIM/verification strings
+dig CNAME www.example.com +short  # is www an alias?
+dig SOA example.com +short        # zone serial + timers (incl. negative TTL)
+dig ANY example.com               # (often refused now; query types explicitly)</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>$ dig MX example.com +short
+10 mail1.example.com.        &lt;- priority 10 = primary
+20 mail2.example.com.        &lt;- priority 20 = backup
+$ dig SOA example.com +short
+ns1.example.com. admin.example.com. 2024051501 7200 3600 1209600 3600
+                                    ^serial                        ^negative-cache TTL</code></pre>
+<div class="box note"><span class="box-title">The SOA serial is your change tracker</span><p>The <code>2024051501</code> serial (date + revision) increments on every zone change; secondary nameservers compare serials to decide whether to re-sync. If you edited a record but the serial didn't bump, secondaries never pick it up — a classic "the change is live on one nameserver but not another" cause. The final field (<code>3600</code>) is how long <code>NXDOMAIN</code> answers are cached.</p></div>
+<div class="box eli5"><span class="box-title">Record types = different columns in the phone book</span><p>One entry for a business can list its street address (A), its PO box (MX for mail), a note saying "we're the real ACME, verified" (TXT), and "also known as" aliases (CNAME). Same name, different kinds of information — you look up the column you actually need.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Putting a CNAME at the apex (breaks the zone) — use an ALIAS/flattening record instead. Chaining CNAMEs deeply adds a lookup per hop and latency. Forgetting SPF/DKIM/DMARC TXT records → your mail lands in spam. Splitting a long TXT record incorrectly (it must be chunked into ≤255-byte strings). A CNAME target that itself doesn't resolve silently breaks the name. Editing the zone but not bumping the SOA serial so secondaries never sync.</p></div>
+
+<h2 id="dns-advanced">14. Advanced DNS &amp; Traffic Routing</h2>
+<p class="section-intro">Modern DNS is a traffic-management tool: it can route users to the nearest, fastest, or healthiest endpoint. (Covered from the cloud angle in the <a href="cloud-aws-complete-guide.html#dns">Route 53 section</a>.)</p>
+<table>
+  <tr><th>Policy</th><th>Routes based on</th><th>Use for</th></tr>
+  <tr><td>Weighted</td><td>Percentages</td><td>Canary releases, A/B testing</td></tr>
+  <tr><td>Latency / Geo</td><td>User location</td><td>Global apps, compliance</td></tr>
+  <tr><td>Failover</td><td>Health checks</td><td>Active-passive DR</td></tr>
+  <tr><td>Round-robin</td><td>Rotate through IPs</td><td>Simple load spreading</td></tr>
+</table>
+<div class="box best"><span class="box-title">DNS security: DNSSEC &amp; DoH/DoT</span><p><strong>DNSSEC</strong> signs DNS records so resolvers can verify they weren't tampered with (prevents cache poisoning). <strong>DoH/DoT</strong> (DNS over HTTPS/TLS) encrypt DNS queries so they can't be snooped or manipulated in transit. Enable DNSSEC on domains you control, and be aware corporate networks may intercept plain DNS.</p></div>
+
+<p><strong>Why DNS became a traffic controller.</strong> Because it sits at the very start of every connection — before any TCP or TLS — DNS is the earliest point to steer a user. Returning a different IP per user lets you send them to the nearest region (latency), a specific version (canary), or a healthy endpoint (failover) with zero client changes. It's the cheapest, most global load-distribution lever you have.</p>
+<p><strong>How the routing policies actually decide.</strong> The authoritative server (e.g. Route 53) evaluates the incoming query's metadata and returns a tailored answer: <em>Weighted</em> returns each IP a configured fraction of the time (10% to the new version). <em>Latency/Geo</em> uses the resolver's location (or EDNS Client Subnet, which forwards a truncated client IP) to pick the closest region. <em>Failover</em> ties records to health checks and stops handing out an IP once its endpoint fails checks. <em>Round-robin</em> rotates the record order each response. Because these are just DNS answers, they're still bound by TTL — a failover is only as fast as the record's TTL lets caches expire, which is why failover records use very low TTLs.</p>
+<div class="code-label label-cmd">Observe DNS-based routing and security</div>
+<pre><code>dig +short api.example.com                       # run repeatedly: IPs rotate = round-robin/weighted
+for i in 1 2 3 4; do dig +short api.example.com; done   # see the distribution
+dig +dnssec example.com                          # RRSIG present = zone is signed
+dig DS example.com +short                        # delegation signer at the parent (DNSSEC chain)
+kdig -d @1.1.1.1 +tls example.com                # DoT (DNS over TLS) query</code></pre>
+<div class="code-label label-output">output (repeated dig showing weighting)</div>
+<pre><code>203.0.113.10     &lt;- returned ~90% of the time (weight 90, stable version)
+203.0.113.10
+203.0.113.20     &lt;- returned ~10% (weight 10, canary)
+203.0.113.10</code></pre>
+<div class="box note"><span class="box-title">Why answers seem to "flip"</span><p>Different IPs on repeated queries are the routing policy at work, not a bug. But remember a caching resolver holds <em>one</em> answer for the whole TTL, so an individual user sticks to whatever they got until it expires. For fast canary rollback or failover, keep TTLs low (30–60s); for stable records, higher TTLs reduce load. The <code>RRSIG</code> in a <code>+dnssec</code> answer is the cryptographic signature proving the record wasn't tampered with.</p></div>
+<div class="box eli5"><span class="box-title">Smart DNS = a receptionist who routes callers</span><p>Call the same company number and the receptionist decides where to connect you: the nearest branch (geo), whichever agent is free (round-robin), or — if the main office is down — the backup site (failover). Same number, different destination depending on who you are and what's healthy.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Expecting instant failover with a 3600s TTL — caches ignore your health check until the old answer expires. Geo-routing based on resolver location misfires when users use 8.8.8.8 far from home (EDNS Client Subnet mitigates this). Turning on DNSSEC but botching key rollover → the whole zone goes dark (SERVFAIL everywhere). Assuming clients honor TTLs — some apps and JVMs cache DNS forever unless configured otherwise.</p></div>
+
+<h2 id="http">15. HTTP/HTTPS &amp; HTTP/2/3</h2>
+<p class="section-intro">HTTP is the protocol of the web and most APIs. Its versions have evolved to be faster and more efficient — worth understanding for performance work.</p>
+<table>
+  <tr><th>Version</th><th>Key improvement</th></tr>
+  <tr><td>HTTP/1.1</td><td>Persistent connections, but one request at a time per connection (head-of-line blocking)</td></tr>
+  <tr><td>HTTP/2</td><td>Multiplexing (many requests over one connection), header compression, server push</td></tr>
+  <tr><td>HTTP/3</td><td>Runs over QUIC (UDP) — eliminates TCP head-of-line blocking, faster connection setup</td></tr>
+</table>
+<div class="code-label label-cmd">Inspect HTTP</div>
+<pre><code>curl -v https://example.com           # full request/response incl. TLS + headers
+curl -I https://example.com           # headers only
+curl -w "%{time_total}s\n" -o /dev/null -s https://example.com   # timing
+curl --http2 -I https://example.com   # check HTTP/2 support</code></pre>
+<div class="box note"><span class="box-title">Status codes tell the story</span><p><strong>2xx</strong> success · <strong>3xx</strong> redirect · <strong>4xx</strong> client error (400 bad request, 401 unauth, 403 forbidden, 404 not found, 429 rate-limited) · <strong>5xx</strong> server error (500 internal, 502 bad gateway, 503 unavailable, 504 timeout). When debugging, the code + response headers usually point straight at the layer that failed.</p></div>
+
+<p><strong>Why HTTP kept evolving.</strong> HTTP/1.1 sends one request at a time per connection, so a slow response blocks everything behind it (head-of-line blocking); browsers hacked around this by opening 6+ parallel connections per host, wasting resources. HTTP/2 fixed the application layer with multiplexing but still rode on a single TCP connection — so one lost packet stalls <em>all</em> streams (TCP-level head-of-line blocking). HTTP/3 moves onto QUIC over UDP, where each stream has independent delivery, so a lost packet only stalls its own stream. Each version removed a bottleneck the previous one exposed.</p>
+<p><strong>How multiplexing works under the hood.</strong> HTTP/2 splits every message into <em>frames</em> tagged with a stream ID; frames from many concurrent requests interleave over one connection and are reassembled by ID at the other end. Headers are compressed with HPACK (a shared dynamic table so repeated headers like <code>cookie</code> aren't resent in full). HTTP/3 does the same framing but over QUIC, which builds encryption (TLS 1.3) and multiplexing directly into the transport and completes the connection + crypto handshake in as little as one round trip (0-RTT on resumption).</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="HTTP request and response message structure">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">HTTP request &amp; response anatomy</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="45" width="340" height="185" rx="8" fill="#161b22" stroke="#58a6ff"/>
+    <text x="210" y="68" text-anchor="middle" class="svg-label" fill="#58a6ff">REQUEST →</text>
+    <text x="210" y="94"  text-anchor="middle" class="svg-sub">GET /users?id=7 HTTP/2   ← method+path</text>
+    <text x="210" y="118" text-anchor="middle" class="svg-sub">Host: api.example.com</text>
+    <text x="210" y="142" text-anchor="middle" class="svg-sub">Authorization: Bearer …</text>
+    <text x="210" y="166" text-anchor="middle" class="svg-sub">Accept: application/json</text>
+    <text x="210" y="196" text-anchor="middle" class="svg-sub">(blank line)</text>
+    <text x="210" y="218" text-anchor="middle" class="svg-sub">[optional body]</text>
+    <rect x="440" y="45" width="340" height="185" rx="8" fill="#161b22" stroke="#7ee787"/>
+    <text x="610" y="68" text-anchor="middle" class="svg-label" fill="#7ee787">← RESPONSE</text>
+    <text x="610" y="94"  text-anchor="middle" class="svg-sub">HTTP/2 200 OK   ← status line</text>
+    <text x="610" y="118" text-anchor="middle" class="svg-sub">Content-Type: application/json</text>
+    <text x="610" y="142" text-anchor="middle" class="svg-sub">Cache-Control: max-age=60</text>
+    <text x="610" y="166" text-anchor="middle" class="svg-sub">Content-Length: 42</text>
+    <text x="610" y="196" text-anchor="middle" class="svg-sub">(blank line)</text>
+    <text x="610" y="218" text-anchor="middle" class="svg-sub">{"id":7,"name":"Ada"}</text>
+  </g>
+</svg>
+<figcaption>Both messages share the same shape: a start line, headers, a blank line, then an optional body. The request's method+path says <em>what to do</em>; the response's status code says <em>what happened</em>. Headers carry everything else — auth, content type, caching rules.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Probe HTTP versions and headers</div>
+<pre><code>curl -sI --http2 https://example.com | head -1     # HTTP/2 200 if negotiated
+curl -sI --http3 https://example.com | head -1     # needs curl built with HTTP/3
+curl -s -o /dev/null -w '%{http_version} %{http_code}\n' https://example.com
+curl -s -D - -o /dev/null https://example.com | grep -i -E 'alt-svc|content-encoding|cache-control'</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>$ curl -sI --http2 https://example.com | head -1
+HTTP/2 200
+$ curl -s -D - -o /dev/null https://example.com | grep -i alt-svc
+alt-svc: h3=":443"; ma=86400        &lt;- server advertises HTTP/3 is available on 443</code></pre>
+<div class="box note"><span class="box-title">The Alt-Svc header is how HTTP/3 gets used</span><p>Clients almost always connect first over HTTP/2 (TCP). The <code>alt-svc: h3=":443"</code> header tells the browser "next time, try HTTP/3 here" — so the upgrade happens on subsequent visits, not the first. If you're testing HTTP/3 and only see HTTP/2, that's expected on the very first connection. <code>content-encoding: gzip/br</code> confirms compression is active — its absence on large text responses is an easy performance win missed.</p></div>
+<div class="box eli5"><span class="box-title">HTTP versions = lanes on a road</span><p>HTTP/1.1 is a one-lane road — one car (request) at a time, and a stalled car blocks everyone. HTTP/2 is a multi-lane road on one bridge — many cars at once, but if the bridge jams (a lost TCP packet) all lanes stop. HTTP/3 gives each lane its own bridge (independent QUIC streams) so one jam doesn't stop the rest.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Still sharding assets across many hostnames "for parallelism" — that hurts HTTP/2, which prefers one connection. Assuming HTTP/2 needs no TLS — browsers only do h2 over HTTPS. Forgetting HTTP/3/QUIC is UDP, so a firewall allowing only TCP/443 silently blocks it (clients quietly fall back). Misreading a <code>502</code>/<code>504</code> as the app being down when it's really the reverse proxy failing to reach or waiting on the backend. Ignoring <code>Cache-Control</code>, so a CDN can't cache and every request hits the origin.</p></div>
+
+<h2 id="tls">16. TLS &amp; Certificates</h2>
+<p class="section-intro">TLS encrypts HTTP (making it HTTPS) and verifies server identity. (Full cryptographic depth is in the <a href="security-devsecops-guide.html#pki-tls">Security PKI/TLS section</a>.)</p>
+<div class="code-label label-cmd">Debug certificates fast</div>
+<pre><code>openssl s_client -connect example.com:443 -servername example.com
+echo | openssl s_client -connect example.com:443 2&gt;/dev/null | openssl x509 -noout -dates
+curl -vI https://example.com   # shows the TLS handshake + cert chain</code></pre>
+<div class="box warn"><span class="box-title">The usual TLS failures</span><p>Expired cert · incomplete chain (server didn't send the intermediate) · hostname mismatch (cert doesn't cover the domain) · protocol/cipher mismatch (client too old). Automate renewal (Let's Encrypt / cert-manager / ACM) so expiry — the most common cause — never happens.</p></div>
+
+<p><strong>Why TLS exists.</strong> Raw HTTP is plaintext — anyone on the path (Wi-Fi, ISP, proxy) can read or alter it, and you have no proof the server is who it claims. TLS provides three things at once: <em>confidentiality</em> (encryption), <em>integrity</em> (tamper detection), and <em>authentication</em> (the certificate proves the server's identity via a chain of trust up to a CA your system already trusts).</p>
+<p><strong>How the handshake works (TLS 1.3).</strong> (1) The client sends <code>ClientHello</code> with supported ciphers, a key-share, and the target hostname in the SNI extension (so a server hosting many sites picks the right cert). (2) The server replies <code>ServerHello</code> with its chosen cipher, its key-share, and its certificate chain. (3) Both sides now have the ingredients to derive the same shared secret via Diffie-Hellman — <em>without ever sending it</em> — giving forward secrecy (capturing traffic today can't be decrypted later even if the key leaks). (4) The client verifies the cert chain: does it chain to a trusted root? Is it in date? Does the name match SNI? If all pass, encrypted application data flows — all in a single round trip (TLS 1.2 needed two). Session resumption/0-RTT can skip even that on repeat visits.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="TLS 1.3 handshake exchange between client and server">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">TLS 1.3 handshake — encrypted data in one round trip</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="70"  y="45" width="130" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="135" y="67" text-anchor="middle" class="svg-sub">client</text>
+    <rect x="620" y="45" width="130" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="685" y="67" text-anchor="middle" class="svg-sub">server</text>
+    <line x1="135" y1="79" x2="135" y2="215" stroke="#30363d"/>
+    <line x1="685" y1="79" x2="685" y2="215" stroke="#30363d"/>
+    <line x1="140" y1="105" x2="680" y2="105" stroke="#8b949e" stroke-width="1.5" marker-end="url(#net-tls)"/><text x="410" y="99" text-anchor="middle" class="svg-sub">ClientHello: ciphers + key-share + SNI</text>
+    <line x1="680" y1="140" x2="140" y2="140" stroke="#8b949e" stroke-width="1.5" marker-end="url(#net-tls)"/><text x="410" y="134" text-anchor="middle" class="svg-sub">ServerHello: cipher + key-share + certificate</text>
+    <text x="410" y="170" text-anchor="middle" class="svg-sub">both derive same secret via Diffie-Hellman (forward secrecy)</text>
+    <line x1="140" y1="200" x2="680" y2="200" stroke="#7ee787" stroke-width="2" marker-end="url(#net-tls)"/><text x="410" y="194" text-anchor="middle" class="svg-sub" fill="#7ee787">Finished → encrypted application data flows</text>
+  </g>
+  <defs><marker id="net-tls" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The client verifies the certificate chains to a trusted root, is in date, and matches the SNI hostname. The shared secret is derived, never sent — so a future key leak can't decrypt captured traffic (forward secrecy). TLS 1.3 completes this in a single round trip.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Inspect the handshake and chain</div>
+<pre><code>openssl s_client -connect example.com:443 -servername example.com &lt;/dev/null 2&gt;/dev/null \
+  | openssl x509 -noout -subject -issuer -dates
+echo | openssl s_client -connect example.com:443 -tls1_3 2&gt;/dev/null | grep -E 'Protocol|Cipher'
+curl -sIv https://example.com 2&gt;&amp;1 | grep -E 'SSL connection|subject|issuer|expire'
+openssl s_client -connect example.com:443 -showcerts &lt;/dev/null 2&gt;/dev/null | grep -c 'BEGIN CERT'</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>subject=CN = example.com
+issuer=CN = R3, O = Let's Encrypt, C = US        &lt;- intermediate that signed the leaf
+notBefore=Apr  1 00:00:00 2024 GMT
+notAfter=Jun 30 23:59:59 2024 GMT                &lt;- expiry: automate renewal before this
+# BEGIN CERT count = 2  -&gt; leaf + intermediate sent (good; 1 = missing intermediate)</code></pre>
+<div class="box note"><span class="box-title">The certificate-count trick</span><p>The server must send the leaf <em>and</em> any intermediates so clients can build the chain to a trusted root. Counting <code>BEGIN CERT</code> blocks tells you instantly: 2+ means the chain is complete; just 1 means a missing intermediate — the classic "works in my browser (which cached the intermediate) but fails in curl/Java/mobile." SNI (<code>-servername</code>) is required on shared hosts, or you'll get the wrong cert.</p></div>
+<div class="box eli5"><span class="box-title">TLS = a sealed, ID-checked delivery</span><p>Before handing over your package, the courier shows ID signed by an authority you trust (the certificate chain), you both agree on a secret lockbox combination without saying it aloud (key exchange), and everything inside is sealed so no one on the route can peek or swap the contents. If the ID is expired, forged, or for the wrong name, you refuse the handoff.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Missing intermediate cert (the #1 "curl fails, browser works"). Expired cert — automate renewal. Hostname/SAN mismatch (modern clients ignore CN and require the name in Subject Alternative Names). Wrong or missing SNI on multi-tenant servers returns the default cert. Clock skew on the client makes valid certs look expired. Terminating TLS at a load balancer but forgetting the backend hop is then plaintext — use end-to-end or a private network. Pinning a cert then rotating it breaks clients.</p></div>
+
+<h2 id="loadbalancing">17. Load Balancing</h2>
+<p class="section-intro">A load balancer spreads traffic across multiple backend servers, providing scalability and high availability. They operate at Layer 4 (TCP) or Layer 7 (HTTP).</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Load balancer distributing to backends">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Load balancer: one entry point, many backends</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="85" width="120" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="100" y="110" text-anchor="middle" class="svg-sub">clients</text>
+    <rect x="320" y="80" width="150" height="50" rx="8" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="395" y="110" text-anchor="middle" class="svg-sub">load balancer</text>
+    <rect x="620" y="45" width="150" height="35" rx="5" fill="#21262d" stroke="#7ee787"/><text x="695" y="68" text-anchor="middle" class="svg-sub">server 1 ✓</text>
+    <rect x="620" y="90" width="150" height="35" rx="5" fill="#21262d" stroke="#7ee787"/><text x="695" y="113" text-anchor="middle" class="svg-sub">server 2 ✓</text>
+    <rect x="620" y="135" width="150" height="35" rx="5" fill="#21262d" stroke="#ff7b72"/><text x="695" y="158" text-anchor="middle" class="svg-sub">server 3 ✗ (skipped)</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="160" y1="105" x2="318" y2="105" marker-end="url(#lb)"/><line x1="470" y1="100" x2="618" y2="62" marker-end="url(#lb)"/><line x1="470" y1="105" x2="618" y2="107" marker-end="url(#lb)"/></g>
+  </g>
+  <defs><marker id="lb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>The LB health-checks backends and only sends traffic to healthy ones. L4 balances by IP/port (fast); L7 understands HTTP so it can route by path/host/header (flexible). This is the front door pattern behind most web systems.</figcaption>
+</figure>
+<table>
+  <tr><th>Algorithm</th><th>Behavior</th></tr>
+  <tr><td>Round-robin</td><td>Rotate evenly through backends</td></tr>
+  <tr><td>Least connections</td><td>Send to the least-busy backend</td></tr>
+  <tr><td>IP hash / sticky</td><td>Same client → same backend (session affinity)</td></tr>
+  <tr><td>Weighted</td><td>Bigger servers get more traffic</td></tr>
+</table>
+
+<p><strong>Why load balancers exist.</strong> A single server has a capacity ceiling and is a single point of failure. A load balancer gives you one stable entry point (one IP/DNS name) in front of many interchangeable backends, so you can add capacity by adding servers, survive individual failures, and deploy/patch backends without downtime by draining them one at a time.</p>
+<p><strong>How L4 vs L7 balancing differ under the hood.</strong> An <em>L4</em> balancer forwards at the TCP/UDP level — it picks a backend per connection and shuttles bytes without understanding them (fast, protocol-agnostic, can't route by URL). An <em>L7</em> balancer terminates the connection, reads the HTTP request, and can route by host/path/header, rewrite, retry, and terminate TLS — richer, at slightly higher cost. Both run continuous <em>health checks</em> (e.g. GET <code>/healthz</code> every few seconds) and eject a backend after N consecutive failures, re-adding it when it recovers. Session affinity ("sticky") pins a client to one backend via a cookie or source-IP hash, needed when the app keeps state in memory.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Layer 4 versus Layer 7 load balancing">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">L4 (by IP/port) vs L7 (by HTTP content)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="45" width="345" height="165" rx="8" fill="#161b22" stroke="#58a6ff"/>
+    <text x="212" y="70" text-anchor="middle" class="svg-label" fill="#58a6ff">L4 — transport</text>
+    <text x="212" y="96"  text-anchor="middle" class="svg-sub">forwards TCP/UDP by (IP:port)</text>
+    <text x="212" y="120" text-anchor="middle" class="svg-sub">never reads the payload</text>
+    <text x="212" y="144" text-anchor="middle" class="svg-sub">fast · protocol-agnostic</text>
+    <text x="212" y="168" text-anchor="middle" class="svg-sub">can't route by URL/header</text>
+    <text x="212" y="192" text-anchor="middle" class="svg-sub">e.g. AWS NLB</text>
+    <rect x="435" y="45" width="345" height="165" rx="8" fill="#161b22" stroke="#7ee787"/>
+    <text x="607" y="70" text-anchor="middle" class="svg-label" fill="#7ee787">L7 — application</text>
+    <text x="607" y="96"  text-anchor="middle" class="svg-sub">terminates &amp; reads HTTP</text>
+    <text x="607" y="120" text-anchor="middle" class="svg-sub">route by host / path / header</text>
+    <text x="607" y="144" text-anchor="middle" class="svg-sub">TLS terminate · rewrite · retry</text>
+    <text x="607" y="168" text-anchor="middle" class="svg-sub">richer, slightly higher cost</text>
+    <text x="607" y="192" text-anchor="middle" class="svg-sub">e.g. AWS ALB · nginx · Envoy</text>
+  </g>
+</svg>
+<figcaption>L4 shuttles bytes blindly and quickly; L7 understands the request so it can send <code>/api</code> to one pool and <code>/static</code> to another, terminate TLS, and retry failures. Both continuously health-check backends and eject unhealthy ones.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Verify balancing and health checks</div>
+<pre><code>for i in $(seq 1 6); do curl -s https://app.example.com/whoami; done   # see different backends
+curl -s -o /dev/null -w '%{http_code}\n' https://app.example.com/healthz  # the LB's health probe
+curl -sI https://app.example.com | grep -i -E 'set-cookie|server|x-served-by'  # affinity/backend hints
+ss -tn state established '( dport = :443 )' | wc -l                     # spread of live conns</code></pre>
+<div class="code-label label-config">nginx: upstream with health-aware balancing</div>
+<pre><code>upstream app {
+    least_conn;                         # send to the least-busy backend
+    server 10.0.1.10:8080 max_fails=3 fail_timeout=10s;
+    server 10.0.1.11:8080 max_fails=3 fail_timeout=10s;
+    server 10.0.1.12:8080 backup;       # only used if the others are down
+}
+server { listen 443 ssl; location / { proxy_pass http://app; } }</code></pre>
+<div class="box note"><span class="box-title">Watch for uneven distribution</span><p>Repeating the <code>whoami</code> call should cycle through backends. If it sticks to one, either affinity is on (a <code>Set-Cookie</code> in the headers) or a keep-alive connection is being reused (each request rides the same connection to the same backend). <code>least_conn</code> beats round-robin when request durations vary a lot, because a couple of slow requests otherwise pile up on one round-robin'd backend.</p></div>
+<div class="box eli5"><span class="box-title">Load balancer = the host at a busy restaurant</span><p>You don't pick a table yourself — the host seats you at whichever section has a free, working table, keeps you away from tables that are "down" (dirty/closed), and spreads guests so no one waiter is swamped. If you're a regular who left your coat at table 4 (session state), they seat you there again (sticky sessions).</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>A too-shallow health check (just TCP connect, or <code>/</code> returning 200 even when the DB is down) keeps sending traffic to a broken backend — health-check a real dependency-touching endpoint. Sticky sessions defeating even distribution and breaking on backend loss — prefer stateless apps with shared session storage. Losing the client IP at the backend — forward <code>X-Forwarded-For</code>/PROXY protocol. Not draining connections before removing a backend, cutting live requests. Idle-timeout mismatches between LB and backend causing random 502s.</p></div>
+
+<h2 id="cdn-proxy">18. CDNs &amp; Proxies</h2>
+<p class="section-intro">Proxies sit between clients and servers to add caching, security, and routing. CDNs are globally-distributed caching proxies.</p>
+<table>
+  <tr><th>Type</th><th>Sits between</th><th>Purpose</th></tr>
+  <tr><td>Forward proxy</td><td>Client → internet</td><td>Egress control, corporate filtering, caching</td></tr>
+  <tr><td>Reverse proxy</td><td>Internet → your servers</td><td>TLS termination, routing, caching, security (NGINX, Envoy)</td></tr>
+  <tr><td>CDN</td><td>Users → origin, globally</td><td>Cache content near users; absorb DDoS (see <a href="cloud-aws-complete-guide.html#cdn">CloudFront</a>)</td></tr>
+</table>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Forward proxy versus reverse proxy placement">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Forward proxy (guards clients) vs reverse proxy (guards servers)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="210" y="52" text-anchor="middle" class="svg-label" fill="#58a6ff">Forward proxy</text>
+    <rect x="30"  y="70" width="90" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="75"  y="92" text-anchor="middle" class="svg-sub">clients</text>
+    <rect x="150" y="70" width="90" height="34" rx="5" fill="#21262d" stroke="#3fb950"/><text x="195" y="92" text-anchor="middle" class="svg-sub">proxy</text>
+    <rect x="270" y="70" width="110" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="325" y="92" text-anchor="middle" class="svg-sub">internet</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="120" y1="87" x2="148" y2="87" marker-end="url(#net-px)"/><line x1="240" y1="87" x2="268" y2="87" marker-end="url(#net-px)"/></g>
+    <text x="205" y="128" text-anchor="middle" class="svg-sub">sits with clients: egress control, filtering</text>
+    <text x="610" y="52" text-anchor="middle" class="svg-label" fill="#7ee787">Reverse proxy</text>
+    <rect x="440" y="70" width="110" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="495" y="92" text-anchor="middle" class="svg-sub">internet</text>
+    <rect x="580" y="70" width="90" height="34" rx="5" fill="#21262d" stroke="#3fb950"/><text x="625" y="92" text-anchor="middle" class="svg-sub">proxy</text>
+    <rect x="700" y="70" width="90" height="34" rx="5" fill="#21262d" stroke="#7ee787"/><text x="745" y="92" text-anchor="middle" class="svg-sub">servers</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="550" y1="87" x2="578" y2="87" marker-end="url(#net-px)"/><line x1="670" y1="87" x2="698" y2="87" marker-end="url(#net-px)"/></g>
+    <text x="615" y="128" text-anchor="middle" class="svg-sub">sits with servers: TLS, routing, caching</text>
+    <rect x="120" y="160" width="580" height="52" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="182" text-anchor="middle" class="svg-sub">Which side it protects tells you which one it is:</text>
+    <text x="410" y="202" text-anchor="middle" class="svg-sub">forward = client-side gateway out · reverse = server-side front door in</text>
+  </g>
+  <defs><marker id="net-px" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A forward proxy represents the <em>client</em> to the internet (outbound control, corporate filtering). A reverse proxy represents the <em>server</em> to the internet (TLS termination, routing, caching, security). Same box, opposite side of the conversation.</figcaption>
+</figure>
+
+<p><strong>Why proxies and CDNs exist.</strong> A <em>reverse proxy</em> centralizes cross-cutting concerns — TLS termination, routing, caching, compression, rate limiting, auth — so your app servers stay simple and uniform. A <em>CDN</em> extends caching to hundreds of edge locations worldwide so content is served from a few milliseconds away instead of a cross-ocean round trip, which also shields the origin from load and volumetric attacks.</p>
+<p><strong>How a CDN decides hit vs miss.</strong> Users are steered (via anycast IP or DNS) to the nearest edge PoP. On a request, the edge checks its cache using the URL plus any <em>cache key</em> rules (query strings, headers). On a <em>hit</em> it serves instantly; on a <em>miss</em> it fetches from the origin, stores the response according to <code>Cache-Control</code>/<code>Expires</code>, and serves it — subsequent nearby users get hits. Freshness is governed by <code>max-age</code>; after that the edge <em>revalidates</em> with the origin using <code>ETag</code>/<code>If-None-Match</code>, getting a cheap <code>304 Not Modified</code> if unchanged. Anycast means one IP is announced from many sites and the network delivers each user to the closest — this is also what lets a CDN absorb DDoS by spreading it across the globe.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="CDN edge caching with hit and miss paths to origin">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">CDN edge caching: hit serves local, miss fetches origin</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30"  y="90" width="120" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="90"  y="115" text-anchor="middle" class="svg-sub">user</text>
+    <rect x="250" y="90" width="150" height="40" rx="6" fill="#21262d" stroke="#3fb950" stroke-width="2"/><text x="325" y="115" text-anchor="middle" class="svg-sub">nearest edge PoP</text>
+    <rect x="620" y="90" width="150" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="695" y="115" text-anchor="middle" class="svg-sub">origin (far)</text>
+    <line x1="150" y1="110" x2="248" y2="110" stroke="#8b949e" stroke-width="2" marker-end="url(#net-cdn)"/>
+    <line x1="400" y1="102" x2="150" y2="70"  stroke="#7ee787" stroke-width="2" marker-end="url(#net-cdn2)"/><text x="270" y="62" text-anchor="middle" class="svg-sub" fill="#7ee787">HIT: served in ms</text>
+    <line x1="400" y1="120" x2="618" y2="120" stroke="#f0883e" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#net-cdn3)"/><text x="510" y="112" text-anchor="middle" class="svg-sub" fill="#f0883e">MISS: fetch + store</text>
+    <rect x="120" y="165" width="580" height="60" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="187" text-anchor="middle" class="svg-sub">edge obeys Cache-Control: max-age → serves fresh copies without touching origin</text>
+    <text x="410" y="209" text-anchor="middle" class="svg-sub">after max-age: revalidate with ETag / If-None-Match → cheap 304 Not Modified</text>
+  </g>
+  <defs>
+    <marker id="net-cdn"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="net-cdn2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7ee787"/></marker>
+    <marker id="net-cdn3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0883e"/></marker>
+  </defs>
+</svg>
+<figcaption>The first request for an object is a miss (fetched from the origin and cached); every nearby request after is a hit served in milliseconds. Anycast routes each user to the closest PoP, which is also how a CDN spreads and absorbs volumetric attacks.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Tell a cache hit from a miss</div>
+<pre><code>curl -sI https://cdn.example.com/logo.png | grep -i -E 'x-cache|age|cache-control|cf-cache-status'
+curl -sI https://cdn.example.com/logo.png | grep -i age   # run twice: Age grows on a cached hit
+curl --resolve cdn.example.com:443:1.2.3.4 -sI https://cdn.example.com/  # test a specific edge IP</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>x-cache: Hit from cloudfront          &lt;- served from the edge, origin untouched
+age: 137                              &lt;- seconds this object has lived in cache
+cache-control: public, max-age=86400  &lt;- edge may keep it up to a day before revalidating</code></pre>
+<div class="box note"><span class="box-title">The header that ends "why is my CDN not caching" tickets</span><p><code>x-cache</code>/<code>cf-cache-status</code> shows <code>Hit</code> or <code>Miss</code>; a growing <code>Age</code> confirms a real cached copy. If you always see <code>Miss</code>, the origin is probably sending <code>Cache-Control: no-store/private</code>, or a <code>Set-Cookie</code> is making every response uncacheable, or the cache key includes a varying query string. Fix the origin headers, not the CDN — the CDN only obeys what the origin tells it.</p></div>
+<div class="box eli5"><span class="box-title">CDN = local corner shops stocking popular items</span><p>Instead of everyone driving to the distant central warehouse (origin), popular goods are stocked at the corner shop nearest you (edge). First person to want an item triggers a restock from the warehouse (cache miss); everyone after grabs it locally (cache hit). Perishable goods get a "sell-by" (max-age) after which the shop checks with the warehouse for a fresh one.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Caching personalized/authenticated responses so one user sees another's data — mark them <code>private</code>/<code>no-store</code> and be careful with the cache key. Forgetting to invalidate/purge after a deploy, so users get stale assets — use content hashes in filenames instead. <code>Set-Cookie</code> silently disabling caching. Not forwarding the real client IP (<code>X-Forwarded-For</code>), so logs and rate limits see the proxy. Trusting <code>X-Forwarded-For</code> blindly — it's spoofable unless set by a trusted hop.</p></div>
+
+<h2 id="troubleshoot-tools">19. Diagnostic Tools</h2>
+<p class="section-intro">The essential networking toolkit — master these and you can diagnose almost anything, layer by layer.</p>
+<table>
+  <tr><th>Tool</th><th>Layer</th><th>Use for</th></tr>
+  <tr><td><code>ping</code></td><td>L3</td><td>Is the host reachable? Round-trip time?</td></tr>
+  <tr><td><code>traceroute</code>/<code>mtr</code></td><td>L3</td><td>What path do packets take? Where's the loss?</td></tr>
+  <tr><td><code>dig</code>/<code>nslookup</code></td><td>L7</td><td>DNS resolution</td></tr>
+  <tr><td><code>ss</code>/<code>netstat</code></td><td>L4</td><td>Open ports &amp; connections</td></tr>
+  <tr><td><code>nc</code> (netcat)</td><td>L4</td><td>Test if a port is open/reachable</td></tr>
+  <tr><td><code>curl</code>/<code>wget</code></td><td>L7</td><td>HTTP requests &amp; timing</td></tr>
+  <tr><td><code>tcpdump</code>/Wireshark</td><td>L2-7</td><td>Capture &amp; inspect actual packets</td></tr>
+</table>
+<div class="code-label label-cmd">A layered debugging session</div>
+<pre><code>ping 8.8.8.8              # L3: is basic connectivity up? (bypasses DNS)
+dig example.com           # L7: does the name resolve?
+ping example.com          # L3: reachable by name?
+traceroute example.com    # L3: where does it stop?
+nc -zv example.com 443    # L4: is the port open?
+curl -v https://example.com  # L7: does the app respond correctly?</code></pre>
+
+<p><strong>Why a layered toolkit.</strong> "It doesn't work" is unfalsifiable; a set of layer-specific tools turns it into a sequence of yes/no tests that <em>bisect</em> the problem. Each tool isolates one layer, so instead of guessing you binary-search the stack until exactly one step fails — that failing step is your bug.</p>
+<p><strong>How to bisect a failure fast.</strong> Go bottom-up and stop at the first failure: (1) <code>ip a</code>/<code>ip link</code> — is the interface up with an IP? (2) <code>ping</code> the gateway then a public IP like <code>1.1.1.1</code> — is L3 routing working, independent of DNS? (3) <code>dig</code> the name — does it resolve, and to the expected IP? (4) <code>nc -zv host port</code> — is the port reachable (firewall/listening)? (5) <code>curl -v</code> — does the app answer correctly? The first step that fails localizes everything: ping-by-IP works but ping-by-name doesn't → DNS; port unreachable but host pingable → firewall or service down; app returns 502 → backend problem behind the proxy.</p>
+<div class="code-label label-cmd">One-shot triage with clear signals</div>
+<pre><code>ping -c1 1.1.1.1 &amp;&amp; echo L3-OK || echo L3-FAIL     # routing works without DNS?
+dig +short example.com | head -1 || echo DNS-FAIL   # resolves?
+nc -zv -w3 example.com 443 2&gt;&amp;1                       # port reachable within 3s?
+curl -sS -o /dev/null -w 'code:%{http_code} total:%{time_total}s\n' https://example.com
+mtr -rwzbc 20 example.com                            # 20-cycle path + loss report</code></pre>
+<div class="code-label label-output">output (mtr, loss localized)</div>
+<pre><code>HOST: laptop            Loss%  Snt  Last  Avg  Best  Wrst
+  1. 10.0.3.1            0.0%   20   1.1   1.2  0.9   2.0
+  4. core-router.isp     0.0%   20   9.8  10.1  9.2  12.0
+  5. congested-hop.isp  35.0%   20  88.0  91.3 40.0 210.0   &lt;- loss starts here
+  6. example.com         0.0%   20  30.0  31.0 29.0  33.0</code></pre>
+<div class="box note"><span class="box-title">Reading mtr: where does loss begin?</span><p>Loss that appears at one hop <em>and continues to the destination</em> is real congestion/failure at that hop. Loss that shows at a middle hop but <em>clears</em> by the final hop is usually just that router de-prioritizing its own ICMP replies (harmless) — a very common false alarm. Judge by the destination line and the last hop with sustained loss, not by a single blip mid-path.</p></div>
+<div class="box eli5"><span class="box-title">Diagnostics = checking the water supply room by room</span><p>No water at the tap? Don't guess. Check the street main (ping 1.1.1.1), then the meter (gateway), then the pipe to your house (route), then the valve to that room (port), then the faucet itself (the app). The first place with no water is where the break is — you don't replace the whole plumbing on a hunch.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Concluding a host is down because <code>ping</code> fails — many hosts/firewalls drop ICMP while TCP services work fine; test the actual port. Trusting a single ping (test multiple + latency). Interpreting mid-path ICMP loss as an outage. Running <code>tcpdump</code> without a filter and drowning in packets. Forgetting <code>curl</code> follows redirects only with <code>-L</code>, so a <code>301</code> looks like "no content." Testing from your laptop when the failing path is server→server inside the network — run the tools <em>from the affected host</em>.</p></div>
+
+<h2 id="security">20. Network Security</h2>
+<p class="section-intro">Networking and security are inseparable. (Deep coverage in the <a href="security-devsecops-guide.html#network-sec">Security guide</a>.)</p>
+<div class="box best"><span class="box-title">Network security essentials</span><ul>
+  <li><strong>Segment</strong> networks (subnets/VPCs/VLANs) so a breach can't roam freely.</li>
+  <li><strong>Default-deny firewalls</strong> — allow only needed ports/sources.</li>
+  <li><strong>Encrypt in transit</strong> (TLS everywhere, mTLS between services).</li>
+  <li><strong>Private subnets</strong> for anything not needing public access.</li>
+  <li><strong>DDoS protection</strong> + WAF at the edge for public endpoints.</li>
+  <li><strong>Zero Trust</strong> — verify every request regardless of network location.</li>
+</ul></div>
+
+<p><strong>Why network security is layered.</strong> No single control is enough — a firewall doesn't stop a stolen credential, and encryption doesn't stop a misconfigured open port. Defense in depth stacks independent controls so an attacker who defeats one still faces the next: segmentation limits blast radius, default-deny firewalls shrink the attack surface, encryption protects data if traffic is captured, and identity checks (Zero Trust) catch attackers who are already "inside."</p>
+<p><strong>How the core controls actually work.</strong> A <em>stateful firewall</em> tracks connections: it allows return traffic for connections you initiated but blocks unsolicited inbound — the same principle NAT relies on. <em>Segmentation</em> puts tiers in separate subnets/security groups so the web tier can reach the app tier on one port and nothing else — a compromised web box can't scan the database directly. <em>mTLS</em> extends TLS so <em>both</em> ends present certificates, so services authenticate each other, not just the client trusting the server. <em>Zero Trust</em> drops the idea that "inside the network = trusted" and authenticates/authorizes every request regardless of origin.</p>
+<div class="code-label label-cmd">Audit exposure and firewall state</div>
+<pre><code>ss -tlnp                                   # every listening port — is anything unexpectedly open?
+sudo nft list ruleset                      # current firewall rules (nftables)
+sudo iptables -L -n -v --line-numbers      # rules + hit counters (iptables)
+nmap -sT -Pn -p- your.host.example         # what's reachable from OUTSIDE (attacker's view)
+ss -tn state established | awk '{print $4}' | sort | uniq -c   # what's actually connected</code></pre>
+<div class="code-label label-config">nftables: default-deny inbound, allow established + specific ports</div>
+<pre><code>table inet filter {
+  chain input {
+    type filter hook input priority 0; policy drop;   # default-deny
+    ct state established,related accept                # allow return traffic
+    iif "lo" accept                                    # loopback
+    tcp dport { 22, 443 } accept                       # only SSH + HTTPS inbound
+    ip protocol icmp accept                            # allow ping (optional)
+  }
+}</code></pre>
+<div class="box note"><span class="box-title">Scan from the outside, not the inside</span><p>Checking <code>ss -tlnp</code> on the host shows what's <em>listening</em>; running <code>nmap</code> from another machine shows what's actually <em>reachable</em> through the firewall/security group. The gap between them is your real exposure. A service listening on <code>0.0.0.0</code> is fine if a default-deny firewall only lets 443 through — but if that firewall is missing, every listening port is internet-facing. Always verify from the attacker's vantage point.</p></div>
+<div class="box eli5"><span class="box-title">Network security = a building with layered access</span><p>The perimeter fence (firewall) keeps most people out. Inside, you still need a badge for each floor (segmentation), sensitive rooms are locked separately (private subnets), conversations happen in soundproof rooms (encryption), and even known employees show ID at each door rather than roaming freely (Zero Trust). One breached door doesn't hand over the whole building.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Security groups/firewalls that are permissive "temporarily" and never tightened (<code>0.0.0.0/0</code> on port 22 is a magnet). Relying on network location for trust — flat networks let one breach spread everywhere. Terminating TLS at the edge and running plaintext internally on an untrusted network. Opening a port for debugging and forgetting it. Trusting client-supplied headers (<code>X-Forwarded-For</code>) for auth decisions. Logging that captures secrets/tokens in URLs. No egress filtering, so a compromised host can exfiltrate freely.</p></div>
+
+<h2 id="field-skills">21. Packet Analysis, Scaling &amp; Storage</h2>
+<p class="section-intro">A grab-bag of practical infrastructure concepts that come up constantly in real DevOps work (and interviews) — reading packets, defending against floods, scaling directions, and how storage is actually attached.</p>
+
+<h3>Packet analysis with Wireshark / tcpdump</h3>
+<p>When "the app is slow" and metrics don't explain it, capturing the actual packets settles it. <code>tcpdump</code> captures on servers; <strong>Wireshark</strong> reads and dissects the capture visually.</p>
+<div class="code-label label-cmd">Capture on a server, analyze anywhere</div>
+<pre><code>sudo tcpdump -i any -n port 443 -w capture.pcap    # capture HTTPS traffic to a file
+# open capture.pcap in Wireshark and filter, e.g.:
+#   http.response.code >= 500        (server errors)
+#   tcp.analysis.retransmission      (packet loss / bad network)
+#   dns.time > 0.1                   (slow DNS lookups)
+tcpdump -i any -n 'tcp[tcpflags] & tcp-syn != 0'   # watch connection attempts</code></pre>
+<div class="box tip"><span class="box-title">What packets reveal that dashboards don't</span><p>Retransmissions = packet loss (bad link or overloaded host). A big gap between the SYN and the response = the <em>server</em> is slow to accept, not the network. TLS handshake taking long = cert/cipher issue. Seeing the raw exchange turns "it's slow somewhere" into "the database's TCP window is full" — the ground truth.</p></div>
+
+<p><strong>Why capture packets at all.</strong> Logs and metrics are the app's <em>opinion</em> of what happened; the packet capture is the <em>ground truth</em> of what actually crossed the wire. When the two disagree — the app logs "sent response" but the client saw nothing — only the capture settles who's lying. It's the court of last resort for network mysteries.</p>
+<p><strong>How to capture without drowning.</strong> Always narrow with a BPF filter (host/port/flags) at capture time, not after — an unfiltered capture on a busy host fills disk in seconds. Capture to a rotating file, then analyze offline in Wireshark where you can "Follow TCP Stream" to see one conversation reassembled, and use display filters to zero in. The workflow is: capture tightly on the server → copy the <code>.pcap</code> → dissect visually elsewhere.</p>
+<div class="code-label label-cmd">Targeted capture + read-back</div>
+<pre><code>sudo tcpdump -i any -n host 10.0.1.20 and port 5432 -w db.pcap -c 5000   # DB traffic, capped
+sudo tcpdump -tttt -n -r db.pcap 'tcp[tcpflags] &amp; (tcp-syn|tcp-fin|tcp-rst) != 0'  # just connection events
+sudo tcpdump -i any -n -c 20 'tcp[tcpflags] &amp; tcp-rst != 0'   # who is sending RSTs (abrupt resets)?</code></pre>
+<div class="code-label label-output">output (connection lifecycle)</div>
+<pre><code>2024-05-15 10:15:02.331  IP 10.0.1.5.51544 &gt; 10.0.1.20.5432: Flags [S]    &lt;- SYN (open)
+2024-05-15 10:15:02.332  IP 10.0.1.20.5432 &gt; 10.0.1.5.51544: Flags [S.]   &lt;- SYN-ACK
+2024-05-15 10:15:02.512  IP 10.0.1.20.5432 &gt; 10.0.1.5.51544: Flags [R.]   &lt;- RST 180ms later!</code></pre>
+<div class="box note"><span class="box-title">What an RST after a handshake tells you</span><p>A connection that completes the handshake then gets an <code>[R]</code> (reset) means the server accepted the TCP connection but the <em>application</em> refused or crashed the session (e.g. max connections reached, auth rejected). That distinguishes a network problem (never gets past SYN) from an app problem (connects then resets) — a distinction dashboards rarely show but a two-line capture makes obvious.</p></div>
+<div class="box eli5"><span class="box-title">tcpdump = a wiretap on the phone line</span><p>Instead of asking each side "what did you say?", you record the actual call. You hear exactly who spoke, when, who hung up first, and whether there was silence (loss) — the objective record, not each party's memory of the conversation.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Capturing with no filter and filling the disk. Forgetting encrypted payloads (HTTPS) show timing/flags but not content — you need TLS keys or capture before/after termination to see the body. Capturing on the wrong interface (<code>-i any</code> when a bridge/veth carries the traffic in containers). Reading only summaries and missing retransmissions — enable <code>tcp.analysis.flags</code> in Wireshark. Leaving a capture running and impacting the host.</p></div>
+
+<h3>DDoS &amp; how to mitigate it</h3>
+<p>A Distributed Denial of Service attack floods you with traffic from many sources to exhaust your capacity. You can't out-buy every attacker, so you absorb and filter.</p>
+<table>
+  <tr><th>Layer of attack</th><th>Example</th><th>Defense</th></tr>
+  <tr><td>Volumetric (L3/4)</td><td>UDP/SYN flood saturating bandwidth</td><td>Cloud scrubbing (AWS Shield, Cloudflare), anycast to spread load</td></tr>
+  <tr><td>Protocol (L3/4)</td><td>SYN flood exhausting connection tables</td><td>SYN cookies, rate limits, stateful firewalls</td></tr>
+  <tr><td>Application (L7)</td><td>Flood of expensive HTTP requests</td><td>WAF, rate limiting per IP/user, CAPTCHA, caching/CDN</td></tr>
+</table>
+<div class="box best"><span class="box-title">The mitigation mindset</span><p>Push defense to the <strong>edge</strong> (a CDN/scrubbing service absorbs floods before they reach your origin — see <a href="#cdn-proxy">§21</a> and <a href="cloud-aws-complete-guide.html#cdn">CloudFront</a>), <strong>rate-limit</strong> at the gateway (see the <a href="kafka-kong-complete-guide.html#kong-security">API gateway guide</a>), <strong>cache</strong> aggressively so floods hit cache not compute, and <strong>autoscale</strong> to ride out spikes. You rarely block a DDoS with a single firewall rule — you architect to absorb it.</p></div>
+
+<p><strong>Why DDoS is hard to "block."</strong> The traffic looks legitimate and comes from thousands of sources, so there's no single IP to ban. And volumetric floods can exceed your bandwidth before a packet ever reaches your firewall — you can't filter what already saturated the pipe. The strategy is therefore <em>absorb and distribute</em>, not "block."</p>
+<p><strong>How each attack class is defeated.</strong> Volumetric floods (raw bandwidth) are absorbed upstream by scrubbing centers and <em>anycast</em>, which spreads one destination IP across dozens of global sites so no single site takes the full load. Protocol attacks (SYN floods that exhaust the connection table) are countered by <em>SYN cookies</em> — the server encodes connection state into the sequence number and keeps no table entry until the handshake completes, so a flood of half-open SYNs costs nothing. Application floods (expensive requests) are stopped by rate limiting per client, caching so the flood hits cache not compute, and a WAF that fingerprints and drops bad requests.</p>
+<div class="code-label label-cmd">Detect and blunt a flood on the host</div>
+<pre><code>ss -s                                       # summary: a huge synrecv count = SYN flood
+ss -tn state syn-recv | wc -l               # half-open connections piling up
+sudo sysctl -w net.ipv4.tcp_syncookies=1    # enable SYN cookies (usually default on)
+sudo tcpdump -i any -n 'tcp[tcpflags] &amp; tcp-syn != 0 and tcp[tcpflags] &amp; tcp-ack = 0' -c 20  # bare SYNs
+# crude per-IP rate limit at the edge (nftables):
+sudo nft add rule inet filter input tcp dport 443 ct state new limit rate over 50/second drop</code></pre>
+<div class="code-label label-output">output (ss -s during a SYN flood)</div>
+<pre><code>TCP:   50213 (estab 42, closed 12, orphaned 0, timewait 10), ports 0
+       synrecv 49800                    &lt;- tens of thousands half-open = SYN flood signature</code></pre>
+<div class="box note"><span class="box-title">The synrecv tell</span><p>A normal server has a handful of <code>synrecv</code> (SYN received, waiting for the final ACK). Tens of thousands means clients are sending SYNs and never completing the handshake — the classic SYN flood. With SYN cookies on, the kernel stops allocating a slot per half-open connection, so the table can't be exhausted; legitimate clients complete normally and attackers' spoofed SYNs cost nothing.</p></div>
+<div class="box eli5"><span class="box-title">DDoS = a flash mob jamming your front door</span><p>Thousands of people crowd your shop entrance so real customers can't get in. You can't fight each one. Instead you open many entrances across the city (anycast/CDN), let a security firm filter the crowd before it reaches you (scrubbing), and stop wasting staff time holding doors for people who never actually enter (SYN cookies).</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Trying to block source IPs during a distributed attack — they're too many and often spoofed. Rate-limiting so aggressively you drop real users (tune with real traffic baselines). Assuming your origin firewall helps against volumetric floods — the pipe is already full upstream; you need edge/scrubbing. No caching, so every flood request hits compute. Forgetting UDP-based amplification (DNS/NTP) — filter or rate-limit those services if you run them.</p></div>
+
+<h3>Vertical vs horizontal scaling</h3>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Vertical versus horizontal scaling">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Scale up (bigger) vs scale out (more)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="205" y="52" text-anchor="middle" class="svg-label" fill="#58a6ff">Vertical (scale up)</text>
+    <rect x="160" y="70" width="90" height="30" rx="4" fill="#21262d" stroke="#58a6ff"/>
+    <rect x="150" y="105" width="110" height="35" rx="4" fill="#21262d" stroke="#58a6ff"/>
+    <rect x="140" y="145" width="130" height="42" rx="4" fill="#21262d" stroke="#58a6ff"/>
+    <text x="205" y="172" text-anchor="middle" class="svg-sub">one bigger machine</text>
+    <text x="615" y="52" text-anchor="middle" class="svg-label" fill="#7ee787">Horizontal (scale out)</text>
+    <g fill="#21262d" stroke="#7ee787"><rect x="470" y="120" width="60" height="50" rx="4"/><rect x="545" y="120" width="60" height="50" rx="4"/><rect x="620" y="120" width="60" height="50" rx="4"/><rect x="695" y="120" width="60" height="50" rx="4"/></g>
+    <text x="615" y="190" text-anchor="middle" class="svg-sub">many machines behind a load balancer</text>
+  </g>
+</svg>
+<figcaption>Vertical = a bigger box (simple, but a ceiling + single point of failure). Horizontal = more boxes behind a load balancer (near-unlimited, fault-tolerant, but the app must be stateless). Cloud-native systems favor horizontal.</figcaption>
+</figure>
+<div class="box eli5"><span class="box-title">Up vs out, plainly</span><p><strong>Scale up</strong> = replace your laptop with a more powerful one. Easy, but there's a biggest-laptop limit, and if it dies you're down. <strong>Scale out</strong> = hire more people to share the work. Nearly unlimited and survives one quitting — but the work must be splittable (your app must be <em>stateless</em>, storing session/state in a shared DB or cache, not in local memory). Designing for horizontal scale is why the <a href="#loadbalancing">load balancing</a> and stateless-app patterns matter.</p></div>
+
+<p><strong>Why the choice matters.</strong> Scaling up is the path of least resistance — no code changes — but it hits a hard ceiling (the biggest instance available) and leaves you with a single point of failure. Scaling out has no practical ceiling and survives node loss, but it forces an architectural discipline: the app must be stateless so any node can handle any request. Most systems scale up first for simplicity, then are forced out by the ceiling or availability needs.</p>
+<p><strong>How horizontal scaling actually works.</strong> Put N identical instances behind a load balancer; the LB spreads requests and health-checks nodes. The catch is <em>state</em>: if a user's session lives in one node's memory, the LB sending their next request elsewhere loses it. The fix is to externalize state — sessions in Redis, data in a shared DB, files in object storage — so instances are interchangeable. Then autoscaling can add/remove nodes based on load (CPU, request rate) and the LB routes only to healthy ones. This is exactly the pattern cloud auto-scaling groups and Kubernetes deployments implement.</p>
+<div class="code-label label-cmd">Signals that tell you which way to scale</div>
+<pre><code>uptime; nproc                              # load average vs core count — CPU-bound? scale up or out
+free -h                                    # memory pressure — a single big process may need scale-up
+ss -s                                      # connection volume — many clients favor scale-out
+# check if the app is stateless (safe to scale out): is session state local or shared?
+curl -s https://app.example.com/whoami; curl -s https://app.example.com/whoami   # same node twice?</code></pre>
+<div class="code-label label-output">output</div>
+<pre><code>$ uptime
+ 10:15:02 up 3 days, load average: 7.90, 7.20, 6.80     &lt;- load ~8 on an 8-core box = saturated
+$ nproc
+8                                                        &lt;- at capacity: add nodes (scale out)</code></pre>
+<div class="box note"><span class="box-title">Load average vs core count</span><p>A load average near your core count means the CPU is fully used; sustained load <em>above</em> it means work is queuing. If one process can use more cores/RAM, scaling up may suffice; if you're already on a large instance or need fault tolerance, scale out. The <code>whoami</code> test reveals statefulness: if two calls must hit the same node to work, the app isn't ready for horizontal scaling until you externalize its state.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Scaling out a stateful app and getting random logouts/lost carts because sessions live in local memory. Autoscaling on the wrong metric (CPU when the bottleneck is DB connections or memory). Scaling the web tier while the database becomes the new bottleneck — scale the whole path. Forgetting that more nodes multiply DB connections (use pooling). Aggressive scale-in terminating nodes with in-flight requests (drain first). Assuming vertical scaling is free of downtime — resizing often needs a restart.</p></div>
+
+<h3>Storage: RAID, NAS &amp; SAN</h3>
+<table>
+  <tr><th>Term</th><th>What it is</th><th>Use</th></tr>
+  <tr><td><strong>RAID</strong></td><td>Combining disks for redundancy/speed (RAID 1 = mirror, RAID 5/6 = parity, RAID 10 = mirror+stripe)</td><td>Survive a disk failure without data loss / boost throughput</td></tr>
+  <tr><td><strong>DAS</strong></td><td>Direct-attached storage (a disk in the server)</td><td>Fastest, but tied to one host (like EBS/instance store)</td></tr>
+  <tr><td><strong>NAS</strong></td><td>Network-attached storage — file-level over the network (NFS/SMB)</td><td>Shared files across many servers (like EFS)</td></tr>
+  <tr><td><strong>SAN</strong></td><td>Storage area network — block-level over a dedicated network</td><td>High-performance shared block storage for databases</td></tr>
+</table>
+<div class="box note"><span class="box-title">How this maps to the cloud</span><p>You rarely rack disks now, but the concepts map directly: <strong>EBS</strong> ≈ network block storage (SAN-like), <strong>instance store</strong> ≈ DAS, <strong>EFS</strong> ≈ NAS (shared NFS), and the cloud handles RAID-like redundancy for you inside the service. Knowing the underlying ideas (block vs file, redundancy via mirroring/parity) is why you can pick the right cloud storage in the <a href="cloud-aws-complete-guide.html#s3-deep">Cloud guide</a> and <a href="databases-data-complete-guide.html">Databases guide</a>.</p></div>
+
+<p><strong>Why these distinctions matter.</strong> The core question is <em>block vs file vs object</em> and <em>local vs network</em>. Block storage (DAS/SAN) hands the OS raw blocks it formats itself — fastest, needed for databases. File storage (NAS) serves a shared filesystem over the network — many hosts read/write the same files. Getting this wrong (e.g. trying to share a block volume across hosts like a filesystem) causes corruption, so the categories are practical, not academic.</p>
+<p><strong>How RAID redundancy works.</strong> RAID combines disks so failures don't lose data or to boost speed. <em>Mirroring</em> (RAID 1) writes identical copies to two disks — survives one failure, halves usable capacity. <em>Striping</em> (RAID 0) splits data across disks for speed — but any disk failure loses everything (no redundancy). <em>Parity</em> (RAID 5/6) stores a computed check block so any one (5) or two (6) failed disks can be reconstructed from the rest — good capacity efficiency, but writes cost extra parity computation. RAID 10 mirrors then stripes for speed <em>and</em> redundancy. NAS speaks file protocols (NFS/SMB) so it's mountable by many hosts; SAN presents block devices over a dedicated fabric (iSCSI/Fibre Channel) for database-grade performance.</p>
+<div class="code-label label-cmd">Inspect storage on Linux</div>
+<pre><code>lsblk                                   # block devices + mounts (the DAS/SAN view)
+cat /proc/mdstat                        # software RAID status + which disks are healthy
+df -hT                                  # filesystems, types, free space
+mount | grep nfs                        # NAS: any NFS mounts? (file-level, network storage)
+sudo iscsiadm -m session                # SAN: active iSCSI block sessions</code></pre>
+<div class="code-label label-output">output (/proc/mdstat, a healthy RAID1)</div>
+<pre><code>md0 : active raid1 sda1[0] sdb1[1]
+      976630464 blocks super 1.2 [2/2] [UU]     &lt;- [2/2] [UU] = both mirror disks present/healthy</code></pre>
+<div class="box note"><span class="box-title">Reading [UU] vs [U_]</span><p><code>[2/2] [UU]</code> means both disks of the mirror are up. <code>[2/1] [U_]</code> means one disk failed and the array is running <em>degraded</em> — still serving data, but a second failure now loses everything. That underscore is your cue to replace the disk immediately. This is exactly the redundancy the cloud manages invisibly for you inside EBS/EFS, but the mental model is identical.</p></div>
+<div class="box eli5"><span class="box-title">RAID/NAS/SAN = how the filing cabinets are arranged</span><p>RAID is keeping duplicate copies of documents (or clever checksums) so losing one drawer doesn't lose the file. DAS is a filing cabinet bolted to your desk — fastest, but only you can use it. NAS is a shared cabinet in the hallway everyone can open (file sharing). SAN is a private high-speed cabinet wired directly to a few power users (databases) who need raw speed.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes &amp; gotchas</span><p>Treating RAID as a backup — it survives disk failure, not deletion, ransomware, or fire; you still need real backups. Mounting a block volume on two hosts simultaneously without a cluster filesystem → corruption. Running a busy database on NFS/NAS and hitting latency/locking issues (use block/SAN). Ignoring a degraded array until the second disk dies. RAID 5 on very large disks — rebuild times are so long a second failure during rebuild is a real risk (prefer RAID 6/10). Assuming NAS gives block semantics — it's file-level.</p></div>
+
+<h2 id="best-practices">22. Best Practices — the checklist</h2>
+<div class="box best"><span class="box-title">Networking best practices</span><ul>
+  <li>Plan non-overlapping CIDR ranges before building.</li>
+  <li>Public subnets only for LBs/NAT; everything else private.</li>
+  <li>Lower DNS TTLs before migrations; use health-checked failover routing.</li>
+  <li>TLS everywhere with automated cert renewal.</li>
+  <li>Load-balance across AZs; health-check backends.</li>
+  <li>Use a CDN for static content and DDoS absorption.</li>
+  <li>Debug systematically by layer (L1→L7).</li>
+  <li>Monitor latency, packet loss, DNS resolution, and cert expiry.</li>
+</ul></div>
+
+<h2 id="troubleshooting">23. Troubleshooting Playbook</h2>
+<div class="trouble"><h4>"Connection refused"</h4><p>Something answered but nothing is listening on that port. The service is down or bound to the wrong interface. Check <code>ss -tulpn</code> on the server; verify the app is running and listening on <code>0.0.0.0</code> (not just <code>127.0.0.1</code>).</p></div>
+<div class="trouble"><h4>"Connection timed out"</h4><p>Nothing answered at all — usually a firewall/security group blocking the port, or wrong IP/route. Check firewall rules, security groups, and that a route exists (<code>traceroute</code>).</p></div>
+<div class="trouble"><h4>Resolves to the wrong/old IP</h4><p>DNS caching. Check the actual record (<code>dig +short name</code>), compare to expected, and check TTL. Flush local cache. If you just changed it, wait for the old TTL to expire.</p></div>
+<div class="trouble"><h4>Intermittent slowness / packet loss</h4><p>Run <code>mtr</code> to find which hop drops packets or spikes latency. Could be a saturated link, a bad router, or an overloaded backend. Correlate with the <a href="observability-k8s-guide.html">observability</a> metrics.</p></div>
+<div class="trouble"><h4>TLS/certificate errors</h4><p><code>openssl s_client</code> to inspect the chain and dates. Usual causes: expired cert, missing intermediate, hostname mismatch. Automate renewal to prevent recurrence.</p></div>
+
+<div class="box eli5"><span class="box-title">You now understand networking end to end</span><p>From the OSI layers and packets through IP/subnetting, TCP/UDP, routing, DNS resolution, HTTP/TLS, and load balancing — plus the diagnostic tools to debug any of it. Networking is the foundation under the <a href="cloud-aws-complete-guide.html">Cloud</a>, <a href="kubernetes-complete-guide.html">Kubernetes</a>, and <a href="security-devsecops-guide.html">Security</a> guides. Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>

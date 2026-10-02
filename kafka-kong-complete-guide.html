@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messaging &amp; API Gateways — Complete Guide (Kafka, Kong &amp; more)</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #00b9e4; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: #062; font-size: 13px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(0,185,228,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: #062; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-yaml { background: #6e40c9; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(0,185,228,0.06); } .best .box-title { color: var(--brand); } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: #062; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">M</span> Messaging &amp; API Gateways</h1>
+    <p>Event streaming &amp; API gateways — incl. RabbitMQ, NATS, Pulsar &amp; alternatives</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:var(--brand,#00b9e4);color:#04303a;border-radius:8px;font-size:13px;font-weight:800;text-decoration:none;">✉ Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Messaging Foundations</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#why-messaging">1. Why Messaging &amp; Async?</a>
+    <a href="#patterns">2. Queues vs Streams</a>
+
+    <div class="nav-group-title">Part 2 — Apache Kafka</div>
+    <a href="#kafka-what">3. What is Kafka?</a>
+    <a href="#kafka-concepts">4. Topics, Partitions &amp; Offsets</a>
+    <a href="#kafka-produce">5. Producers &amp; Consumers</a>
+    <a href="#kafka-groups">6. Consumer Groups &amp; Scaling</a>
+    <a href="#kafka-delivery">7. Delivery Guarantees</a>
+    <a href="#kafka-ops">8. Running Kafka in Production</a>
+    <a href="#kafka-ecosystem">9. Kafka Ecosystem</a>
+
+    <div class="nav-group-title">Part 3 — API Gateways &amp; Kong</div>
+    <a href="#gateway-what">10. What is an API Gateway?</a>
+    <a href="#kong-arch">11. Kong Architecture</a>
+    <a href="#kong-config">12. Services, Routes &amp; Plugins</a>
+    <a href="#kong-security">13. Auth, Rate Limiting &amp; Security</a>
+    <a href="#kong-k8s">14. Kong on Kubernetes (Ingress)</a>
+
+    <div class="nav-group-title">Part 4 — Kafka Internals</div>
+    <a href="#kafka-internals">15. Replication, ISR &amp; Durability</a>
+    <a href="#kafka-eos">16. Exactly-Once Semantics</a>
+    <a href="#kafka-streams">17. Kafka Streams &amp; ksqlDB</a>
+    <a href="#kafka-connect">18. Kafka Connect Deep</a>
+    <a href="#kafka-tuning">19. Tuning, Security &amp; Monitoring</a>
+
+    <div class="nav-group-title">Part 5 — Kong Advanced</div>
+    <a href="#kong-deploy">20. Deployment Modes &amp; Clustering</a>
+    <a href="#kong-plugins-deep">21. Plugin Categories &amp; Dev Portal</a>
+    <a href="#gateway-api">22. Gateway API &amp; the Future</a>
+
+    <div class="nav-group-title">Part 6 — The Wider Landscape</div>
+    <a href="#other-brokers">23. RabbitMQ, NATS &amp; Pulsar</a>
+    <a href="#other-gateways">24. Other API Gateways</a>
+    <a href="#choosing">25. Choosing the Right Tool</a>
+
+    <div class="nav-group-title">Part 7 — Reference</div>
+    <a href="#best-practices">26. Best Practices</a>
+    <a href="#troubleshooting">27. Troubleshooting Playbook</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Messaging &amp; API Gateways: The Complete Guide</h1>
+<p class="lead">Two pillars of modern distributed systems: <strong>Apache Kafka</strong> for event streaming that decouples your services, and <strong>Kong</strong> for the API gateway that fronts them — from core concepts to production operations, with diagrams.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>Part 2 covers Kafka (async communication <em>between</em> services); Part 3 covers Kong (managing the APIs clients call). Both are common in microservice architectures. Each concept: <strong>what</strong>, <strong>why</strong>, <strong>config</strong>, <strong>★ best practice</strong>. Builds on the <a href="kubernetes-complete-guide.html">Kubernetes</a> and <a href="observability-k8s-guide.html">Observability</a> guides.</p>
+</div>
+
+<h2 id="why-messaging">1. Why Messaging &amp; Async Communication?</h2>
+<p class="section-intro">When services call each other directly (synchronously), one slow or down service breaks the chain. Messaging decouples them: producers drop messages, consumers pick them up when ready.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Synchronous coupling versus async messaging">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Direct calls (fragile) vs a message broker (resilient)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="205" y="52" text-anchor="middle" class="svg-label" fill="#ff7b72">❌ Synchronous</text>
+    <rect x="60" y="70" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="105" y="95" text-anchor="middle" class="svg-sub">A</text>
+    <rect x="180" y="70" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="225" y="95" text-anchor="middle" class="svg-sub">B</text>
+    <rect x="300" y="70" width="90" height="40" rx="6" fill="#21262d" stroke="#ff7b72"/><text x="345" y="95" text-anchor="middle" class="svg-sub">C (down)</text>
+    <g stroke="#ff7b72" stroke-width="2"><line x1="150" y1="90" x2="178" y2="90" marker-end="url(#km)"/><line x1="270" y1="90" x2="298" y2="90" marker-end="url(#km)"/></g>
+    <text x="205" y="135" text-anchor="middle" class="svg-sub">C down → B fails → A fails (cascade)</text>
+
+    <text x="615" y="52" text-anchor="middle" class="svg-label" fill="#7ee787">✓ Async via broker</text>
+    <rect x="470" y="70" width="80" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="510" y="95" text-anchor="middle" class="svg-sub">A</text>
+    <rect x="580" y="70" width="90" height="40" rx="6" fill="#21262d" stroke="#00b9e4"/><text x="625" y="95" text-anchor="middle" class="svg-sub">broker</text>
+    <rect x="700" y="70" width="90" height="40" rx="6" fill="#21262d" stroke="#ff7b72"/><text x="745" y="95" text-anchor="middle" class="svg-sub">C (down)</text>
+    <g stroke="#7ee787" stroke-width="2"><line x1="550" y1="90" x2="578" y2="90" marker-end="url(#km)"/></g>
+    <line x1="670" y1="90" x2="698" y2="90" stroke="#8b949e" stroke-width="2" stroke-dasharray="4"/>
+    <text x="615" y="135" text-anchor="middle" class="svg-sub">A keeps working; C catches up later</text>
+    <text x="410" y="185" text-anchor="middle" class="svg-sub">Decoupling = resilience, buffering of spikes, and independent scaling of each service.</text>
+  </g>
+  <defs><marker id="km" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A broker sits between services so a slow or failed consumer doesn't cascade back to the producer. Messages wait safely until consumers are ready.</figcaption>
+</figure>
+
+<div class="box eli5">
+  <span class="box-title">Messaging = a post office, not a phone call</span>
+  <p>A synchronous API call is a phone call: both parties must be available <em>right now</em>. Messaging is the postal system: you drop a letter in the box and go on with your day; the recipient reads it whenever they're ready. If they're on holiday, the letters wait — nothing breaks. This is why event-driven systems handle spikes and failures so gracefully.</p>
+</div>
+
+<h4>Why async exists — the failure math</h4>
+<p>In a synchronous chain <code>A → B → C</code>, the availability of the whole request is the <em>product</em> of each link. If each service is up 99.9% of the time, three in series give 0.999³ ≈ 99.7% — and every extra hop makes it worse. Worse, latency <em>adds up</em> and a slow C holds a thread open in B and A, so one slow dependency exhausts connection pools and topples the whole chain (a "retry storm"). Async breaks this coupling: the producer's success no longer depends on the consumer being up <em>at that instant</em>.</p>
+
+<h4>How it works under the hood</h4>
+<p>A broker persists the message to durable storage (disk/replicated log) the moment it is accepted, then acknowledges the producer. The producer's job is done — it doesn't wait for anyone to process the message. The consumer polls (or is pushed) later and processes at its own pace. Between the two sits a <em>buffer</em>: during a traffic spike the broker absorbs the backlog (this is "load leveling" or "peak shaving") and the consumer drains it steadily instead of falling over.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — smoothing a spike</span>
+  <p>Suppose checkout emits 5,000 orders/sec during a flash sale but the fulfillment service can only process 800/sec. Synchronously, 4,200 requests/sec fail. With a broker in between, all 5,000/sec are accepted and stored; fulfillment drains the backlog over the next few minutes. No orders lost, no cascading failure — just a temporary, visible lag you can monitor.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes with async</span>
+  <ul>
+    <li><strong>Assuming async = instant.</strong> Messages are eventually consistent; a read right after a write may not see the effect yet. Design UIs and APIs for that lag.</li>
+    <li><strong>No dead-letter path.</strong> A message that always fails to process will retry forever and block progress. Route repeated failures to a dead-letter topic/queue.</li>
+    <li><strong>Fire-and-forget everything.</strong> Not all calls should be async — a login that must return a token is inherently synchronous. Use async for work that can complete later.</li>
+  </ul>
+</div>
+
+<h2 id="patterns">2. Queues vs Streams</h2>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Queue where messages are consumed and removed versus a log where messages are retained and replayable">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Queue (consume &amp; remove) vs Log (retain &amp; replay)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="200" y="56" text-anchor="middle" class="svg-label" fill="#f0883e">Queue — each message to one worker, then gone</text>
+    <rect x="60" y="72" width="50" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="85" y="94" text-anchor="middle" class="svg-sub">m3</text>
+    <rect x="115" y="72" width="50" height="34" rx="4" fill="#21262d" stroke="#f0883e"/><text x="140" y="94" text-anchor="middle" class="svg-sub">m2</text>
+    <rect x="170" y="72" width="50" height="34" rx="4" fill="#161b22" stroke="#30363d" stroke-dasharray="3"/><text x="195" y="94" text-anchor="middle" class="svg-sub">m1 ✓</text>
+    <rect x="270" y="60" width="90" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="315" y="80" text-anchor="middle" class="svg-sub">worker A</text>
+    <rect x="270" y="96" width="90" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="315" y="116" text-anchor="middle" class="svg-sub">worker B</text>
+    <g stroke="#f0883e" stroke-width="2">
+      <line x1="220" y1="82" x2="268" y2="75" marker-end="url(#msg-qs-arr)"/>
+      <line x1="220" y1="94" x2="268" y2="111" marker-end="url(#msg-qs-arr)"/>
+    </g>
+    <text x="200" y="146" text-anchor="middle" class="svg-sub">acked message is deleted — competing consumers, no replay</text>
+
+    <line x1="410" y1="52" x2="410" y2="240" stroke="#30363d" stroke-dasharray="4"/>
+
+    <text x="620" y="56" text-anchor="middle" class="svg-label" fill="#7ee787">Log — retained, many readers, replayable</text>
+    <rect x="470" y="72" width="46" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="493" y="94" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="518" y="72" width="46" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="541" y="94" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="566" y="72" width="46" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="589" y="94" text-anchor="middle" class="svg-sub">2</text>
+    <rect x="614" y="72" width="46" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="637" y="94" text-anchor="middle" class="svg-sub">3</text>
+    <text x="560" y="140" text-anchor="middle" class="svg-sub">reader X @offset 3</text>
+    <text x="560" y="158" text-anchor="middle" class="svg-sub" fill="#00b9e4">reader Y @offset 1 (replaying)</text>
+    <g stroke="#7ee787" stroke-width="2"><line x1="470" y1="120" x2="660" y2="120" marker-end="url(#msg-qs-arr2)"/></g>
+    <text x="410" y="196" text-anchor="middle" class="svg-sub">Same events, two shapes: a queue distributes work; a log broadcasts history.</text>
+    <text x="410" y="216" text-anchor="middle" class="svg-sub">Pick a queue for "do this once"; pick a log for "let everyone read the stream."</text>
+  </g>
+  <defs>
+    <marker id="msg-qs-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0883e"/></marker>
+    <marker id="msg-qs-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7ee787"/></marker>
+  </defs>
+</svg>
+<figcaption>In a queue, a message is delivered to one worker and removed once acknowledged — great for distributing tasks. In a log, records are retained and any number of readers advance independent offsets, so history can be re-read or replayed at will.</figcaption>
+</figure>
+<table>
+  <tr><th></th><th>Queue (e.g., RabbitMQ, SQS)</th><th>Stream / Log (e.g., Kafka)</th></tr>
+  <tr><td><strong>Message life</strong></td><td>Deleted once consumed</td><td>Retained for a period; many can re-read</td></tr>
+  <tr><td><strong>Consumers</strong></td><td>Compete for messages (one gets each)</td><td>Independent groups each read all messages</td></tr>
+  <tr><td><strong>Replay</strong></td><td>No</td><td>Yes — rewind to any offset</td></tr>
+  <tr><td><strong>Best for</strong></td><td>Task/work distribution</td><td>Event sourcing, analytics, multiple consumers, high throughput</td></tr>
+</table>
+
+<h4>Why two models exist</h4>
+<p>They answer different questions. A <strong>queue</strong> answers "who does this piece of work?" — a message is a <em>command</em> that should be handled once, then it's gone. A <strong>stream/log</strong> answers "what happened?" — a message is a <em>fact</em> that stays on the record so any number of independent readers (now or in the future) can react to it. Confusing the two is the root of most messaging design mistakes.</p>
+
+<h4>How each works under the hood</h4>
+<p>A classic queue tracks per-message state: <em>unacked → delivered → acked → deleted</em>. The broker hands a message to one worker, waits for an ack, and removes it. If the worker dies before acking, the message is redelivered. A log does the opposite: it <em>never</em> mutates or deletes on consumption. Instead, each consumer group stores a single number — its <strong>offset</strong> (a bookmark). "Consuming" just advances the bookmark; the data stays until a retention policy expires it. That's why a log can serve many groups and support replay, while a queue cannot.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — the same event, two models</span>
+  <p>An <code>OrderPlaced</code> event needs to (1) charge the card, (2) update inventory, (3) email the customer, (4) feed analytics. With a <strong>queue</strong> you'd need four separate queues and the producer must know all four consumers. With a <strong>log</strong> (Kafka), the producer writes <code>OrderPlaced</code> once to the <code>orders</code> topic and four independent consumer groups each read it — you can add a fifth (fraud scoring) tomorrow without touching the producer.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Using a log as a work queue naively.</strong> Kafka distributes work by partition, not per-message, so a single slow message blocks its whole partition (no per-message redelivery like RabbitMQ).</li>
+    <li><strong>Using a queue when you need replay.</strong> Once a queue message is acked it's gone; you cannot re-derive state or onboard a new consumer against history.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">To-do list vs logbook</span>
+  <p>A queue is a shared <em>to-do list</em>: whoever grabs a task crosses it off and it's gone. A stream is a <em>logbook</em>: every entry stays written forever, and any number of people can read the whole book from wherever they left their bookmark. Pick a to-do list for dividing up work; pick a logbook for broadcasting facts that many parties care about.</p>
+</div>
+
+<h2 id="kafka-what">3. What is Kafka?</h2>
+<p class="section-intro">Apache Kafka is a distributed <strong>event streaming platform</strong> — think of it as a massive, durable, replayable append-only log that many producers write to and many consumers read from, at enormous scale.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="A Kafka topic split into partitions each an append only log with offsets">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">A topic = partitions, each an append-only log with offsets</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="60" y="70" class="svg-label" fill="#00b9e4">Topic: orders</text>
+
+    <text x="60" y="108" class="svg-sub">P0</text>
+    <rect x="90" y="90" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="115" y="110" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="145" y="90" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="170" y="110" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="200" y="90" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="225" y="110" text-anchor="middle" class="svg-sub">2</text>
+    <rect x="255" y="90" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="280" y="110" text-anchor="middle" class="svg-sub">3</text>
+    <rect x="310" y="90" width="50" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-dasharray="3"/><text x="335" y="110" text-anchor="middle" class="svg-sub">4</text>
+
+    <text x="60" y="158" class="svg-sub">P1</text>
+    <rect x="90" y="140" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="115" y="160" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="145" y="140" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="170" y="160" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="200" y="140" width="50" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-dasharray="3"/><text x="225" y="160" text-anchor="middle" class="svg-sub">2</text>
+
+    <text x="60" y="208" class="svg-sub">P2</text>
+    <rect x="90" y="190" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="115" y="210" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="145" y="190" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="170" y="210" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="200" y="190" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="225" y="210" text-anchor="middle" class="svg-sub">2</text>
+    <rect x="255" y="190" width="50" height="30" rx="4" fill="#21262d" stroke="#7ee787"/><text x="280" y="210" text-anchor="middle" class="svg-sub">3</text>
+
+    <line x1="400" y1="80" x2="400" y2="228" stroke="#30363d"/>
+    <text x="620" y="104" text-anchor="middle" class="svg-sub">Writes only ever APPEND to the</text>
+    <text x="620" y="124" text-anchor="middle" class="svg-sub">tail (dashed = next offset).</text>
+    <text x="620" y="152" text-anchor="middle" class="svg-sub">Each record has a monotonically</text>
+    <text x="620" y="172" text-anchor="middle" class="svg-sub">increasing OFFSET within its partition.</text>
+    <text x="620" y="200" text-anchor="middle" class="svg-sub">Consumers track their own offset →</text>
+    <text x="620" y="220" text-anchor="middle" class="svg-sub">rewind to replay, skip ahead, or resume.</text>
+
+    <g stroke="#00b9e4" stroke-width="2">
+      <line x1="308" y1="105" x2="360" y2="105" marker-end="url(#msg-log-arr)"/>
+    </g>
+  </g>
+  <defs><marker id="msg-log-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#00b9e4"/></marker></defs>
+</svg>
+<figcaption>A topic is split into partitions; each partition is an ordered, append-only log where every record gets an offset. Producers only append at the tail, and consumers read forward at their own pace — the offset is a bookmark they can rewind or advance to replay history.</figcaption>
+</figure>
+<div class="box note"><span class="box-title">Kafka's superpower: the durable log</span><p>Unlike a queue that deletes messages after delivery, Kafka <em>keeps</em> events for a configured retention (hours to forever). New consumers can read history from the start; a buggy consumer can be fixed and replay. This makes Kafka the backbone for event-driven microservices, real-time analytics, and data pipelines.</p></div>
+
+<h4>Why Kafka is fast — the append-only log on disk</h4>
+<p>People assume disks are slow, but <em>sequential</em> disk writes are extremely fast — often faster than random memory access — because the OS batches them and the disk head never seeks. Kafka exploits this: every write is an <strong>append</strong> to the end of a segment file, never a random insert or update. Reads are also sequential (consumers read forward from an offset). Kafka further uses the OS <strong>page cache</strong> (so hot data is served from RAM without a JVM copy) and <strong>zero-copy</strong> (<code>sendfile</code>) to ship bytes straight from the page cache to the network socket, skipping user space entirely. That's how a single broker handles millions of messages/sec on commodity hardware.</p>
+
+<h4>How a partition looks on disk</h4>
+<div class="code-label label-output">Inside a partition directory on a broker</div>
+<pre><code>$ ls -1 /var/lib/kafka/data/orders-0/
+00000000000000000000.log     # segment: the actual appended records
+00000000000000000000.index   # offset -&gt; byte position (sparse index)
+00000000000000000000.timeindex# timestamp -&gt; offset (for time-based seeks)
+00000000000000114820.log     # next segment once the first rolls over
+leader-epoch-checkpoint</code></pre>
+<p>A partition is a directory of <strong>segment</strong> files. New records append to the active <code>.log</code> segment; when it hits <code>segment.bytes</code> or <code>segment.ms</code>, it "rolls" to a new one. Old <em>closed</em> segments are deleted (or compacted) by retention — that's just deleting whole files, which is why cleanup is cheap. The <code>.index</code> maps offsets to byte positions so a consumer can seek to any offset in O(log n) without scanning.</p>
+
+<div class="box eli5">
+  <span class="box-title">Kafka is an ever-growing notebook, not a whiteboard</span>
+  <p>A queue is a whiteboard — you write a note, someone reads it and wipes it off. Kafka is a bound notebook: you only ever write on the next blank line, never erase, and everyone reading keeps their own bookmark. Old pages get torn out only when the notebook is "full" (retention), and tearing out whole pages is instant. Because nothing is erased on read, ten different readers can all read the same pages independently.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common misconceptions</span>
+  <ul>
+    <li><strong>"Kafka is a message queue."</strong> It's a distributed log. Consumption doesn't delete data; retention does.</li>
+    <li><strong>"Retention = how long until delivery."</strong> No — retention is how long data lives regardless of whether it's been read. Set it too low and slow/new consumers lose data before reading it.</li>
+    <li><strong>"More brokers = automatically faster."</strong> Throughput scales with <em>partitions</em>, not just brokers. A one-partition topic won't go faster on a 10-broker cluster.</li>
+  </ul>
+</div>
+
+<h2 id="kafka-concepts">4. Topics, Partitions &amp; Offsets</h2>
+<p class="section-intro">These three concepts <em>are</em> Kafka. Understand them and everything else follows.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="A topic split into partitions each an ordered log">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">A topic = partitions; each partition = an ordered log</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="70" y="70" class="svg-sub">Topic "orders"</text>
+    <text x="70" y="100" class="svg-sub">Partition 0</text>
+    <rect x="180" y="82" width="40" height="30" fill="#21262d" stroke="#00b9e4"/><text x="200" y="102" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="220" y="82" width="40" height="30" fill="#21262d" stroke="#00b9e4"/><text x="240" y="102" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="260" y="82" width="40" height="30" fill="#21262d" stroke="#00b9e4"/><text x="280" y="102" text-anchor="middle" class="svg-sub">2</text>
+    <rect x="300" y="82" width="40" height="30" fill="#21262d" stroke="#7ee787"/><text x="320" y="102" text-anchor="middle" class="svg-sub">3</text>
+    <text x="360" y="102" class="svg-sub">← new writes append here</text>
+
+    <text x="70" y="150" class="svg-sub">Partition 1</text>
+    <rect x="180" y="132" width="40" height="30" fill="#21262d" stroke="#00b9e4"/><text x="200" y="152" text-anchor="middle" class="svg-sub">0</text>
+    <rect x="220" y="132" width="40" height="30" fill="#21262d" stroke="#00b9e4"/><text x="240" y="152" text-anchor="middle" class="svg-sub">1</text>
+    <rect x="260" y="132" width="40" height="30" fill="#21262d" stroke="#7ee787"/><text x="280" y="152" text-anchor="middle" class="svg-sub">2</text>
+
+    <text x="410" y="210" text-anchor="middle" class="svg-sub">Each message has an offset (its position). Order is guaranteed WITHIN a partition, not across them.</text>
+    <text x="410" y="230" text-anchor="middle" class="svg-sub">Messages with the same key always go to the same partition → per-key ordering.</text>
+  </g>
+</svg>
+<figcaption>Topics are split into partitions for parallelism. Each partition is an ordered, immutable sequence; the offset is a message's position. This design is what lets Kafka scale horizontally.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td><strong>Topic</strong></td><td>A named stream of events (like a table/category)</td></tr>
+  <tr><td><strong>Partition</strong></td><td>A shard of a topic; the unit of parallelism &amp; ordering</td></tr>
+  <tr><td><strong>Offset</strong></td><td>A message's sequential position within a partition</td></tr>
+  <tr><td><strong>Key</strong></td><td>Determines the partition → guarantees same-key ordering</td></tr>
+  <tr><td><strong>Broker</strong></td><td>A Kafka server; a cluster has many, holding partition replicas</td></tr>
+</table>
+
+<h4>Why partitions exist</h4>
+<p>A single ordered log can only be written and read as fast as one machine allows. Partitioning splits a topic into N independent logs so N brokers can accept writes and N consumers can read in parallel — that's the only knob that scales Kafka horizontally. The trade-off: Kafka guarantees order <em>within</em> a partition, never across partitions. So partitioning is really a choice about "what must stay ordered together?"</p>
+
+<h4>How keys map to partitions</h4>
+<p>The producer decides the partition. With no key it round-robins (or sticky-batches) for even spread. With a key it computes <code>partition = murmur2(key) % numPartitions</code>, so the same key always lands on the same partition and therefore stays ordered. This is how you get per-entity ordering: key by <code>customer_id</code> and every event for a customer is processed in order, while different customers spread across partitions for parallelism.</p>
+<div class="code-label label-cmd">See offsets and where messages land</div>
+<pre><code># Produce keyed messages (key:value separated by ':')
+kafka-console-producer.sh --topic orders --bootstrap-server localhost:9092 \
+  --property parse.key=true --property key.separator=:
+&gt;cust-42:{"item":"book"}
+&gt;cust-42:{"item":"pen"}
+
+# Inspect earliest/latest offsets per partition
+kafka-run-class.sh kafka.tools.GetOffsetShell \
+  --broker-list localhost:9092 --topic orders</code></pre>
+<div class="code-label label-output">Result — offsets are per-partition</div>
+<pre><code>orders:0:0        # partition 0 is empty (latest offset 0)
+orders:1:2        # partition 1 has 2 records (both cust-42, in order)
+orders:2:0
+# Both cust-42 events hashed to partition 1 -&gt; guaranteed ordered</code></pre>
+
+<div class="box eli5">
+  <span class="box-title">Partitions = checkout lanes; the key = your loyalty card</span>
+  <p>A topic is a supermarket; partitions are its checkout lanes. More lanes = more shoppers served at once. The <em>key</em> is like a rule that says "customer #42 always uses lane 3" — so all of #42's items are rung up in the exact order they arrived, while other customers use other lanes simultaneously. The offset is simply the receipt line number in that lane.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Too few partitions.</strong> Partition count caps consumer parallelism forever. You can add partitions later, but that <em>changes</em> <code>key % N</code> so existing keys may move — breaking per-key ordering. Plan for peak up front.</li>
+    <li><strong>Too many partitions.</strong> Each partition costs file handles, memory, and leader-election time. Tens of thousands cluster-wide slows failover. Right-size, don't max out.</li>
+    <li><strong>Hot key / skew.</strong> If one key (e.g. a single huge tenant) dominates, its partition becomes a bottleneck while others idle. Consider a composite key or salting.</li>
+    <li><strong>Expecting global ordering.</strong> Order holds only within a partition. If you truly need total order, you're limited to one partition (and thus one consumer).</li>
+  </ul>
+</div>
+
+<h2 id="kafka-produce">5. Producers &amp; Consumers</h2>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Producer routing records to partitions by key hash">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Producer → partition: the key decides where a record lands</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="70" width="120" height="120" rx="8" fill="#21262d" stroke="#8b949e"/>
+    <text x="100" y="94" text-anchor="middle" class="svg-label">Producer</text>
+    <text x="100" y="120" text-anchor="middle" class="svg-sub">key=user-42</text>
+    <text x="100" y="140" text-anchor="middle" class="svg-sub">key=user-7</text>
+    <text x="100" y="160" text-anchor="middle" class="svg-sub">key=null</text>
+
+    <rect x="230" y="100" width="150" height="60" rx="8" fill="#161b22" stroke="#d2a8ff"/>
+    <text x="305" y="126" text-anchor="middle" class="svg-sub" fill="#d2a8ff">partitioner</text>
+    <text x="305" y="146" text-anchor="middle" class="svg-sub">hash(key) % N</text>
+
+    <rect x="470" y="52" width="150" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="545" y="74" text-anchor="middle" class="svg-sub">P0  (user-7 →)</text>
+    <rect x="470" y="112" width="150" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="545" y="134" text-anchor="middle" class="svg-sub">P1  (user-42 →)</text>
+    <rect x="470" y="172" width="150" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="545" y="194" text-anchor="middle" class="svg-sub">P2  (null → round-robin)</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="160" y1="130" x2="228" y2="130" marker-end="url(#msg-prod-arr)"/>
+      <line x1="380" y1="120" x2="468" y2="70" marker-end="url(#msg-prod-arr)"/>
+      <line x1="380" y1="130" x2="468" y2="129" marker-end="url(#msg-prod-arr)"/>
+      <line x1="380" y1="140" x2="468" y2="188" marker-end="url(#msg-prod-arr)"/>
+    </g>
+    <text x="410" y="234" text-anchor="middle" class="svg-sub">Same key → same partition → ordered per key. No key → spread evenly for throughput.</text>
+  </g>
+  <defs><marker id="msg-prod-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The producer's partitioner hashes the record key to pick a partition, so every record with the same key lands on the same partition and stays ordered. Records with no key are spread round-robin across partitions to maximize throughput.</figcaption>
+</figure>
+
+<div class="box eli5">
+  <span class="box-title">The key is a "keep these together" label</span>
+  <p>Imagine sorting mail into a fixed set of pigeonholes. The <strong>key</strong> is the rule for which hole a letter goes in — all letters for "user-42" always drop in the same hole, so they arrive in the order you sent them. Leave the key blank and the sorter just spreads letters evenly to keep every hole busy. That's why you set a key when per-entity ordering matters (e.g., all events for one account) and skip it when you only care about throughput.</p>
+</div>
+
+<div class="box tip">
+  <span class="box-title">Choosing a partition key</span>
+  <p>Pick a key with <em>high cardinality</em> and <em>even distribution</em> (e.g., <code>userId</code>, <code>orderId</code>). A low-cardinality key like <code>country</code> creates "hot" partitions where one broker does most of the work. If you change the partition <em>count</em> later, the hash mapping shifts and ordering guarantees only hold for messages sent after the change — plan capacity up front.</p>
+</div>
+<div class="code-label label-cmd">Try it with the console tools</div>
+<pre><code># Create a topic with 3 partitions
+kafka-topics.sh --create --topic orders --partitions 3 --replication-factor 3 \
+  --bootstrap-server localhost:9092
+
+# Produce messages
+kafka-console-producer.sh --topic orders --bootstrap-server localhost:9092
+
+# Consume from the beginning
+kafka-console-consumer.sh --topic orders --from-beginning \
+  --bootstrap-server localhost:9092</code></pre>
+
+<h4>Why producers batch and consumers poll</h4>
+<p>Sending one network request per message would waste most of the bandwidth on protocol overhead. So the producer <em>accumulates</em> records in memory per-partition and flushes a batch when it reaches <code>batch.size</code> or after <code>linger.ms</code> — trading a few milliseconds of latency for a huge throughput win. On the other side, consumers <strong>pull</strong> (poll) rather than being pushed. Pull lets each consumer read at its own pace (natural backpressure — a slow consumer just polls less) and fetch large batches efficiently, instead of the broker guessing how fast each consumer can go.</p>
+
+<h4>How a produce request flows under the hood</h4>
+<div class="code-label label-output">Lifecycle of a single send()</div>
+<pre><code>1. producer.send(record)   -&gt; serialize key/value, pick partition (key hash)
+2. append to in-memory batch for that partition (returns a Future immediately)
+3. sender thread groups batches by broker, sends when linger.ms/batch.size hit
+4. leader broker appends to its log, waits for replicas per 'acks'
+5. broker returns the assigned OFFSET -&gt; Future completes (callback fires)
+   on error: retry (safe if enable.idempotence=true), else callback gets error</code></pre>
+<p>The consumer side is a loop: <code>poll()</code> returns a batch, you process it, then you <strong>commit</strong> the offset to say "I've handled up to here." Where you commit relative to processing is exactly what decides your delivery guarantee (§7).</p>
+
+<div class="box tip">
+  <span class="box-title">Worked example — tune for throughput</span>
+  <p>For a high-volume pipeline, set <code>linger.ms=20</code>, <code>batch.size=64KB</code>, and <code>compression.type=lz4</code>. Batching + compression can cut network bytes 5–10× and multiply throughput, at the cost of ~20 ms extra latency — usually a great trade for streaming workloads.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Ignoring the send callback / Future.</strong> <code>send()</code> is async; if you never check the result you'll silently drop failed messages.</li>
+    <li><strong>Blocking the poll loop.</strong> Long processing between <code>poll()</code> calls exceeds <code>max.poll.interval.ms</code>, so Kafka thinks the consumer died and rebalances — causing duplicate processing and lag.</li>
+    <li><strong>Creating a producer per message.</strong> Producers are thread-safe and meant to be long-lived and shared; recreating them destroys batching and hammers connections.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Producer = mailer, consumer = someone checking their mailbox</span>
+  <p>The producer doesn't hand-deliver each letter; it drops a stack into the post box (batching). The consumer isn't interrupted for every letter — it walks to the mailbox when it's ready and grabs whatever arrived (polling). Committing an offset is like moving a sticky note that says "read up to here," so if you step away and come back you don't reread old mail.</p>
+</div>
+
+<h2 id="kafka-groups">6. Consumer Groups &amp; Scaling</h2>
+<p class="section-intro">A consumer group lets you scale processing: Kafka distributes a topic's partitions across the group's members so each message is processed once by the group.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="Consumer group partition assignment and rebalance">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Consumer groups — one partition → one consumer in the group</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="200" y="52" text-anchor="middle" class="svg-label" fill="#00b9e4">Topic: 4 partitions</text>
+    <rect x="60" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="90" y="86" text-anchor="middle" class="svg-sub">P0</text>
+    <rect x="130" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="160" y="86" text-anchor="middle" class="svg-sub">P1</text>
+    <rect x="200" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="230" y="86" text-anchor="middle" class="svg-sub">P2</text>
+    <rect x="270" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="300" y="86" text-anchor="middle" class="svg-sub">P3</text>
+
+    <text x="200" y="150" text-anchor="middle" class="svg-label" fill="#7ee787">Group with 2 consumers</text>
+    <rect x="70" y="164" width="110" height="44" rx="8" fill="#21262d" stroke="#7ee787"/><text x="125" y="184" text-anchor="middle" class="svg-sub">Consumer A</text><text x="125" y="200" text-anchor="middle" class="svg-sub">P0, P1</text>
+    <rect x="210" y="164" width="110" height="44" rx="8" fill="#21262d" stroke="#7ee787"/><text x="265" y="184" text-anchor="middle" class="svg-sub">Consumer B</text><text x="265" y="200" text-anchor="middle" class="svg-sub">P2, P3</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="90" y1="98" x2="110" y2="162" marker-end="url(#msg-cg-arr)"/>
+      <line x1="160" y1="98" x2="130" y2="162" marker-end="url(#msg-cg-arr)"/>
+      <line x1="230" y1="98" x2="255" y2="162" marker-end="url(#msg-cg-arr)"/>
+      <line x1="300" y1="98" x2="278" y2="162" marker-end="url(#msg-cg-arr)"/>
+    </g>
+
+    <line x1="360" y1="60" x2="360" y2="230" stroke="#30363d" stroke-dasharray="4"/>
+
+    <text x="590" y="52" text-anchor="middle" class="svg-label" fill="#f0883e">Consumer B leaves → rebalance</text>
+    <rect x="420" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="450" y="86" text-anchor="middle" class="svg-sub">P0</text>
+    <rect x="490" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="520" y="86" text-anchor="middle" class="svg-sub">P1</text>
+    <rect x="560" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="590" y="86" text-anchor="middle" class="svg-sub">P2</text>
+    <rect x="630" y="64" width="60" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="660" y="86" text-anchor="middle" class="svg-sub">P3</text>
+    <rect x="490" y="164" width="140" height="44" rx="8" fill="#21262d" stroke="#7ee787"/><text x="560" y="184" text-anchor="middle" class="svg-sub">Consumer A</text><text x="560" y="200" text-anchor="middle" class="svg-sub">P0, P1, P2, P3</text>
+    <g stroke="#f0883e" stroke-width="2">
+      <line x1="450" y1="98" x2="520" y2="162" marker-end="url(#msg-cg-arr2)"/>
+      <line x1="520" y1="98" x2="545" y2="162" marker-end="url(#msg-cg-arr2)"/>
+      <line x1="590" y1="98" x2="575" y2="162" marker-end="url(#msg-cg-arr2)"/>
+      <line x1="660" y1="98" x2="600" y2="162" marker-end="url(#msg-cg-arr2)"/>
+    </g>
+
+    <text x="410" y="252" text-anchor="middle" class="svg-sub">Max useful parallelism = partition count. Add consumers beyond that and they sit idle.</text>
+  </g>
+  <defs>
+    <marker id="msg-cg-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="msg-cg-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0883e"/></marker>
+  </defs>
+</svg>
+<figcaption>Kafka assigns each partition to exactly one consumer in a group. When a consumer joins or leaves, the group rebalances and partitions are redistributed. Because a partition can't be split, the partition count sets the ceiling on parallelism.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="Partitions assigned across consumers in a group">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Consumer group: partitions split across members</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="60" width="120" height="35" rx="6" fill="#21262d" stroke="#00b9e4"/><text x="120" y="83" text-anchor="middle" class="svg-sub">Partition 0</text>
+    <rect x="60" y="105" width="120" height="35" rx="6" fill="#21262d" stroke="#00b9e4"/><text x="120" y="128" text-anchor="middle" class="svg-sub">Partition 1</text>
+    <rect x="60" y="150" width="120" height="35" rx="6" fill="#21262d" stroke="#00b9e4"/><text x="120" y="173" text-anchor="middle" class="svg-sub">Partition 2</text>
+    <rect x="500" y="70" width="140" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="570" y="95" text-anchor="middle" class="svg-sub">Consumer 1</text>
+    <rect x="500" y="140" width="140" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="570" y="165" text-anchor="middle" class="svg-sub">Consumer 2</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="180" y1="77" x2="498" y2="88" marker-end="url(#kg)"/><line x1="180" y1="122" x2="498" y2="95" marker-end="url(#kg)"/><line x1="180" y1="167" x2="498" y2="160" marker-end="url(#kg)"/></g>
+    <text x="410" y="200" text-anchor="middle" class="svg-sub">Max useful consumers = number of partitions. Add a consumer → Kafka rebalances assignments.</text>
+  </g>
+  <defs><marker id="kg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Scale a consumer group by adding members — up to the partition count. Different groups each get their own full copy of the stream.</figcaption>
+</figure>
+<div class="box warn"><span class="box-title">Partitions cap your parallelism</span><p>You can't have more <em>active</em> consumers in a group than partitions — extras sit idle. Choose partition count with future scale in mind (increasing partitions later changes key→partition mapping and can break ordering). A common starting point is a partition per expected peak consumer.</p></div>
+
+<h4>Why consumer groups exist</h4>
+<p>A single consumer can't always keep up with a busy topic, and you also want fault tolerance — if a consumer crashes, someone else must pick up its partitions. A consumer group solves both: it's a set of consumers that <em>collectively</em> read a topic, with Kafka guaranteeing each partition is owned by exactly one member at a time. Add members to scale out; lose one and its partitions are reassigned automatically. Different groups (different <code>group.id</code>) are fully independent and each get the whole stream.</p>
+
+<h4>How rebalancing &amp; offset commits work under the hood</h4>
+<p>Each group has a broker acting as its <strong>group coordinator</strong>. Members send periodic <em>heartbeats</em>. When membership changes (a consumer joins, leaves, or misses heartbeats for <code>session.timeout.ms</code>), the coordinator triggers a <strong>rebalance</strong>: one member becomes leader, computes a new partition→member assignment, and everyone gets their new set. Committed offsets aren't stored on the consumer — they're written to an internal compacted topic called <code>__consumer_offsets</code>, keyed by (group, topic, partition). So when a partition moves to a new owner, that owner reads the last committed offset and resumes exactly where the previous owner left off.</p>
+<div class="code-label label-cmd">Inspect a group's assignments and lag</div>
+<pre><code>kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+  --describe --group orders-consumers</code></pre>
+<div class="code-label label-output">CURRENT-OFFSET vs LOG-END-OFFSET = LAG</div>
+<pre><code>GROUP            TOPIC   PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG  CONSUMER-ID
+orders-consumers orders  0          10520           10540           20   consumer-1
+orders-consumers orders  1          9980            9980            0    consumer-1
+orders-consumers orders  2          8000            9500            1500 consumer-2  &lt;- falling behind</code></pre>
+<p><strong>LAG</strong> = how many messages are produced but not yet consumed on that partition. It is the single most important health signal: flat/zero lag is healthy; steadily rising lag means consumers can't keep up.</p>
+
+<div class="box danger">
+  <span class="box-title">Rebalance storms &amp; the "stop-the-world" pause</span>
+  <p>During a classic (eager) rebalance, <em>all</em> members stop consuming while partitions are reassigned — a brief outage. If processing exceeds <code>max.poll.interval.ms</code>, the coordinator evicts that consumer, triggering yet another rebalance, which slows everyone, which causes more evictions — a rebalance storm. Fixes: keep per-batch processing short (or reduce <code>max.poll.records</code>), and enable <strong>cooperative-sticky</strong> assignment (<code>partition.assignment.strategy=CooperativeStickyAssignor</code>) so only the moving partitions pause, not the whole group.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">A group is a delivery team sharing streets</span>
+  <p>Think of one topic as a city and partitions as its streets. A consumer group is a delivery team; each street is assigned to exactly one driver so no house gets two deliveries. If a driver quits, the dispatcher (coordinator) reshuffles the streets among the rest — that reshuffle is a rebalance. Each driver keeps a note of the last house done on each street (the committed offset) so a replacement resumes from there, not from the start.</p>
+</div>
+
+<h2 id="kafka-delivery">7. Delivery Guarantees</h2>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="At-most-once versus at-least-once versus exactly-once delivery">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Three delivery guarantees — the tradeoff triangle</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="52" width="240" height="170" rx="8" fill="#21262d" stroke="#f0883e"/>
+    <text x="150" y="76" text-anchor="middle" class="svg-label" fill="#f0883e">At-most-once</text>
+    <text x="150" y="100" text-anchor="middle" class="svg-sub">commit offset BEFORE</text>
+    <text x="150" y="116" text-anchor="middle" class="svg-sub">processing</text>
+    <text x="150" y="146" text-anchor="middle" class="svg-sub">crash → message lost</text>
+    <text x="150" y="176" text-anchor="middle" class="svg-sub">✓ no duplicates</text>
+    <text x="150" y="196" text-anchor="middle" class="svg-sub">✗ can drop data</text>
+
+    <rect x="290" y="52" width="240" height="170" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="410" y="76" text-anchor="middle" class="svg-label" fill="#7ee787">At-least-once</text>
+    <text x="410" y="100" text-anchor="middle" class="svg-sub">commit offset AFTER</text>
+    <text x="410" y="116" text-anchor="middle" class="svg-sub">processing</text>
+    <text x="410" y="146" text-anchor="middle" class="svg-sub">crash → reprocess</text>
+    <text x="410" y="176" text-anchor="middle" class="svg-sub">✓ never lose data</text>
+    <text x="410" y="196" text-anchor="middle" class="svg-sub">✗ may duplicate</text>
+
+    <rect x="550" y="52" width="240" height="170" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="670" y="76" text-anchor="middle" class="svg-label" fill="#00b9e4">Exactly-once</text>
+    <text x="670" y="100" text-anchor="middle" class="svg-sub">idempotent producer</text>
+    <text x="670" y="116" text-anchor="middle" class="svg-sub">+ transactions</text>
+    <text x="670" y="146" text-anchor="middle" class="svg-sub">atomic read-process-write</text>
+    <text x="670" y="176" text-anchor="middle" class="svg-sub">✓ no loss, no dupes</text>
+    <text x="670" y="196" text-anchor="middle" class="svg-sub">✗ more overhead</text>
+  </g>
+</svg>
+<figcaption>The guarantee you get depends on <em>when</em> you commit the offset relative to processing. Commit early and you risk losing a message on crash (at-most-once); commit late and you may reprocess it (at-least-once). Exactly-once combines the idempotent producer with transactions to get the best of both at some throughput cost.</figcaption>
+</figure>
+<table>
+  <tr><th>Guarantee</th><th>Meaning</th><th>Cost</th></tr>
+  <tr><td>At-most-once</td><td>May lose messages, never duplicates</td><td>Fastest</td></tr>
+  <tr><td>At-least-once</td><td>Never loses, may duplicate</td><td>Default; needs idempotent consumers</td></tr>
+  <tr><td>Exactly-once (EOS)</td><td>No loss, no duplicates</td><td>Slowest; needs transactions/idempotent producer</td></tr>
+</table>
+<div class="box best"><span class="box-title">Design consumers to be idempotent</span><p>Most systems run at-least-once, so <em>duplicates will happen</em>. Make processing idempotent — key on an event ID and skip if already processed (upsert, dedup table). This is simpler and more robust than chasing full exactly-once semantics.</p></div>
+
+<h4>Why the guarantee is decided by <em>commit order</em>, not a setting</h4>
+<p>The three guarantees aren't a single flag — they emerge from <em>when</em> you commit the offset relative to doing the work. Commit <em>before</em> processing and a crash loses the message (at-most-once). Commit <em>after</em> processing and a crash re-delivers it (at-least-once). Making the process-and-commit a single atomic unit gives exactly-once.</p>
+<div class="code-label label-output">The two orderings that decide everything</div>
+<pre><code># AT-MOST-ONCE  (commit first -&gt; may lose)
+records = poll()
+commit()                 # &lt;-- crash here: work never done, but offset advanced
+process(records)         # message lost
+
+# AT-LEAST-ONCE (process first -&gt; may duplicate)  [DEFAULT, recommended]
+records = poll()
+process(records)         # &lt;-- crash here: offset NOT advanced, so redelivered
+commit()                 # same message processed twice -&gt; must be idempotent</code></pre>
+
+<div class="box tip">
+  <span class="box-title">Worked example — an idempotent consumer</span>
+  <p>Give every event a unique <code>event_id</code>. On the consumer, do an upsert keyed by it:</p>
+  <div class="code-label label-config">SQL dedupe on a business key</div>
+  <pre><code>INSERT INTO processed_orders (event_id, order_id, amount)
+VALUES (:event_id, :order_id, :amount)
+ON CONFLICT (event_id) DO NOTHING;   -- second delivery is a no-op</code></pre>
+  <p>Now a duplicate delivery is harmless — you get at-least-once <em>delivery</em> with effectively exactly-once <em>effect</em>, without transactions.</p>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Auto-commit + slow processing.</strong> <code>enable.auto.commit=true</code> commits on a timer regardless of whether processing finished — silently mixing at-most-once behavior in. For real control, commit manually after processing.</li>
+    <li><strong>Assuming no duplicates.</strong> Even with retries disabled, a rebalance right before a commit re-delivers the batch. Duplicates are a <em>when</em>, not an <em>if</em> — always dedupe.</li>
+    <li><strong>Side effects that aren't idempotent.</strong> Sending an email or charging a card twice is a real bug. Guard those with an idempotency key / dedupe table.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Crossing off the to-do list too early vs too late</span>
+  <p>Imagine a chore list where you cross off items as you do them. Cross off <em>before</em> doing the chore and if you get interrupted, it never gets done (at-most-once). Cross off <em>after</em> and if you're interrupted mid-chore, you'll redo it later (at-least-once). Doing the chore and crossing it off in one indivisible motion is exactly-once — harder to arrange, which is why most people just make chores safe to redo.</p>
+</div>
+
+<h2 id="kafka-ops">8. Running Kafka in Production</h2>
+<div class="box note"><span class="box-title">KRaft replaces ZooKeeper</span><p>Older Kafka needed a separate ZooKeeper cluster for coordination. Modern Kafka (3.x+) uses <strong>KRaft</strong> mode — self-managed metadata, no ZooKeeper — simpler to operate. New clusters should use KRaft.</p></div>
+<div class="box best"><span class="box-title">Production essentials</span><ul>
+  <li><strong>Replication factor 3</strong> and <code>min.insync.replicas=2</code> so you survive a broker loss without data loss.</li>
+  <li>Spread brokers across <a href="cloud-aws-complete-guide.html#regions">AZs</a>.</li>
+  <li>Monitor <strong>consumer lag</strong> (how far behind consumers are) — the #1 health metric (see <a href="observability-k8s-guide.html">Observability</a>).</li>
+  <li>On Kubernetes, use the <strong>Strimzi</strong> operator; on AWS, consider <strong>MSK</strong> (managed Kafka) to offload ops.</li>
+  <li>Set retention deliberately (size/time) — it drives storage cost.</li>
+</ul></div>
+
+<h4>Why KRaft replaced ZooKeeper</h4>
+<p>ZooKeeper was a <em>separate</em> distributed system Kafka depended on to store metadata (which broker leads which partition, ACLs, configs). That meant two clusters to operate, two failure domains, and metadata changes bottlenecked on ZooKeeper writes — limiting how many partitions a cluster could hold. KRaft folds metadata management into Kafka itself: a small quorum of <em>controller</em> brokers runs the Raft consensus protocol and stores metadata in an internal Kafka log. Fewer moving parts, faster failover, and clusters that scale to millions of partitions.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — a durable topic that survives a broker loss</span>
+  <div class="code-label label-cmd">Create with production-grade durability</div>
+  <pre><code>kafka-topics.sh --create --topic payments \
+  --partitions 12 --replication-factor 3 \
+  --config min.insync.replicas=2 \
+  --config retention.ms=604800000 \
+  --bootstrap-server localhost:9092
+
+# Verify replica placement &amp; ISR
+kafka-topics.sh --describe --topic payments --bootstrap-server localhost:9092</code></pre>
+  <div class="code-label label-output">Leader + replicas + ISR per partition</div>
+  <pre><code>Topic: payments  Partition: 0  Leader: 1  Replicas: 1,2,3  Isr: 1,2,3
+Topic: payments  Partition: 1  Leader: 2  Replicas: 2,3,1  Isr: 2,3,1
+# Isr lists all 3 -&gt; fully replicated; can lose 1 broker with zero data loss</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common production mistakes</span>
+  <ul>
+    <li><strong>Replication factor 1.</strong> Fine for a laptop, catastrophic in prod — one broker dies and that data is gone forever.</li>
+    <li><strong>All brokers in one AZ/rack.</strong> A single rack or AZ failure takes down every replica. Spread replicas with rack awareness.</li>
+    <li><strong>Not monitoring consumer lag / under-replicated partitions.</strong> These are your earliest warning signs; without them you learn of trouble from users.</li>
+    <li><strong>Unbounded retention by default.</strong> Disks fill up silently; a full disk takes a broker offline. Set retention and alert on disk usage.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Running Kafka = running a warehouse chain, not one shed</span>
+  <p>Production Kafka is like a chain of warehouses in different neighborhoods (AZs), each keeping copies of the same goods (replicas) so a fire in one doesn't lose inventory. KRaft is the head office that tracks who stores what — modern Kafka keeps that head office in-house instead of outsourcing it to a separate company (ZooKeeper). And you always watch the loading-dock backlog (consumer lag) to know if you're falling behind.</p>
+</div>
+
+<h2 id="kafka-ecosystem">9. Kafka Ecosystem</h2>
+<table>
+  <tr><th>Tool</th><th>Purpose</th></tr>
+  <tr><td><strong>Kafka Connect</strong></td><td>No-code connectors to sync data in/out (databases, S3, Elasticsearch)</td></tr>
+  <tr><td><strong>Kafka Streams / ksqlDB</strong></td><td>Process &amp; transform streams (joins, aggregations) in your app or SQL</td></tr>
+  <tr><td><strong>Schema Registry</strong></td><td>Enforce message schemas (Avro/Protobuf) so producers &amp; consumers stay compatible</td></tr>
+  <tr><td><strong>MirrorMaker</strong></td><td>Replicate topics across clusters/regions</td></tr>
+</table>
+<div class="box tip"><span class="box-title">Use a Schema Registry from day one</span><p>Without schemas, one producer changing a field silently breaks every consumer. A Schema Registry enforces compatibility rules (backward/forward), so message contracts evolve safely — the messaging equivalent of API versioning.</p></div>
+
+<h4>Why the ecosystem exists</h4>
+<p>Raw Kafka only moves bytes. Real systems also need to get data <em>in and out</em> without hand-writing plumbing (Connect), <em>transform</em> streams (Streams/ksqlDB), keep producers and consumers <em>compatible</em> as messages evolve (Schema Registry), and <em>span regions</em> (MirrorMaker). Each tool exists so you don't reinvent a fragile, bespoke version of it.</p>
+
+<h4>How schema compatibility works under the hood</h4>
+<p>With Avro/Protobuf, the producer registers its schema and the registry returns a numeric <strong>schema ID</strong>. The message on the wire is just <code>[magic-byte][4-byte schema ID][binary payload]</code> — the schema itself isn't shipped with every message, saving bandwidth. Consumers fetch the schema by ID (and cache it) to deserialize. Before accepting a new schema, the registry checks it against the configured compatibility rule (e.g. <em>backward</em>: new consumers can read old data). If a change would break readers, registration is rejected — the break is caught at deploy time, not at 3am in production.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — a rejected incompatible change</span>
+  <div class="code-label label-config">Adding a required field with no default (backward-incompatible)</div>
+  <pre><code>{ "type":"record","name":"Order","fields":[
+    {"name":"id","type":"int"},
+    {"name":"currency","type":"string"}   // NEW, no default -&gt; old data can't fill it
+]}</code></pre>
+  <div class="code-label label-output">Registry refuses to register it</div>
+  <pre><code>409 Conflict: Schema being registered is incompatible with an earlier schema
+  (reader/writer compatibility: BACKWARD) — field 'currency' has no default
+# Fix: give it a default -&gt; {"name":"currency","type":"string","default":"USD"}</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>No schema governance.</strong> JSON with no registry means every field rename is a silent, delayed outage in some downstream consumer.</li>
+    <li><strong>Running Connect workers under-provisioned.</strong> Connect is a distributed system too — too few tasks or workers throttles CDC and lets source lag build.</li>
+    <li><strong>Treating MirrorMaker as instant DR.</strong> Cross-cluster replication is async; offsets differ between clusters, so failover needs an offset-translation plan.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">The ecosystem = the accessories that make the log useful</span>
+  <p>If Kafka is a conveyor belt, Connect is the loading/unloading robots at each end, Streams/ksqlDB are the workers sorting and combining items as they pass, and the Schema Registry is the quality inspector making sure every box is labelled in a format the next station understands. The belt alone moves things; the accessories make it a factory.</p>
+</div>
+
+<h2 id="gateway-what">10. What is an API Gateway?</h2>
+<p class="section-intro">An API gateway is a single front door for all your APIs. Instead of clients calling dozens of microservices directly, they hit the gateway, which routes, authenticates, rate-limits, and observes every request.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 270" role="img" aria-label="Without a gateway clients wire to every service versus a single gateway front door">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Client-to-service sprawl vs a single gateway front door</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="200" y="52" text-anchor="middle" class="svg-label" fill="#ff7b72">❌ No gateway — every client wires to every service</text>
+    <rect x="40" y="70" width="70" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="75" y="90" text-anchor="middle" class="svg-sub">web</text>
+    <rect x="40" y="150" width="70" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="75" y="170" text-anchor="middle" class="svg-sub">mobile</text>
+    <rect x="290" y="60" width="80" height="26" rx="4" fill="#21262d" stroke="#f0883e"/><text x="330" y="78" text-anchor="middle" class="svg-sub">auth</text>
+    <rect x="290" y="112" width="80" height="26" rx="4" fill="#21262d" stroke="#f0883e"/><text x="330" y="130" text-anchor="middle" class="svg-sub">orders</text>
+    <rect x="290" y="164" width="80" height="26" rx="4" fill="#21262d" stroke="#f0883e"/><text x="330" y="182" text-anchor="middle" class="svg-sub">billing</text>
+    <g stroke="#ff7b72" stroke-width="1.5">
+      <line x1="110" y1="85" x2="288" y2="73" marker-end="url(#msg-gw-arrbad)"/>
+      <line x1="110" y1="85" x2="288" y2="125" marker-end="url(#msg-gw-arrbad)"/>
+      <line x1="110" y1="85" x2="288" y2="177" marker-end="url(#msg-gw-arrbad)"/>
+      <line x1="110" y1="165" x2="288" y2="73" marker-end="url(#msg-gw-arrbad)"/>
+      <line x1="110" y1="165" x2="288" y2="125" marker-end="url(#msg-gw-arrbad)"/>
+      <line x1="110" y1="165" x2="288" y2="177" marker-end="url(#msg-gw-arrbad)"/>
+    </g>
+    <text x="200" y="212" text-anchor="middle" class="svg-sub">N×M connections; auth &amp; limits duplicated in every service</text>
+
+    <line x1="410" y1="46" x2="410" y2="240" stroke="#30363d" stroke-dasharray="4"/>
+
+    <text x="620" y="52" text-anchor="middle" class="svg-label" fill="#7ee787">✓ Gateway — one entry, cross-cutting concerns once</text>
+    <rect x="470" y="70" width="70" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="505" y="90" text-anchor="middle" class="svg-sub">web</text>
+    <rect x="470" y="150" width="70" height="30" rx="6" fill="#21262d" stroke="#8b949e"/><text x="505" y="170" text-anchor="middle" class="svg-sub">mobile</text>
+    <rect x="580" y="102" width="90" height="66" rx="8" fill="#21262d" stroke="#00b9e4"/><text x="625" y="130" text-anchor="middle" class="svg-sub">gateway</text><text x="625" y="148" text-anchor="middle" class="svg-sub">auth·limit·log</text>
+    <rect x="710" y="60" width="80" height="26" rx="4" fill="#21262d" stroke="#7ee787"/><text x="750" y="78" text-anchor="middle" class="svg-sub">auth</text>
+    <rect x="710" y="112" width="80" height="26" rx="4" fill="#21262d" stroke="#7ee787"/><text x="750" y="130" text-anchor="middle" class="svg-sub">orders</text>
+    <rect x="710" y="164" width="80" height="26" rx="4" fill="#21262d" stroke="#7ee787"/><text x="750" y="182" text-anchor="middle" class="svg-sub">billing</text>
+    <g stroke="#7ee787" stroke-width="1.5">
+      <line x1="540" y1="85" x2="578" y2="120" marker-end="url(#msg-gw-arrgood)"/>
+      <line x1="540" y1="165" x2="578" y2="150" marker-end="url(#msg-gw-arrgood)"/>
+      <line x1="670" y1="130" x2="708" y2="73" marker-end="url(#msg-gw-arrgood)"/>
+      <line x1="670" y1="135" x2="708" y2="125" marker-end="url(#msg-gw-arrgood)"/>
+      <line x1="670" y1="140" x2="708" y2="177" marker-end="url(#msg-gw-arrgood)"/>
+    </g>
+    <text x="620" y="212" text-anchor="middle" class="svg-sub">clients know one address; services stay focused on business logic</text>
+  </g>
+  <defs>
+    <marker id="msg-gw-arrbad" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff7b72"/></marker>
+    <marker id="msg-gw-arrgood" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7ee787"/></marker>
+  </defs>
+</svg>
+<figcaption>Without a gateway, every client must know and secure a path to every service — an N×M mesh with auth and rate limiting copy-pasted everywhere. A gateway collapses that into one entry point where cross-cutting concerns are enforced once and services stay simple.</figcaption>
+</figure>
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="API gateway fronting microservices">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">One front door for many services</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="95" width="120" height="50" rx="8" fill="#21262d" stroke="#8b949e"/><text x="100" y="125" text-anchor="middle" class="svg-sub">clients</text>
+    <rect x="250" y="85" width="150" height="70" rx="10" fill="#21262d" stroke="#00b9e4" stroke-width="2"/>
+    <text x="325" y="112" text-anchor="middle" class="svg-label" fill="#00b9e4">API Gateway</text>
+    <text x="325" y="132" text-anchor="middle" class="svg-sub">auth · rate-limit · route</text>
+    <rect x="520" y="45" width="150" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="595" y="70" text-anchor="middle" class="svg-sub">users-svc</text>
+    <rect x="520" y="100" width="150" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="595" y="125" text-anchor="middle" class="svg-sub">orders-svc</text>
+    <rect x="520" y="155" width="150" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="595" y="180" text-anchor="middle" class="svg-sub">payments-svc</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="160" y1="120" x2="248" y2="120" marker-end="url(#kn)"/><line x1="400" y1="110" x2="518" y2="65" marker-end="url(#kn)"/><line x1="400" y1="120" x2="518" y2="120" marker-end="url(#kn)"/><line x1="400" y1="130" x2="518" y2="175" marker-end="url(#kn)"/></g>
+    <text x="410" y="222" text-anchor="middle" class="svg-sub">Cross-cutting concerns live in the gateway once, not duplicated in every service.</text>
+  </g>
+  <defs><marker id="kn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>The gateway centralizes authentication, rate limiting, TLS, routing, and telemetry — so each microservice can focus on business logic.</figcaption>
+</figure>
+
+<div class="box eli5">
+  <span class="box-title">API gateway = the reception desk of a building</span>
+  <p>Visitors don't wander the building looking for the right office. They check in at reception, which verifies their ID (auth), enforces visitor limits (rate limiting), and directs them to the correct floor (routing). The gateway is that reception desk for your APIs — one place that handles security and traffic control so every office (service) doesn't have to.</p>
+</div>
+
+<h4>Why a gateway exists — the alternative is duplication</h4>
+<p>Every API needs the same cross-cutting concerns: authentication, TLS, rate limiting, CORS, logging, tracing, request size limits. Without a gateway you implement all of that in <em>every</em> microservice, in every language, and it drifts out of sync — one service forgets to check auth and you have a breach. A gateway centralizes these concerns at the edge so services only implement business logic, and security policy is enforced consistently in one place you can audit.</p>
+
+<h4>How a gateway processes one request under the hood</h4>
+<div class="code-label label-output">The request pipeline (phases run in order)</div>
+<pre><code>1. Accept TCP + terminate TLS        (decrypt HTTPS once, at the edge)
+2. Match ROUTE                       (host + path + method -&gt; which service?)
+3. Run request plugins in order:
+     a. auth        -&gt; verify API key / JWT; reject 401 if invalid
+     b. rate-limit  -&gt; check &amp; increment this client's counter; 429 if over
+     c. transform   -&gt; add/strip headers, rewrite path
+4. Load-balance + PROXY to a healthy upstream instance
+5. Receive upstream response, run response plugins (CORS, logging, metrics)
+6. Return to client + emit trace/metrics</code></pre>
+<p>Rate limiting is just a counter per client per window: the gateway keeps <code>requests_this_minute[client]</code> (in memory or in Redis for a shared count across nodes) and rejects with <code>429 Too Many Requests</code> once it exceeds the limit — protecting your services from being overwhelmed by any single caller.</p>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Business logic in the gateway.</strong> The gateway is for cross-cutting concerns. Putting domain logic there creates a fragile, hard-to-test monolith at your edge.</li>
+    <li><strong>Gateway as a single point of failure.</strong> If everything flows through it, run it highly available (multiple replicas) or a total outage takes down all APIs.</li>
+    <li><strong>Trusting the gateway as the only security layer.</strong> If an attacker reaches a service directly (inside the network), gateway auth is bypassed. Keep service-level checks too (defense in depth).</li>
+  </ul>
+</div>
+
+<h2 id="kong-arch">11. Kong Architecture</h2>
+<p class="section-intro">Kong is a popular open-source API gateway built on NGINX. Requests flow through Kong, which applies plugins before proxying to your upstream services.</p>
+<table>
+  <tr><th>Concept</th><th>What it is</th></tr>
+  <tr><td><strong>Service</strong></td><td>An upstream API Kong proxies to (your microservice)</td></tr>
+  <tr><td><strong>Route</strong></td><td>Rules (path, host, method) that map incoming requests to a Service</td></tr>
+  <tr><td><strong>Plugin</strong></td><td>Middleware adding behavior (auth, rate-limit, logging, transforms)</td></tr>
+  <tr><td><strong>Consumer</strong></td><td>An identified API client (for auth &amp; per-client limits)</td></tr>
+  <tr><td><strong>Upstream / Target</strong></td><td>Load-balancing across backend instances</td></tr>
+</table>
+<div class="box note"><span class="box-title">DB-less &amp; declarative</span><p>Kong can run <strong>DB-less</strong>: its whole config lives in a YAML file (declarative config), version-controlled in Git and applied on deploy — GitOps-friendly and simple. The alternative (Postgres-backed) suits dynamic, admin-API-driven setups. For Kubernetes, config is driven by CRDs (§14).</p></div>
+
+<h4>Why Kong is built on NGINX + Lua</h4>
+<p>NGINX is already a battle-tested, event-driven proxy that handles tens of thousands of concurrent connections efficiently. Rather than reinvent a proxy, Kong embeds <strong>OpenResty</strong> (NGINX + LuaJIT) and implements its logic as Lua that runs inside NGINX's request lifecycle. That's why plugins hook into distinct <em>phases</em> (access, header_filter, body_filter, log) — they're literally callbacks NGINX invokes as it processes the request. You inherit NGINX's performance for free and add programmable behavior on top.</p>
+
+<h4>How the pieces fit together</h4>
+<div class="code-label label-output">The object model, from request to backend</div>
+<pre><code>client request
+   │  matched by
+   ▼
+ROUTE (path/host/method)  ──belongs to──►  SERVICE (upstream API)
+   │                                            │ can point at
+   │ plugins attach here (route/service/global) ▼
+   ▼                                        UPSTREAM ──► TARGETs (instances)
+PLUGINS run in phase order                  (load-balancing + health checks)
+   │  CONSUMER identity (from auth plugin) drives per-client limits
+   ▼
+proxied to a healthy Target</code></pre>
+<p>A <strong>Route</strong> decides <em>if</em> a request matches; a <strong>Service</strong> is <em>where</em> it goes; <strong>Plugins</strong> decide <em>what happens</em> along the way; an <strong>Upstream</strong> with <strong>Targets</strong> handles load-balancing and health checks across backend instances; a <strong>Consumer</strong> is the identified caller so plugins can apply per-client rules.</p>
+
+<div class="box warn">
+  <span class="box-title">DB-backed vs DB-less — pick deliberately</span>
+  <p>DB-backed mode lets you change config live via the Admin API (good for many teams / dynamic config) but adds a Postgres dependency you must run HA and back up. DB-less is simpler and immutable (great for GitOps) but every change means redeploying the config file — you can't mutate it at runtime via the Admin API. Choosing DB-backed "just in case" adds real operational burden; most teams should start DB-less.</p>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Kong = a smart receptionist standing on NGINX's shoulders</span>
+  <p>NGINX is the fast, tireless doorman who can shuffle huge crowds through a door. Kong is the clipboard-carrying receptionist standing next to that doorman, checking IDs and applying rules (plugins) before waving each visitor to the right office (service). Kong didn't build the door — it added the brains on top of a door that already works brilliantly.</p>
+</div>
+
+<h2 id="kong-config">12. Services, Routes &amp; Plugins</h2>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Kong request plugin pipeline from client to upstream">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Kong request pipeline — plugins run in order</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="86" width="90" height="46" rx="8" fill="#21262d" stroke="#8b949e"/><text x="65" y="114" text-anchor="middle" class="svg-sub">client</text>
+
+    <rect x="140" y="70" width="500" height="80" rx="10" fill="#161b22" stroke="#00b9e4"/>
+    <text x="390" y="62" text-anchor="middle" class="svg-label" fill="#00b9e4">Route matched → plugin chain</text>
+    <rect x="156" y="90" width="100" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="206" y="112" text-anchor="middle" class="svg-sub">CORS</text><text x="206" y="126" text-anchor="middle" class="svg-sub">pre</text>
+    <rect x="266" y="90" width="100" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="316" y="112" text-anchor="middle" class="svg-sub">auth (JWT/key)</text><text x="316" y="126" text-anchor="middle" class="svg-sub">identity</text>
+    <rect x="376" y="90" width="100" height="42" rx="6" fill="#21262d" stroke="#f0883e"/><text x="426" y="112" text-anchor="middle" class="svg-sub">rate-limit</text><text x="426" y="126" text-anchor="middle" class="svg-sub">throttle</text>
+    <rect x="486" y="90" width="140" height="42" rx="6" fill="#21262d" stroke="#d2a8ff"/><text x="556" y="112" text-anchor="middle" class="svg-sub">transform + log</text><text x="556" y="126" text-anchor="middle" class="svg-sub">mutate/observe</text>
+
+    <rect x="680" y="86" width="120" height="46" rx="8" fill="#21262d" stroke="#7ee787"/><text x="740" y="108" text-anchor="middle" class="svg-sub">upstream</text><text x="740" y="124" text-anchor="middle" class="svg-sub">service</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="110" y1="109" x2="138" y2="109" marker-end="url(#msg-kongpipe-arr)"/>
+      <line x1="640" y1="109" x2="678" y2="109" marker-end="url(#msg-kongpipe-arr)"/>
+    </g>
+    <text x="410" y="182" text-anchor="middle" class="svg-sub">Each plugin can short-circuit (reject) or mutate the request before it reaches the upstream.</text>
+    <text x="410" y="202" text-anchor="middle" class="svg-sub">Response plugins run again on the way back (add headers, log, transform body).</text>
+  </g>
+  <defs><marker id="msg-kongpipe-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A request that matches a route runs through an ordered chain of plugins — CORS, authentication, rate limiting, transformation and logging — before Kong forwards it upstream. Any plugin can reject or rewrite the request, so cross-cutting concerns live in the gateway, not each service.</figcaption>
+</figure>
+
+<div class="box note">
+  <span class="box-title">Service, Route, Plugin — how they fit</span>
+  <p>A <strong>Service</strong> is an upstream (where to send traffic). A <strong>Route</strong> is the match rule (host/path/method) that maps an incoming request to a Service. A <strong>Plugin</strong> attaches behavior — and can be scoped globally, to a Service, to a Route, or to a Consumer, from broadest to narrowest. When the same plugin is configured at several scopes, the <em>most specific</em> one wins, which is how you set a global default and override it for one noisy route.</p>
+</div>
+<div class="code-label label-yaml">DB-less declarative config (kong.yml)</div>
+<pre><code>_format_version: "3.0"
+services:
+  - name: orders-service
+    url: http://orders-svc.default.svc:8080
+    routes:
+      - name: orders-route
+        paths: ["/api/orders"]
+    plugins:
+      - name: rate-limiting
+        config: { minute: 100, policy: local }
+      - name: key-auth        # require an API key</code></pre>
+
+<h4>Why this three-object model</h4>
+<p>Separating Route (match) from Service (destination) from Plugin (behavior) means each can change independently: point a route at a new service version without touching plugins; attach the same rate-limit plugin to ten routes; or move a plugin from one route to all routes (global) in one edit. It's the same separation-of-concerns that keeps the config understandable as it grows to hundreds of APIs.</p>
+
+<h4>How plugin scope resolves</h4>
+<p>A plugin can be attached at four scopes; when the same plugin type applies at multiple scopes, the <em>most specific</em> wins: <strong>Consumer+Route</strong> &gt; <strong>Route</strong> &gt; <strong>Service</strong> &gt; <strong>Global</strong>. So you can set a lenient global rate limit and override it with a stricter one on a sensitive route, or a looser one for a trusted consumer.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — apply config &amp; test it</span>
+  <div class="code-label label-cmd">Sync a DB-less config and send a request</div>
+  <pre><code># Validate then apply the declarative config with decK (or kong config db_import)
+deck gateway sync kong.yml
+
+# Call the route through Kong (proxy port 8000)
+curl -i http://localhost:8000/api/orders</code></pre>
+  <div class="code-label label-output">Rejected because key-auth requires a key</div>
+  <pre><code>HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Key realm="kong"
+{"message":"No API key found in request"}
+
+# With a valid key it proxies through:
+$ curl -i http://localhost:8000/api/orders -H "apikey: SECRET123"
+HTTP/1.1 200 OK
+X-RateLimit-Limit-Minute: 100
+X-RateLimit-Remaining-Minute: 99</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Overlapping routes.</strong> Two routes matching the same path with different priorities cause confusing "wrong service" bugs. Keep matches specific and check route priority.</li>
+    <li><strong>Editing DB-less config in the Admin API.</strong> In DB-less mode the Admin API is read-only for entities — changes must go through the YAML file, or they vanish on restart.</li>
+    <li><strong>Forgetting <code>policy: local</code> vs <code>redis</code> for rate-limiting.</strong> <code>local</code> counts per Kong node, so with 3 nodes the effective limit is 3× — use <code>redis</code> for a shared cluster-wide count.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Route = the sign, Service = the room, Plugin = the rule on the door</span>
+  <p>A Route is the sign that says "Orders → this way." The Service is the actual room the sign points to. Plugins are the rules taped to that door ("show your badge," "max 100 visitors/min"). You can repaint a sign to point at a new room, or slap the same rule on many doors, without rebuilding anything else.</p>
+</div>
+
+<h2 id="kong-security">13. Auth, Rate Limiting &amp; Security</h2>
+<p class="section-intro">The gateway's biggest value: enforcing security consistently. Kong ships plugins for the common needs.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Rate limiting token bucket at the API gateway">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Rate limiting — token bucket at the gateway edge</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="80" width="110" height="50" rx="8" fill="#21262d" stroke="#8b949e"/>
+    <text x="95" y="110" text-anchor="middle" class="svg-sub">client (100/min)</text>
+
+    <rect x="230" y="56" width="180" height="120" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="320" y="80" text-anchor="middle" class="svg-label" fill="#00b9e4">Rate-limit plugin</text>
+    <rect x="250" y="94" width="140" height="20" rx="10" fill="#161b22" stroke="#7ee787"/>
+    <circle cx="266" cy="104" r="5" fill="#7ee787"/><circle cx="284" cy="104" r="5" fill="#7ee787"/><circle cx="302" cy="104" r="5" fill="#7ee787"/><circle cx="320" cy="104" r="5" fill="#7ee787"/>
+    <text x="320" y="132" text-anchor="middle" class="svg-sub">bucket refills over time</text>
+    <text x="320" y="150" text-anchor="middle" class="svg-sub">counter in Redis (cluster-wide)</text>
+
+    <rect x="490" y="56" width="140" height="50" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="560" y="86" text-anchor="middle" class="svg-sub">✓ under limit → upstream</text>
+
+    <rect x="490" y="126" width="140" height="50" rx="8" fill="#21262d" stroke="#ff7b72"/>
+    <text x="560" y="150" text-anchor="middle" class="svg-sub" fill="#ff7b72">✗ over limit</text>
+    <text x="560" y="166" text-anchor="middle" class="svg-sub" fill="#ff7b72">429 Too Many Requests</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="150" y1="105" x2="228" y2="105" marker-end="url(#msg-rl-arr)"/>
+      <line x1="410" y1="90" x2="488" y2="82" stroke="#7ee787" marker-end="url(#msg-rl-arr2)"/>
+      <line x1="410" y1="120" x2="488" y2="145" stroke="#ff7b72" marker-end="url(#msg-rl-arr3)"/>
+    </g>
+    <text x="410" y="215" text-anchor="middle" class="svg-sub">Protects upstreams from spikes/abuse; returns X-RateLimit-Remaining and Retry-After headers.</text>
+  </g>
+  <defs>
+    <marker id="msg-rl-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="msg-rl-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7ee787"/></marker>
+    <marker id="msg-rl-arr3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ff7b72"/></marker>
+  </defs>
+</svg>
+<figcaption>The rate-limiting plugin keeps a per-consumer counter (backed by Redis so it holds across all gateway nodes). Requests within budget pass through; those over the limit are rejected with a 429 before ever touching the upstream service.</figcaption>
+</figure>
+<table>
+  <tr><th>Plugin</th><th>Protects against / provides</th></tr>
+  <tr><td><strong>key-auth / JWT / OAuth2 / OIDC</strong></td><td>Authentication — verify who's calling</td></tr>
+  <tr><td><strong>rate-limiting</strong></td><td>Abuse &amp; overload — cap requests per client</td></tr>
+  <tr><td><strong>cors</strong></td><td>Browser cross-origin rules</td></tr>
+  <tr><td><strong>request/response-transformer</strong></td><td>Rewrite headers/bodies</td></tr>
+  <tr><td><strong>ip-restriction / bot-detection</strong></td><td>Block bad actors</td></tr>
+  <tr><td><strong>prometheus</strong></td><td>Export metrics (RED signals) to your <a href="observability-k8s-guide.html">observability</a> stack</td></tr>
+</table>
+<div class="box best"><span class="box-title">Defense in depth</span><p>Authenticate at the gateway <em>and</em> keep service-level checks — the gateway is a front door, not the only lock. Rate-limit per consumer to stop one client starving others. Terminate TLS at the gateway and use mTLS (or a <a href="kubernetes-complete-guide.html#service-mesh">service mesh</a>) for internal hops. Emit metrics/traces for every request.</p></div>
+
+<h4>Why enforce security at the edge</h4>
+<p>Auth and rate limiting must be applied <em>before</em> a request reaches your services — otherwise unauthenticated or abusive traffic already consumed backend resources. The gateway is the earliest, cheapest place to reject bad requests, and doing it in one audited place beats trusting every service to get it right.</p>
+
+<h4>How rate limiting actually counts</h4>
+<p>The simplest algorithm is a <strong>fixed window</strong>: a counter per (consumer, minute) that resets each minute. It's cheap but allows bursts at window edges (nearly 2× the limit across a boundary). A <strong>sliding window</strong> smooths this by weighting the previous window. In a multi-node Kong cluster, the counter must be shared — that's why <code>policy: redis</code> stores it centrally so all nodes agree; <code>policy: local</code> keeps a per-node count (faster but the real limit becomes limit × node-count).</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — how auth + limit appear on the wire</span>
+  <div class="code-label label-cmd">Exceed the limit to see the 429</div>
+  <pre><code>for i in $(seq 1 101); do
+  curl -s -o /dev/null -w "%{http_code} " \
+    http://localhost:8000/api/orders -H "apikey: SECRET123"
+done</code></pre>
+  <div class="code-label label-output">200s until the limit, then 429 with a Retry-After</div>
+  <pre><code>200 200 200 ... 200 429
+# The 101st request in the same minute:
+HTTP/1.1 429 Too Many Requests
+RateLimit-Remaining: 0
+Retry-After: 37            # seconds until the window resets</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Rate-limiting by IP behind a load balancer.</strong> All traffic appears to come from the LB's IP, so you throttle everyone together. Limit by consumer/API key, and trust <code>X-Forwarded-For</code> only from your own LB.</li>
+    <li><strong>API keys in query strings.</strong> They leak into logs and browser history. Prefer headers, and use JWT/OIDC for anything sensitive.</li>
+    <li><strong>Global-only limits.</strong> One noisy client can still exhaust the shared budget. Layer per-consumer limits under the global one.</li>
+    <li><strong>Terminating TLS but leaving internal hops plaintext.</strong> Anyone inside the network can sniff traffic — use mTLS or a mesh for east-west encryption.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Auth = the ID check; rate limit = the ticket counter</span>
+  <p>The bouncer checks your ID at the door (auth) before you get anywhere near the party. The venue also counts how many drinks each guest orders per hour and cuts you off past the limit (rate limiting) so no single guest drains the bar. Doing both at the entrance protects everyone inside without each room needing its own bouncer.</p>
+</div>
+
+<h2 id="kong-k8s">14. Kong on Kubernetes (Ingress)</h2>
+<p class="section-intro">On Kubernetes, Kong runs as an <strong>Ingress Controller</strong>: you configure it with Kubernetes resources (Ingress + Kong CRDs) instead of a config file.</p>
+<div class="code-label label-yaml">Attaching a Kong plugin via annotations</div>
+<pre><code>apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata: { name: rate-limit }
+plugin: rate-limiting
+config: { minute: 100 }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orders
+  annotations:
+    konghq.com/plugins: rate-limit        # apply the plugin to this route
+spec:
+  ingressClassName: kong
+  rules:
+    - http:
+        paths:
+          - path: /api/orders
+            pathType: Prefix
+            backend: { service: { name: orders-svc, port: { number: 8080 } } }</code></pre>
+<div class="box note"><span class="box-title">Gateway API — the future of ingress</span><p>Kubernetes is moving from the older <code>Ingress</code> resource to the richer <strong>Gateway API</strong> (see the <a href="kubernetes-complete-guide.html#ingress">Kubernetes Ingress section</a>). Kong, Istio, and others implement it. It cleanly separates infra (Gateway) from routing (HTTPRoute) with role-based ownership — worth adopting for new clusters.</p></div>
+
+<h4>Why config-as-CRDs on Kubernetes</h4>
+<p>On Kubernetes you already declare desired state as YAML and reconcile it. The Kong Ingress Controller (KIC) fits that model: it <em>watches</em> Kubernetes resources (Ingress, KongPlugin, KongConsumer) and translates them into Kong's config automatically. So you manage the gateway the same GitOps way as everything else — no separate Admin API calls, no drift between what's in Git and what's running.</p>
+
+<h4>How the Ingress Controller reconciles config</h4>
+<div class="code-label label-output">The KIC reconcile loop</div>
+<pre><code>1. WATCH Ingress + Kong CRDs + Services/Endpoints via the K8s API
+2. On any change, build the full intended Kong config
+3. PUSH it to the Kong data plane(s) (Admin API in DB mode, or /config DB-less)
+4. Kong now routes matching traffic to the Service's Pod Endpoints
+   (KIC tracks EndpointSlices so scaling Pods updates upstream targets live)</code></pre>
+<p>Because KIC reads Endpoints directly, when your Deployment scales up/down Kong's load-balancing targets update automatically — no manual upstream editing.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — verify the plugin is attached</span>
+  <div class="code-label label-cmd">Apply and inspect</div>
+  <pre><code>kubectl apply -f orders-ingress.yaml
+kubectl get ingress orders -o jsonpath='{.metadata.annotations}'
+# Send traffic through the Kong proxy Service (LoadBalancer/NodePort)
+curl -i http://$KONG_LB/api/orders</code></pre>
+  <div class="code-label label-output">Rate-limit headers prove the KongPlugin is active</div>
+  <pre><code>HTTP/1.1 200 OK
+X-RateLimit-Limit-Minute: 100
+X-RateLimit-Remaining-Minute: 98
+Via: kong/3.x</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Missing <code>ingressClassName: kong</code>.</strong> Without it, another ingress controller (or none) may claim the Ingress and Kong never sees it.</li>
+    <li><strong>Plugin annotation on the wrong object.</strong> <code>konghq.com/plugins</code> on the Ingress applies to its routes; on a Service it applies service-wide. Mismatches cause "plugin didn't apply" confusion.</li>
+    <li><strong>Forgetting the KongPlugin resource exists.</strong> The annotation only <em>references</em> a KongPlugin by name — if that CRD isn't created, the annotation is a no-op.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">The controller is a translator between two languages</span>
+  <p>You speak Kubernetes ("here's an Ingress and a plugin"); Kong speaks its own config language. The Kong Ingress Controller is the bilingual clerk who watches for your Kubernetes notes and rewrites them into Kong's language in real time — so you never have to speak Kong directly, and the two always stay in sync.</p>
+</div>
+
+<h2 id="kafka-internals">15. Replication, ISR &amp; Durability</h2>
+<p class="section-intro">Kafka's durability guarantees come from replicating each partition across brokers. Understanding leaders, followers, and the in-sync replica set (ISR) is what lets you configure Kafka to never lose data.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="Kafka partition replication with leader, followers and in-sync replica set">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Partition replication — leader, followers &amp; the ISR</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="60" width="200" height="110" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="160" y="86" text-anchor="middle" class="svg-label" fill="#7ee787">Broker 1 — LEADER</text>
+    <text x="160" y="106" text-anchor="middle" class="svg-sub">partition 0 (writable)</text>
+    <rect x="80" y="120" width="160" height="30" rx="4" fill="#161b22" stroke="#8b949e"/><text x="160" y="140" text-anchor="middle" class="svg-sub">log: 0 1 2 3 4 5</text>
+
+    <rect x="300" y="60" width="200" height="110" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="400" y="86" text-anchor="middle" class="svg-label" fill="#00b9e4">Broker 2 — follower</text>
+    <text x="400" y="106" text-anchor="middle" class="svg-sub">in ISR ✓ (caught up)</text>
+    <rect x="320" y="120" width="160" height="30" rx="4" fill="#161b22" stroke="#8b949e"/><text x="400" y="140" text-anchor="middle" class="svg-sub">log: 0 1 2 3 4 5</text>
+
+    <rect x="540" y="60" width="220" height="110" rx="8" fill="#21262d" stroke="#f0883e"/>
+    <text x="650" y="86" text-anchor="middle" class="svg-label" fill="#f0883e">Broker 3 — follower</text>
+    <text x="650" y="106" text-anchor="middle" class="svg-sub">lagging → dropped from ISR</text>
+    <rect x="560" y="120" width="180" height="30" rx="4" fill="#161b22" stroke="#8b949e"/><text x="650" y="140" text-anchor="middle" class="svg-sub">log: 0 1 2 3 (behind)</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="260" y1="115" x2="298" y2="115" marker-end="url(#msg-isr-arr)"/>
+      <line x1="500" y1="115" x2="538" y2="115" stroke="#f0883e" stroke-dasharray="5" marker-end="url(#msg-isr-arr2)"/>
+    </g>
+    <text x="280" y="106" text-anchor="middle" class="svg-sub">replicate</text>
+
+    <rect x="120" y="196" width="580" height="60" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="220" text-anchor="middle" class="svg-sub">acks=all + min.insync.replicas=2 → a write is committed only once the ISR persists it.</text>
+    <text x="410" y="240" text-anchor="middle" class="svg-sub">If the leader dies, a new leader is elected only from the ISR — so no committed data is lost.</text>
+  </g>
+  <defs>
+    <marker id="msg-isr-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="msg-isr-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0883e"/></marker>
+  </defs>
+</svg>
+<figcaption>Each partition has one leader that takes writes and followers that replicate it. Only replicas that stay caught up belong to the in-sync replica set (ISR). With <code>acks=all</code> and <code>min.insync.replicas</code>, a message is acknowledged only once enough ISR members have it, and failover elects a new leader exclusively from the ISR.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Partition leader and follower replicas across brokers">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Each partition: 1 leader + N follower replicas</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="60" width="220" height="150" rx="10" fill="none" stroke="#00b9e4" stroke-width="2"/><text x="150" y="82" text-anchor="middle" class="svg-label" fill="#00b9e4">Broker 1</text>
+    <rect x="70" y="100" width="160" height="40" rx="6" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="150" y="118" text-anchor="middle" class="svg-sub">P0 LEADER</text><text x="150" y="133" text-anchor="middle" class="svg-sub">reads+writes here</text>
+    <rect x="300" y="60" width="220" height="150" rx="10" fill="none" stroke="#00b9e4" stroke-width="2"/><text x="410" y="82" text-anchor="middle" class="svg-label" fill="#00b9e4">Broker 2</text>
+    <rect x="330" y="100" width="160" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="410" y="118" text-anchor="middle" class="svg-sub">P0 follower</text><text x="410" y="133" text-anchor="middle" class="svg-sub">in ISR ✓</text>
+    <rect x="560" y="60" width="220" height="150" rx="10" fill="none" stroke="#00b9e4" stroke-width="2"/><text x="670" y="82" text-anchor="middle" class="svg-label" fill="#00b9e4">Broker 3</text>
+    <rect x="590" y="100" width="160" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="670" y="118" text-anchor="middle" class="svg-sub">P0 follower</text><text x="670" y="133" text-anchor="middle" class="svg-sub">in ISR ✓</text>
+    <g stroke="#7ee787" stroke-width="2"><line x1="230" y1="120" x2="328" y2="120" marker-end="url(#ki)"/><line x1="490" y1="120" x2="588" y2="120" marker-end="url(#ki)"/></g>
+    <text x="410" y="235" text-anchor="middle" class="svg-sub">Followers replicate from the leader. If the leader dies, an in-sync follower is promoted — no data loss.</text>
+  </g>
+  <defs><marker id="ki" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7ee787"/></marker></defs>
+</svg>
+<figcaption>Every partition has one leader (handles all reads/writes) and followers that replicate it. The <strong>ISR</strong> is the set of replicas fully caught up. If the leader fails, Kafka promotes an ISR member — that's how it survives broker loss.</figcaption>
+</figure>
+
+<div class="box eli5">
+  <span class="box-title">ISR = the "trusted backups" that are fully caught up</span>
+  <p>Imagine a document with a main author (leader) and copiers (followers) keeping duplicate copies. The <strong>in-sync replicas</strong> are the copiers whose copy is fully up to date. If the main author vanishes, you promote a fully-caught-up copier — nothing is lost. A copier that's fallen behind is dropped from the trusted set until it catches up. <code>acks=all</code> means "don't confirm my write until all trusted copiers have it" — maximum safety.</p>
+</div>
+
+<div class="code-label label-yaml">Durability configuration that survives a broker loss</div>
+<pre><code># Producer side
+acks: all                 # wait for all in-sync replicas to ack (no data loss)
+enable.idempotence: true  # no duplicates on producer retries
+retries: 2147483647       # retry indefinitely (with idempotence, safe)
+
+# Topic / broker side
+replication.factor: 3     # 3 copies of every partition
+min.insync.replicas: 2    # require >=2 in-sync; refuse writes if fewer
+unclean.leader.election.enable: false  # never promote an out-of-sync replica</code></pre>
+<div class="box danger"><span class="box-title">The <code>acks</code> + <code>min.insync.replicas</code> contract</span><p>With <code>replication.factor=3</code>, <code>min.insync.replicas=2</code>, and producer <code>acks=all</code>: you can lose <em>one</em> broker and still accept writes with zero data loss. Lose two and Kafka correctly <em>refuses</em> writes rather than risk losing data. Set <code>unclean.leader.election=false</code> so a stale replica is never promoted (which would silently lose messages). This trio is the heart of Kafka durability.</p></div>
+
+<h4>How replication works step by step</h4>
+<p>All reads and writes for a partition go to its <strong>leader</strong>. Followers are just consumers of the leader: each follower issues <em>fetch</em> requests and appends the records to its own log. The leader tracks each follower's progress via its <strong>log-end offset</strong>. A follower is "in-sync" (in the ISR) if it has fetched up to the leader within <code>replica.lag.time.max.ms</code>. The leader advances the <strong>high-water mark</strong> (the highest offset all ISR members have) — and consumers can only read up to the high-water mark. That's the invariant that makes failover safe: anything a consumer has seen is already on every in-sync replica.</p>
+
+<h4>How failover picks a new leader</h4>
+<div class="code-label label-output">Leader dies — an ISR member is promoted</div>
+<pre><code>Before:  P0  Leader=1  Isr=[1,2,3]  HW=10540
+Broker 1 crashes
+Controller: elect new leader from ISR (must be in [2,3]) -&gt; picks 2
+After:   P0  Leader=2  Isr=[2,3]    HW=10540   # no data loss: 2 had everything up to HW
+Broker 1 returns -&gt; catches up from leader -&gt; rejoins Isr=[2,3,1]</code></pre>
+<p>Because the new leader must come from the ISR, it already holds every acknowledged message — so promotion loses nothing. Allowing <em>out-of-sync</em> replicas to be promoted (unclean election) is the one setting that trades durability for availability and can silently drop data.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — watch ISR shrink and recover</span>
+  <div class="code-label label-cmd">Find under-replicated partitions</div>
+  <pre><code>kafka-topics.sh --describe --under-replicated-partitions \
+  --bootstrap-server localhost:9092</code></pre>
+  <div class="code-label label-output">A shrunk ISR flags a lagging/dead replica</div>
+  <pre><code>Topic: payments Partition: 3 Leader: 2 Replicas: 2,3,1 Isr: 2,3
+# Replica 1 dropped out of the ISR -&gt; still safe (2 in sync &gt;= min.insync.replicas)
+# If ISR falls below min.insync.replicas, acks=all producers get NotEnoughReplicas</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong><code>replication.factor</code> = <code>min.insync.replicas</code>.</strong> e.g. both 3 — then losing one broker halts writes. Keep RF &gt; min.insync.replicas (3 and 2).</li>
+    <li><strong>Enabling unclean leader election for "availability."</strong> It quietly loses committed data on failover. Leave it <code>false</code> unless you truly prefer availability over correctness.</li>
+    <li><strong><code>acks=1</code> with RF=3.</strong> The leader acks before followers copy the record; if it dies right after, that message is gone despite having 3 replicas configured.</li>
+  </ul>
+</div>
+
+<h2 id="kafka-eos">16. Exactly-Once Semantics (EOS)</h2>
+<p class="section-intro">"Process each message exactly once, even through failures and retries" is famously hard in distributed systems. Kafka provides it via the idempotent producer plus transactions.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="Exactly-once semantics via idempotent producer and transactions">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Exactly-once = idempotent producer + atomic read-process-write</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="70" width="120" height="60" rx="8" fill="#21262d" stroke="#8b949e"/>
+    <text x="100" y="95" text-anchor="middle" class="svg-label">Producer</text>
+    <text x="100" y="115" text-anchor="middle" class="svg-sub">PID + seq #</text>
+
+    <rect x="220" y="70" width="150" height="60" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="295" y="95" text-anchor="middle" class="svg-label" fill="#00b9e4">Broker (dedup)</text>
+    <text x="295" y="115" text-anchor="middle" class="svg-sub">drops duplicate seq</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="160" y1="90" x2="218" y2="90" marker-end="url(#msg-eos-arr)"/>
+      <line x1="160" y1="112" x2="218" y2="112" stroke="#ff7b72" stroke-dasharray="4"/>
+    </g>
+    <text x="189" y="140" text-anchor="middle" class="svg-sub" fill="#ff7b72">retry (same seq)</text>
+    <text x="189" y="86" text-anchor="middle" class="svg-sub">write #42</text>
+
+    <rect x="430" y="46" width="340" height="108" rx="8" fill="#161b22" stroke="#7ee787"/>
+    <text x="600" y="70" text-anchor="middle" class="svg-label" fill="#7ee787">Transaction (atomic)</text>
+    <rect x="450" y="82" width="140" height="30" rx="4" fill="#21262d" stroke="#8b949e"/><text x="520" y="102" text-anchor="middle" class="svg-sub">consume offset</text>
+    <rect x="610" y="82" width="140" height="30" rx="4" fill="#21262d" stroke="#8b949e"/><text x="680" y="102" text-anchor="middle" class="svg-sub">produce result</text>
+    <text x="600" y="134" text-anchor="middle" class="svg-sub">commit offset + output together — all or nothing</text>
+
+    <g stroke="#7ee787" stroke-width="2"><line x1="370" y1="100" x2="428" y2="100" marker-end="url(#msg-eos-arr2)"/></g>
+
+    <rect x="120" y="196" width="580" height="60" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="220" text-anchor="middle" class="svg-sub">enable.idempotence=true · transactional.id=... · isolation.level=read_committed</text>
+    <text x="410" y="240" text-anchor="middle" class="svg-sub">Consumers reading committed only never see aborted or duplicated results.</text>
+  </g>
+  <defs>
+    <marker id="msg-eos-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="msg-eos-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7ee787"/></marker>
+  </defs>
+</svg>
+<figcaption>The idempotent producer tags each write with a producer id and sequence number so the broker discards retried duplicates; transactions then bind "commit consumed offset" and "produce output" into one atomic unit, giving true exactly-once processing for read-process-write pipelines.</figcaption>
+</figure>
+<div class="code-label label-output">How EOS is achieved</div>
+<pre><code>1. Idempotent producer  — each message gets a sequence number; the broker
+                          dedupes retries, so a retry never creates a duplicate.
+2. Transactions         — produce to multiple partitions + commit consumer
+                          offsets atomically ("consume-transform-produce").
+3. Isolation level      — consumers set isolation.level=read_committed to
+                          only see committed messages.</code></pre>
+<div class="box warn"><span class="box-title">EOS has a cost — often at-least-once + idempotency is enough</span><p>Transactions add latency and complexity and only span Kafka (not an external database, unless you use the transactional outbox pattern). For most systems, <strong>at-least-once delivery + idempotent consumers</strong> (dedupe on a business key) is simpler and robust. Reserve full EOS for Kafka-to-Kafka stream processing where exactly-once is genuinely required.</p></div>
+
+<h4>How the idempotent producer dedupes retries</h4>
+<p>When you set <code>enable.idempotence=true</code>, the broker assigns the producer a <strong>producer ID (PID)</strong> and every record carries a per-partition monotonic <strong>sequence number</strong>. The broker remembers the last sequence it accepted per (PID, partition). If a network hiccup makes the producer retry a record the broker already stored, the sequence number is a duplicate and the broker silently discards it — returning success without writing twice. That's how retries become safe: no duplicates, and order is preserved.</p>
+
+<h4>How transactions make consume-transform-produce atomic</h4>
+<div class="code-label label-output">The transactional loop (Streams does this for you)</div>
+<pre><code>producer.initTransactions()          // register a transactional.id
+while (true) {
+  records = consumer.poll()
+  producer.beginTransaction()
+  producer.send(transformed)                        // output records
+  producer.sendOffsetsToTransaction(consumedOffsets, groupMetadata) // input offsets
+  producer.commitTransaction()       // output + offset commit land ATOMICALLY
+}
+// On crash mid-transaction, it aborts: outputs are marked aborted and
+// read_committed consumers never see them; offsets aren't advanced -&gt; safe replay.</code></pre>
+<p>The key trick: the <em>output messages</em> and the <em>input offset commit</em> are written in one transaction. Either both happen or neither does — so there's no window where output exists but the input looks unprocessed (which would duplicate on replay). Downstream consumers set <code>isolation.level=read_committed</code> so they skip aborted/uncommitted records entirely.</p>
+
+<div class="box tip">
+  <span class="box-title">Worked example — turn on EOS in Kafka Streams</span>
+  <div class="code-label label-config">One line enables the whole machinery</div>
+  <pre><code>processing.guarantee=exactly_once_v2
+# Streams then manages transactional.id, read_committed, and atomic
+# offset+output commits for you — no manual transaction code needed.</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Thinking EOS covers your database.</strong> Transactions are Kafka-only. Writing to Postgres <em>and</em> Kafka atomically needs the <strong>outbox pattern</strong> (write to an outbox table in the DB txn, then CDC it to Kafka).</li>
+    <li><strong>Reusing one <code>transactional.id</code> across instances.</strong> It must be stable-per-partition-assignment; sharing it causes producers to fence each other (<code>ProducerFencedException</code>).</li>
+    <li><strong>Forgetting <code>read_committed</code> downstream.</strong> Default is <code>read_uncommitted</code>, so consumers would see aborted records — silently breaking the guarantee.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">EOS = numbered receipts + an all-or-nothing signature</span>
+  <p>The idempotent producer is like putting a serial number on every receipt: if you accidentally hand the cashier the same receipt twice, they notice the number and don't ring it up again. Transactions are like signing a whole batch of paperwork at once — either every page is filed or none is, so you never end up with the "money moved but the ledger wasn't updated" situation.</p>
+</div>
+
+<h2 id="kafka-streams">17. Kafka Streams &amp; ksqlDB</h2>
+<p class="section-intro">Beyond moving messages, you often need to <em>process</em> them — aggregate, join, window. Kafka Streams (a Java library) and ksqlDB (SQL over streams) do this natively.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="Stream table duality in Kafka Streams">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Stream ⇄ Table duality</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="200" y="54" text-anchor="middle" class="svg-label" fill="#7ee787">Stream — a log of changes</text>
+    <rect x="60" y="70" width="70" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="95" y="92" text-anchor="middle" class="svg-sub">A=1</text>
+    <rect x="140" y="70" width="70" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="175" y="92" text-anchor="middle" class="svg-sub">B=5</text>
+    <rect x="220" y="70" width="70" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="255" y="92" text-anchor="middle" class="svg-sub">A=7</text>
+    <rect x="300" y="70" width="70" height="34" rx="4" fill="#21262d" stroke="#7ee787"/><text x="335" y="92" text-anchor="middle" class="svg-sub">B=9</text>
+    <text x="215" y="126" text-anchor="middle" class="svg-sub">each event = one fact, appended forever</text>
+
+    <text x="620" y="54" text-anchor="middle" class="svg-label" fill="#00b9e4">Table — latest value per key</text>
+    <rect x="520" y="70" width="200" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="620" y="92" text-anchor="middle" class="svg-sub">A → 7   (last write wins)</text>
+    <rect x="520" y="112" width="200" height="34" rx="4" fill="#21262d" stroke="#00b9e4"/><text x="620" y="134" text-anchor="middle" class="svg-sub">B → 9   (last write wins)</text>
+
+    <g stroke="#d2a8ff" stroke-width="2">
+      <line x1="380" y1="87" x2="516" y2="87" marker-end="url(#msg-dual-arr)"/>
+      <line x1="516" y1="150" x2="380" y2="150" marker-end="url(#msg-dual-arr)"/>
+    </g>
+    <text x="450" y="80" text-anchor="middle" class="svg-sub" fill="#d2a8ff">aggregate</text>
+    <text x="450" y="168" text-anchor="middle" class="svg-sub" fill="#d2a8ff">changelog</text>
+
+    <rect x="120" y="200" width="580" height="56" rx="8" fill="#161b22" stroke="#30363d"/>
+    <text x="410" y="224" text-anchor="middle" class="svg-sub">A KTable is just a stream folded by key; a KStream is a table's changelog replayed.</text>
+    <text x="410" y="244" text-anchor="middle" class="svg-sub">This duality powers joins, windowed aggregates, and materialized views over live data.</text>
+  </g>
+  <defs><marker id="msg-dual-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#d2a8ff"/></marker></defs>
+</svg>
+<figcaption>A stream and a table are two views of the same data: fold a stream by key and you get a table (the current state); emit a table's updates and you get a stream (its changelog). Kafka Streams and ksqlDB exploit this to run joins and aggregations continuously.</figcaption>
+</figure>
+<div class="code-label label-output">Stream processing concepts</div>
+<pre><code># ksqlDB — continuous SQL over a stream
+CREATE STREAM orders (id INT, amount DOUBLE, region VARCHAR)
+  WITH (kafka_topic='orders', value_format='JSON');
+
+# A continuously-updating aggregation (a "materialized view")
+CREATE TABLE revenue_by_region AS
+  SELECT region, SUM(amount) AS total
+  FROM orders WINDOW TUMBLING (SIZE 1 HOUR)
+  GROUP BY region;</code></pre>
+<table>
+  <tr><th>Concept</th><th>Meaning</th></tr>
+  <tr><td>Stream</td><td>Unbounded sequence of events (the topic)</td></tr>
+  <tr><td>Table</td><td>Current state derived from a stream (latest value per key)</td></tr>
+  <tr><td>Windowing</td><td>Group events by time (tumbling, hopping, session)</td></tr>
+  <tr><td>Stateful ops</td><td>Joins &amp; aggregations backed by local state + changelog topics</td></tr>
+</table>
+<div class="box eli5"><span class="box-title">Stream-table duality</span><p>A <strong>stream</strong> is a log of every change ("+£5, +£3, -£2"); a <strong>table</strong> is the current total ("£6"). They're two views of the same data: replay a stream and you rebuild the table; capture a table's changes and you get a stream. This duality is the core insight behind stream processing — and why Kafka can rebuild state just by replaying the log.</p></div>
+
+<h4>Why a stream processor instead of a database + cron</h4>
+<p>The old way to aggregate events was: dump them somewhere, run a batch job every N minutes. That's high-latency and reprocesses everything. A stream processor computes <em>incrementally</em> and <em>continuously</em> — each new event updates the result immediately, so your "revenue by region" is always current, not minutes stale.</p>
+
+<h4>How stateful operations survive crashes</h4>
+<p>Aggregations and joins need state (running totals, join buffers). Kafka Streams keeps that state in a local embedded store (<strong>RocksDB</strong>) for fast access, but also writes every state change to a <strong>changelog topic</strong> in Kafka. If the instance crashes and its task moves to another node, that node <em>replays the changelog</em> to rebuild the exact state — so local state is fast but never the source of truth. Windowed operations additionally track event time and a <em>grace period</em> for late-arriving data.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — a materialized view you can query</span>
+  <div class="code-label label-cmd">Push events and read the live aggregate</div>
+  <pre><code># Assuming the CREATE TABLE revenue_by_region above is running:
+ksql&gt; SELECT region, total FROM revenue_by_region EMIT CHANGES;</code></pre>
+  <div class="code-label label-output">Updates stream out as new orders arrive</div>
+  <pre><code>+------------+---------+
+|REGION      |TOTAL    |
++------------+---------+
+|EU          |5.00     |   # after order amount=5
+|EU          |8.00     |   # +3, updates in place (table semantics)
+|US          |12.50    |
+# EMIT CHANGES = a continuous query; the view never "finishes"</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Ignoring event time vs processing time.</strong> Windowing on when Kafka received a record (not when the event happened) skews results when producers lag. Set timestamps + a grace period.</li>
+    <li><strong>Deleting changelog topics to "save space."</strong> They're how state is rebuilt after a crash — delete them and a restart loses all aggregation state.</li>
+    <li><strong>Under-provisioning RocksDB memory / disk.</strong> Large stateful jobs need real local disk; running them on tiny nodes causes constant restore and stalls.</li>
+  </ul>
+</div>
+
+<h2 id="kafka-connect">18. Kafka Connect Deep</h2>
+<p class="section-intro">Most data doesn't originate in Kafka — it's in databases, files, and SaaS apps. Kafka Connect moves data in and out with no code, using pluggable connectors.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Kafka Connect CDC pipeline from source database through Kafka to sink systems">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Kafka Connect — CDC in, fan-out to sinks out</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="90" width="120" height="70" rx="8" fill="#21262d" stroke="#f0883e"/>
+    <text x="90" y="118" text-anchor="middle" class="svg-label" fill="#f0883e">Postgres</text>
+    <text x="90" y="138" text-anchor="middle" class="svg-sub">WAL / binlog</text>
+
+    <rect x="185" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="250" y="114" text-anchor="middle" class="svg-label" fill="#7ee787">Source connector</text>
+    <text x="250" y="134" text-anchor="middle" class="svg-sub">Debezium CDC</text>
+    <text x="250" y="150" text-anchor="middle" class="svg-sub">row change → event</text>
+
+    <rect x="350" y="80" width="120" height="90" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="410" y="106" text-anchor="middle" class="svg-label" fill="#00b9e4">Kafka topic</text>
+    <text x="410" y="126" text-anchor="middle" class="svg-sub">db.public.orders</text>
+    <text x="410" y="146" text-anchor="middle" class="svg-sub">durable log</text>
+
+    <rect x="505" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="570" y="114" text-anchor="middle" class="svg-label" fill="#7ee787">Sink connector</text>
+    <text x="570" y="134" text-anchor="middle" class="svg-sub">JDBC / ES / S3</text>
+
+    <rect x="670" y="52" width="120" height="46" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="730" y="80" text-anchor="middle" class="svg-sub">Elasticsearch</text>
+    <rect x="670" y="108" width="120" height="46" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="730" y="136" text-anchor="middle" class="svg-sub">Data warehouse</text>
+    <rect x="670" y="164" width="120" height="46" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="730" y="192" text-anchor="middle" class="svg-sub">S3 data lake</text>
+
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="150" y1="125" x2="183" y2="125" marker-end="url(#msg-cdc-arr)"/>
+      <line x1="315" y1="125" x2="348" y2="125" marker-end="url(#msg-cdc-arr)"/>
+      <line x1="470" y1="125" x2="503" y2="125" marker-end="url(#msg-cdc-arr)"/>
+      <line x1="635" y1="120" x2="668" y2="80" marker-end="url(#msg-cdc-arr)"/>
+      <line x1="635" y1="125" x2="668" y2="131" marker-end="url(#msg-cdc-arr)"/>
+      <line x1="635" y1="130" x2="668" y2="182" marker-end="url(#msg-cdc-arr)"/>
+    </g>
+    <text x="410" y="215" text-anchor="middle" class="svg-sub">Capture changes once → replay to many sinks without touching the source DB again.</text>
+  </g>
+  <defs><marker id="msg-cdc-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A source connector (e.g., Debezium) turns database row changes into events; the topic buffers them durably; any number of sink connectors deliver the same stream to search, warehouse and lake — decoupled and replayable.</figcaption>
+</figure>
+<figure class="diagram">
+<svg viewBox="0 0 820 190" role="img" aria-label="Kafka Connect source and sink">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Source connectors in, sink connectors out</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="75" width="140" height="50" rx="6" fill="#21262d" stroke="#7ee787"/><text x="100" y="100" text-anchor="middle" class="svg-sub">Postgres</text><text x="100" y="116" text-anchor="middle" class="svg-sub">(CDC source)</text>
+    <rect x="230" y="75" width="150" height="50" rx="6" fill="#21262d" stroke="#00b9e4" stroke-width="2"/><text x="305" y="104" text-anchor="middle" class="svg-sub">source connector</text>
+    <rect x="440" y="75" width="120" height="50" rx="6" fill="#21262d" stroke="#00b9e4" stroke-width="2"/><text x="500" y="104" text-anchor="middle" class="svg-sub">Kafka topic</text>
+    <rect x="620" y="75" width="160" height="50" rx="6" fill="#21262d" stroke="#7ee787"/><text x="700" y="100" text-anchor="middle" class="svg-sub">sink → S3 /</text><text x="700" y="116" text-anchor="middle" class="svg-sub">Elasticsearch</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="170" y1="100" x2="228" y2="100" marker-end="url(#kc)"/><line x1="380" y1="100" x2="438" y2="100" marker-end="url(#kc)"/><line x1="560" y1="100" x2="618" y2="100" marker-end="url(#kc)"/></g>
+  </g>
+  <defs><marker id="kc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption><strong>Source</strong> connectors pull data into Kafka (e.g., Debezium captures database changes — CDC); <strong>sink</strong> connectors push Kafka data out to stores. Hundreds of ready-made connectors exist — no code required.</figcaption>
+</figure>
+<div class="box tip"><span class="box-title">Change Data Capture (CDC) with Debezium</span><p>Debezium is a source connector that tails a database's transaction log and emits every insert/update/delete as a Kafka event — <em>without</em> polling or changing the app. This is the standard way to stream a database into Kafka for event-driven architectures, cache invalidation, or replicating data to a search index/warehouse.</p></div>
+
+<h4>Why Connect instead of writing your own producer/consumer</h4>
+<p>Integrations are 80% the same boilerplate: offset tracking, retries, schema conversion, scaling, restart-after-crash. Connect provides all of that as a reusable framework so a connector author only writes the source/sink-specific bit. You get a fleet of hundreds of tested connectors and a uniform way to run and monitor them, instead of a snowflake integration per system.</p>
+
+<h4>How Connect scales and tracks progress under the hood</h4>
+<p>Connect runs as a cluster of <strong>workers</strong>. A connector is split into <strong>tasks</strong> (e.g. one task per table or per partition) and the workers balance tasks among themselves — add a worker and tasks rebalance to it. Progress is stored in internal Kafka topics: <code>connect-offsets</code> (source position, e.g. the DB log position), <code>connect-configs</code>, and <code>connect-status</code>. So if a worker dies, another resumes each task from its last committed source offset — no re-reading the whole database.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — register a Debezium source via REST</span>
+  <div class="code-label label-cmd">Connect is configured over HTTP</div>
+  <pre><code>curl -X POST http://connect:8083/connectors -H 'Content-Type: application/json' -d '{
+  "name": "orders-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "pg", "database.dbname": "shop",
+    "table.include.list": "public.orders",
+    "topic.prefix": "cdc" } }'
+
+curl http://connect:8083/connectors/orders-cdc/status</code></pre>
+  <div class="code-label label-output">Task running; inserts now appear on cdc.public.orders</div>
+  <pre><code>{"name":"orders-cdc","connector":{"state":"RUNNING"},
+ "tasks":[{"id":0,"state":"RUNNING"}]}
+# INSERT into orders -&gt; a message lands on topic "cdc.public.orders"</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Running Connect in standalone mode in prod.</strong> Standalone has no failover; use distributed mode so tasks survive worker loss.</li>
+    <li><strong>Deleting the internal offset topic.</strong> A source connector then restarts from the beginning — re-emitting the entire dataset.</li>
+    <li><strong>Debezium without enough DB WAL retention.</strong> If the database recycles its transaction log before the connector reads it, you get gaps; size WAL/replication-slot retention accordingly.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Connect = universal adapters for the conveyor belt</span>
+  <p>You don't rewire a new plug for every appliance — you use a standard adapter. Connect is a set of standard adapters that snap data sources and sinks onto Kafka. Debezium is a special adapter that quietly watches a database's diary (its transaction log) and announces every change to the belt, without the database app even knowing.</p>
+</div>
+
+<h2 id="kafka-tuning">19. Tuning, Security &amp; Monitoring</h2>
+<table>
+  <tr><th>Area</th><th>Key levers</th></tr>
+  <tr><td>Throughput</td><td><code>batch.size</code>, <code>linger.ms</code>, <code>compression.type</code> (lz4/zstd), partition count</td></tr>
+  <tr><td>Latency</td><td>Lower <code>linger.ms</code>, fewer replicas to ack, co-locate consumers</td></tr>
+  <tr><td>Retention</td><td><code>retention.ms</code>/<code>retention.bytes</code>; tiered storage for cheap long retention</td></tr>
+  <tr><td>Security</td><td>TLS encryption, SASL auth, ACLs per topic/consumer-group</td></tr>
+  <tr><td>Monitoring</td><td>Consumer lag (top signal), under-replicated partitions, request latency, ISR shrink</td></tr>
+</table>
+<div class="box best"><span class="box-title">The metrics that matter most</span><ul><li><strong>Consumer lag</strong> — how far behind consumers are; rising lag = can't keep up.</li><li><strong>Under-replicated partitions</strong> — should be 0; non-zero means a broker/replication problem.</li><li><strong>Offline partitions</strong> — should be 0; non-zero means unavailable data.</li></ul><p>Wire these into the <a href="observability-k8s-guide.html">Observability stack</a> with the JMX/Kafka exporter and alert on them.</p></div>
+<div class="code-label label-yaml">Security: TLS + SASL + ACLs</div>
+<pre><code># Enable encryption + authentication (broker)
+listeners: SASL_SSL://:9093
+sasl.enabled.mechanisms: SCRAM-SHA-512
+# Authorize: only the 'orders-app' principal may read the 'orders' topic
+kafka-acls.sh --add --allow-principal User:orders-app \
+  --operation Read --topic orders --group orders-consumers</code></pre>
+
+<h4>Why these levers, and how they trade off</h4>
+<p>Kafka tuning is mostly a <strong>latency vs throughput vs durability</strong> triangle. Bigger batches and <code>linger.ms</code> raise throughput but add latency. Compression trades CPU for network/disk. More replicas and <code>acks=all</code> raise durability but add write latency. There's no universal "fast" setting — you pick the corner of the triangle your workload needs and measure.</p>
+
+<h4>How consumer lag reveals health under the hood</h4>
+<p>Lag = <code>log-end-offset − committed-offset</code> per partition. It's the truest health signal because it directly measures "are we falling behind?" A flat non-zero lag means you're keeping pace with a backlog; steadily <em>rising</em> lag means consumers can't keep up and you must add consumers (up to partition count), speed up processing, or add partitions. Pair it with <strong>under-replicated partitions</strong> (should be 0) and <strong>offline partitions</strong> (should be 0) for a complete picture.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — alert on rising lag</span>
+  <div class="code-label label-yaml">Prometheus alert (via kafka-exporter metrics)</div>
+  <pre><code>- alert: KafkaConsumerLagHigh
+  expr: sum by (consumergroup, topic) (kafka_consumergroup_lag) &gt; 100000
+  for: 10m
+  labels: { severity: warning }
+  annotations:
+    summary: "Consumer group {{ $labels.consumergroup }} lagging on {{ $labels.topic }}"</code></pre>
+  <div class="code-label label-cmd">Quick manual check</div>
+  <pre><code>watch -n5 'kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+  --describe --group orders-consumers | awk "{print \$1,\$5,\$6}"'</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes &amp; gotchas</span>
+  <ul>
+    <li><strong>Tuning blind.</strong> Changing <code>batch.size</code>/<code>linger.ms</code> without measuring throughput and p99 latency just moves the problem. Benchmark with <code>kafka-producer-perf-test.sh</code>.</li>
+    <li><strong>Encryption without authorization.</strong> TLS hides traffic but anyone can still connect — add SASL auth <em>and</em> ACLs so only permitted principals read/write each topic.</li>
+    <li><strong>Alerting only on broker CPU.</strong> Brokers can look healthy while consumers drown. Lag, under-replicated, and offline partitions are the signals that catch real user-facing problems.</li>
+    <li><strong>Compression mismatch expectations.</strong> <code>gzip</code> compresses hard but burns CPU; <code>lz4</code>/<code>zstd</code> are usually the better throughput trade.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Lag is the queue at the checkout</span>
+  <p>Consumer lag is like the line at a supermarket till: a short, steady line is fine, but a line that keeps growing means you need more cashiers (consumers) or faster ones. Watching CPU alone is like checking if the lights are on — the growing line is what actually tells you customers are unhappy. Security-wise, TLS is the tinted windows (nobody sees in) while ACLs are the door locks (only the right people get in) — you want both.</p>
+</div>
+
+<h2 id="kong-deploy">20. Kong Deployment Modes &amp; Clustering</h2>
+<p class="section-intro">Kong runs in several architectures depending on scale and how you want to manage config.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="Kong hybrid mode with a control plane distributing config to data plane nodes">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Kong hybrid mode — split control plane &amp; data plane</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="300" y="44" width="220" height="70" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="410" y="70" text-anchor="middle" class="svg-label" fill="#00b9e4">Control Plane (CP)</text>
+    <text x="410" y="90" text-anchor="middle" class="svg-sub">Admin API · config store (DB)</text>
+    <text x="410" y="106" text-anchor="middle" class="svg-sub">compiles &amp; validates config</text>
+
+    <rect x="70" y="180" width="180" height="72" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="160" y="206" text-anchor="middle" class="svg-label" fill="#7ee787">Data Plane 1</text>
+    <text x="160" y="226" text-anchor="middle" class="svg-sub">proxies traffic</text>
+    <text x="160" y="242" text-anchor="middle" class="svg-sub">in-memory config cache</text>
+
+    <rect x="320" y="180" width="180" height="72" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="410" y="206" text-anchor="middle" class="svg-label" fill="#7ee787">Data Plane 2</text>
+    <text x="410" y="226" text-anchor="middle" class="svg-sub">proxies traffic</text>
+    <text x="410" y="242" text-anchor="middle" class="svg-sub">no DB dependency</text>
+
+    <rect x="570" y="180" width="180" height="72" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="660" y="206" text-anchor="middle" class="svg-label" fill="#7ee787">Data Plane N</text>
+    <text x="660" y="226" text-anchor="middle" class="svg-sub">proxies traffic</text>
+    <text x="660" y="242" text-anchor="middle" class="svg-sub">survives CP outage</text>
+
+    <g stroke="#00b9e4" stroke-width="2">
+      <line x1="360" y1="114" x2="180" y2="178" marker-end="url(#msg-hybrid-arr)"/>
+      <line x1="410" y1="114" x2="410" y2="178" marker-end="url(#msg-hybrid-arr)"/>
+      <line x1="460" y1="114" x2="640" y2="178" marker-end="url(#msg-hybrid-arr)"/>
+    </g>
+    <text x="410" y="150" text-anchor="middle" class="svg-sub">config pushed over mTLS (gRPC) — one-way, read-only to DPs</text>
+    <text x="410" y="272" text-anchor="middle" class="svg-sub">If the CP goes down, DPs keep serving traffic from their cached config.</text>
+  </g>
+  <defs><marker id="msg-hybrid-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#00b9e4"/></marker></defs>
+</svg>
+<figcaption>Hybrid mode separates the config-managing control plane from stateless data-plane proxies. DPs cache config locally, so proxying continues even if the control plane or its database is unavailable.</figcaption>
+</figure>
+<table>
+  <tr><th>Mode</th><th>How config is stored</th><th>Use for</th></tr>
+  <tr><td><strong>DB-less</strong></td><td>A YAML file loaded at boot</td><td>GitOps, immutable deploys, simplicity</td></tr>
+  <tr><td><strong>Traditional (DB)</strong></td><td>Postgres; changed via Admin API</td><td>Dynamic config, many teams</td></tr>
+  <tr><td><strong>Hybrid</strong></td><td>Control plane (DB) + stateless data planes</td><td>Scale: many gateway nodes, central control</td></tr>
+</table>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Kong hybrid mode control plane and data planes">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Hybrid mode: one control plane, many data planes</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="320" y="45" width="180" height="45" rx="8" fill="#21262d" stroke="#00b9e4" stroke-width="2"/><text x="410" y="65" text-anchor="middle" class="svg-sub">Control Plane</text><text x="410" y="81" text-anchor="middle" class="svg-sub">config + DB</text>
+    <rect x="80" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="160" y="166" text-anchor="middle" class="svg-sub">data plane 1</text>
+    <rect x="330" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="166" text-anchor="middle" class="svg-sub">data plane 2</text>
+    <rect x="580" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="660" y="166" text-anchor="middle" class="svg-sub">data plane 3</text>
+    <g stroke="#58a6ff" stroke-width="1.5"><line x1="380" y1="90" x2="180" y2="138" marker-end="url(#kd)"/><line x1="410" y1="90" x2="410" y2="138" marker-end="url(#kd)"/><line x1="440" y1="90" x2="640" y2="138" marker-end="url(#kd)"/></g>
+    <text x="410" y="196" text-anchor="middle" class="svg-sub">Data planes proxy traffic; they pull config from the control plane and keep serving even if it's down.</text>
+  </g>
+  <defs><marker id="kd" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Hybrid mode separates the control plane (where you configure) from stateless data planes (which proxy traffic) — scale the data planes horizontally, and they keep serving even if the control plane is temporarily down.</figcaption>
+</figure>
+
+<h4>Why hybrid mode exists</h4>
+<p>At scale you want many gateway nodes near your traffic, but you don't want every node hammering a shared database on every request — that couples proxy performance to database health and creates a blast radius. Hybrid mode decouples them: the <strong>control plane</strong> owns config (and the DB), while stateless <strong>data planes</strong> just proxy. Data planes cache the config locally, so if the control plane (or its DB) goes down, traffic keeps flowing on the last-known-good config — the failure of the management layer doesn't take down live APIs.</p>
+
+<h4>How data planes stay in sync</h4>
+<div class="code-label label-output">Config distribution in hybrid mode</div>
+<pre><code>1. You change config on the CONTROL PLANE (Admin API / decK)
+2. CP compiles config, computes a hash, stores it
+3. DATA PLANES hold a persistent mTLS connection to the CP
+4. CP pushes the new config bundle to each DP over that channel
+5. DP validates + hot-reloads it; if CP is unreachable, DP keeps serving
+   the last config from its local cache (LMDB) — no downtime</code></pre>
+
+<div class="box note">
+  <span class="box-title">Worked example — check a data plane is connected</span>
+  <div class="code-label label-cmd">Query the control plane's clustering status</div>
+  <pre><code>curl -s http://control-plane:8001/clustering/data-planes | jq '.data[] | {ip, hostname, sync_status}'</code></pre>
+  <div class="code-label label-output">Each DP reports its last config sync</div>
+  <pre><code>{ "ip": "10.0.1.7", "hostname": "kong-dp-1", "sync_status": "normal" }
+{ "ip": "10.0.1.8", "hostname": "kong-dp-2", "sync_status": "normal" }</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Version-skewing CP and DP.</strong> The control plane must be the same or newer than data planes; a newer DP against an older CP fails to sync.</li>
+    <li><strong>Expiring the cluster mTLS certs.</strong> CP↔DP uses mutual TLS; expired certs silently stop config propagation while old config keeps serving — a confusing "changes don't apply" symptom.</li>
+    <li><strong>Running a single control plane as if it were critical-path.</strong> It isn't for traffic, but you still want it HA so you can push changes during an incident.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Head office vs the shops</span>
+  <p>The control plane is head office where policies are written; data planes are the individual shops serving customers. Head office emails new policies to every shop, but if head office loses power for an afternoon, the shops keep trading on yesterday's rulebook. Customers never notice — that separation is exactly why hybrid mode is resilient at scale.</p>
+</div>
+
+<h2 id="kong-plugins-deep">21. Plugin Categories &amp; Dev Portal</h2>
+<p class="section-intro">Kong's power is its plugin ecosystem. They fall into clear categories, and you can write your own in Lua or via external plugin servers (Go, Python, JS).</p>
+<table>
+  <tr><th>Category</th><th>Example plugins</th></tr>
+  <tr><td>Authentication</td><td>key-auth, JWT, OAuth2, OIDC, mTLS, LDAP</td></tr>
+  <tr><td>Traffic control</td><td>rate-limiting, request-size-limiting, proxy-cache, request-termination</td></tr>
+  <tr><td>Transformations</td><td>request/response-transformer, correlation-id, GraphQL</td></tr>
+  <tr><td>Security</td><td>CORS, IP-restriction, bot-detection, ACL</td></tr>
+  <tr><td>Observability</td><td>prometheus, datadog, zipkin, file-log, http-log</td></tr>
+  <tr><td>Serverless</td><td>aws-lambda, azure-functions (call functions directly)</td></tr>
+</table>
+<div class="box note"><span class="box-title">Developer Portal</span><p>Kong's Dev Portal auto-generates API documentation from your specs and lets API consumers self-register and get credentials — turning your gateway into a managed API product. This is the "API management" layer on top of the raw gateway, useful when you expose APIs to external developers.</p></div>
+
+<h4>Why plugins run in a fixed phase order</h4>
+<p>The categories aren't just organizational — they map to <em>when</em> a plugin runs. Auth must run before rate-limiting (you rate-limit a <em>known</em> consumer), which runs before transformations, which run before proxying. Kong assigns each plugin a <strong>priority</strong> number and executes higher priorities first within the access phase, so the pipeline is deterministic regardless of the order you configured them.</p>
+
+<h4>How a custom plugin hooks in</h4>
+<div class="code-label label-config">A minimal Lua plugin adds a header in the access phase</div>
+<pre><code>-- handler.lua
+local MyPlugin = { PRIORITY = 1000, VERSION = "1.0" }
+function MyPlugin:access(conf)
+  kong.service.request.set_header("X-Tenant", conf.tenant)
+end
+return MyPlugin
+-- Prefer external plugin servers (Go/Python/JS) if you don't want Lua.</code></pre>
+<p>The <code>PRIORITY</code> decides where it sits relative to built-in plugins; the phase method (<code>access</code>, <code>header_filter</code>, <code>log</code>…) decides <em>when</em> in the request lifecycle it fires — the same NGINX phases Kong itself uses (§11).</p>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Assuming config order = execution order.</strong> It's the priority number that decides. A rate-limit plugin with a higher priority than auth would meter anonymous traffic wrongly.</li>
+    <li><strong>Heavy work in the <code>access</code> phase.</strong> It's on the hot path of every request; do expensive logging in the async <code>log</code> phase instead.</li>
+    <li><strong>Exposing the Dev Portal without RBAC.</strong> Self-registration is powerful — gate it and review credential approval, or you hand out API access freely.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Plugins are an assembly line, not a pile</span>
+  <p>Even though you drop plugins onto a route in any order, Kong runs them in a fixed assembly-line sequence: check ID first, then count visits, then relabel the package, then ship it. The priority number is each station's fixed position on the line — so the outcome is predictable no matter what order you bolted the stations on.</p>
+</div>
+
+<h2 id="gateway-api">22. Gateway API &amp; the Future</h2>
+<p class="section-intro">Kubernetes is standardizing ingress around the new <strong>Gateway API</strong>, which Kong (and Istio, and others) implement. It's the successor to the older Ingress resource.</p>
+<div class="code-label label-yaml">Gateway API — cleaner separation of concerns</div>
+<pre><code>apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: { name: orders }
+spec:
+  parentRefs: [{ name: kong-gateway }]      # infra owned by platform team
+  rules:
+    - matches: [{ path: { type: PathPrefix, value: /api/orders } }]
+      backendRefs: [{ name: orders-svc, port: 8080 }]</code></pre>
+<div class="box note"><span class="box-title">Why Gateway API matters</span><p>The old <code>Ingress</code> resource crammed everything into annotations and mixed infra and routing concerns. Gateway API cleanly separates the <strong>Gateway</strong> (owned by platform/infra teams) from <strong>HTTPRoutes</strong> (owned by app teams), supports more protocols, and is portable across implementations. New clusters should adopt it — see the <a href="kubernetes-complete-guide.html#ingress">Kubernetes Ingress section</a>.</p></div>
+
+<h4>Why annotations weren't enough</h4>
+<p>Ingress standardized only basic host/path routing; everything else (rate limits, rewrites, canary weights) lived in vendor-specific annotations — so an Ingress written for NGINX didn't work on Kong, and there was no schema validation of those magic strings. Gateway API makes these first-class, typed, validated resources, so your routing config is portable and the API server rejects mistakes instead of silently ignoring them.</p>
+
+<h4>How the roles split under the hood</h4>
+<div class="code-label label-output">Three resources, three owners</div>
+<pre><code>GatewayClass  (owned by: infra/vendor)  -&gt; "Kong implements this class"
+   ▲ references
+Gateway       (owned by: platform team) -&gt; listeners, ports, TLS certs
+   ▲ parentRefs
+HTTPRoute     (owned by: app team)      -&gt; paths, headers, backends, weights
+   -&gt; attaches to a Gateway only if the Gateway's namespace policy ALLOWS it</code></pre>
+<p>The Gateway can restrict <em>which</em> namespaces may attach routes, so platform teams delegate routing to app teams safely — app teams can't open ports or change TLS, only add routes to backends they own.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — canary split with weights</span>
+  <div class="code-label label-yaml">Something Ingress annotations did clumsily, now first-class</div>
+  <pre><code>apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: { name: orders-canary }
+spec:
+  parentRefs: [{ name: kong-gateway }]
+  rules:
+    - matches: [{ path: { type: PathPrefix, value: /api/orders } }]
+      backendRefs:
+        - { name: orders-svc,    port: 8080, weight: 90 }   # 90% stable
+        - { name: orders-svc-v2, port: 8080, weight: 10 }   # 10% canary</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes</span>
+  <ul>
+    <li><strong>Mixing Ingress and Gateway API for the same host.</strong> Two controllers claiming the same route causes nondeterministic behavior. Migrate a host fully.</li>
+    <li><strong>Forgetting <code>allowedRoutes</code> namespace policy.</strong> By default a Gateway may only accept routes from its own namespace; cross-namespace attach needs explicit allowance.</li>
+    <li><strong>Assuming full feature parity across implementations.</strong> Core is portable, but some advanced features live in implementation-specific extensions — check your controller's conformance.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Gateway API = a proper org chart for ingress</span>
+  <p>Old Ingress was one overloaded form where everybody scribbled notes in the margins (annotations) and hoped the vendor read them. Gateway API is a proper org chart: facilities owns the building's doors and locks (Gateway), each team owns the signs directing visitors to their own rooms (HTTPRoute), and there's a clear rule about who may put up signs where. Cleaner ownership, fewer collisions.</p>
+</div>
+
+<h2 id="other-brokers">23. RabbitMQ, NATS &amp; Pulsar</h2>
+<p class="section-intro">Kafka is one of several messaging systems. As a lead engineer you choose the right one — they optimize for different things. (Kafka and Kong were examples; the <em>category</em> is what matters.)</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="Comparison of Kafka, RabbitMQ, NATS and Pulsar messaging models">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Four brokers, four mental models</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="46" width="170" height="220" rx="8" fill="#21262d" stroke="#00b9e4"/>
+    <text x="125" y="70" text-anchor="middle" class="svg-label" fill="#00b9e4">Kafka</text>
+    <text x="125" y="92" text-anchor="middle" class="svg-sub">Distributed log</text>
+    <rect x="60" y="106" width="130" height="26" rx="4" fill="#161b22" stroke="#8b949e"/><text x="125" y="123" text-anchor="middle" class="svg-sub">partitioned offsets</text>
+    <text x="125" y="152" text-anchor="middle" class="svg-sub">✓ replay history</text>
+    <text x="125" y="172" text-anchor="middle" class="svg-sub">✓ huge throughput</text>
+    <text x="125" y="192" text-anchor="middle" class="svg-sub">✓ many consumers</text>
+    <text x="125" y="222" text-anchor="middle" class="svg-sub">✗ no per-msg ack</text>
+    <text x="125" y="242" text-anchor="middle" class="svg-sub">✗ no priority/TTL</text>
+
+    <rect x="225" y="46" width="170" height="220" rx="8" fill="#21262d" stroke="#f0883e"/>
+    <text x="310" y="70" text-anchor="middle" class="svg-label" fill="#f0883e">RabbitMQ</text>
+    <text x="310" y="92" text-anchor="middle" class="svg-sub">AMQP broker</text>
+    <rect x="245" y="106" width="130" height="26" rx="4" fill="#161b22" stroke="#8b949e"/><text x="310" y="123" text-anchor="middle" class="svg-sub">exchange → queues</text>
+    <text x="310" y="152" text-anchor="middle" class="svg-sub">✓ flexible routing</text>
+    <text x="310" y="172" text-anchor="middle" class="svg-sub">✓ per-msg ack</text>
+    <text x="310" y="192" text-anchor="middle" class="svg-sub">✓ priority / TTL</text>
+    <text x="310" y="222" text-anchor="middle" class="svg-sub">✗ lower throughput</text>
+    <text x="310" y="242" text-anchor="middle" class="svg-sub">✗ limited replay</text>
+
+    <rect x="410" y="46" width="170" height="220" rx="8" fill="#21262d" stroke="#7ee787"/>
+    <text x="495" y="70" text-anchor="middle" class="svg-label" fill="#7ee787">NATS</text>
+    <text x="495" y="92" text-anchor="middle" class="svg-sub">Lightweight pub/sub</text>
+    <rect x="430" y="106" width="130" height="26" rx="4" fill="#161b22" stroke="#8b949e"/><text x="495" y="123" text-anchor="middle" class="svg-sub">subject → subs</text>
+    <text x="495" y="152" text-anchor="middle" class="svg-sub">✓ µs-latency</text>
+    <text x="495" y="172" text-anchor="middle" class="svg-sub">✓ tiny footprint</text>
+    <text x="495" y="192" text-anchor="middle" class="svg-sub">✓ JetStream persist</text>
+    <text x="495" y="222" text-anchor="middle" class="svg-sub">✗ core = at-most-once</text>
+    <text x="495" y="242" text-anchor="middle" class="svg-sub">✗ fewer features</text>
+
+    <rect x="595" y="46" width="185" height="220" rx="8" fill="#21262d" stroke="#d2a8ff"/>
+    <text x="687" y="70" text-anchor="middle" class="svg-label" fill="#d2a8ff">Pulsar</text>
+    <text x="687" y="92" text-anchor="middle" class="svg-sub">Log + queue hybrid</text>
+    <rect x="615" y="106" width="145" height="26" rx="4" fill="#161b22" stroke="#8b949e"/><text x="687" y="123" text-anchor="middle" class="svg-sub">broker | BookKeeper</text>
+    <text x="687" y="152" text-anchor="middle" class="svg-sub">✓ compute≠storage</text>
+    <text x="687" y="172" text-anchor="middle" class="svg-sub">✓ multi-tenancy</text>
+    <text x="687" y="192" text-anchor="middle" class="svg-sub">✓ geo-replication</text>
+    <text x="687" y="222" text-anchor="middle" class="svg-sub">✗ more moving parts</text>
+    <text x="687" y="242" text-anchor="middle" class="svg-sub">✗ heavier ops</text>
+  </g>
+</svg>
+<figcaption>Same "send a message" verb, four very different engines: pick the log for replayable streaming, the queue for work distribution, NATS for low-latency signaling, and Pulsar when you need both models with tenant isolation.</figcaption>
+</figure>
+<table>
+  <tr><th>System</th><th>Model</th><th>Strengths</th><th>Use when</th></tr>
+  <tr><td><strong>Kafka</strong></td><td>Distributed log</td><td>High throughput, replay, streaming</td><td>Event streaming, analytics, many consumers</td></tr>
+  <tr><td><strong>RabbitMQ</strong></td><td>Traditional broker (AMQP)</td><td>Flexible routing, per-message ack, priorities</td><td>Task queues, complex routing, RPC</td></tr>
+  <tr><td><strong>NATS</strong></td><td>Lightweight pub/sub</td><td>Ultra-low latency, tiny footprint</td><td>Microservice signaling, IoT, edge</td></tr>
+  <tr><td><strong>Pulsar</strong></td><td>Log + queue hybrid</td><td>Multi-tenancy, tiered storage, geo-replication</td><td>Both streaming &amp; queuing at scale</td></tr>
+  <tr><td><strong>Redis Streams</strong></td><td>In-memory stream</td><td>Simple, fast, already have Redis</td><td>Lightweight streaming without new infra</td></tr>
+</table>
+<div class="box eli5"><span class="box-title">Log vs queue — the core distinction</span><p>A <strong>queue</strong> (RabbitMQ) is like a to-do list: workers grab tasks and they're removed once done. A <strong>log</strong> (Kafka) is like a ship's logbook: entries stay, and many readers can each read the whole history at their own pace. Choose a queue for distributing work to one worker each; choose a log for broadcasting events to many independent consumers and needing replay.</p></div>
+
+<h4>Why not just use Kafka for everything</h4>
+<p>Kafka is superb at high-throughput ordered logs, but it's a poor fit for some jobs. It has no per-message acknowledgement, no priority queues, no message TTL/delayed delivery, and no easy way to redeliver just one stuck message — a slow message blocks its whole partition. RabbitMQ gives you exactly those queue features; NATS gives you microsecond-latency fire-and-forget signaling with a tiny footprint; Pulsar gives you both models plus multi-tenancy and geo-replication. The right tool depends on whether you need <em>work distribution</em>, <em>low-latency signaling</em>, or <em>durable streaming</em>.</p>
+
+<h4>How their routing models differ under the hood</h4>
+<div class="code-label label-output">Same "send a message," very different mechanics</div>
+<pre><code>RabbitMQ:  producer -&gt; EXCHANGE --(binding rules)--&gt; QUEUE(s) -&gt; consumer ACKs each msg
+           (routing by key/headers; unacked msgs redelivered; supports priority/TTL)
+NATS core: producer -&gt; SUBJECT -&gt; all current subscribers (fire-and-forget, no storage)
+           (JetStream adds persistence + replay on top)
+Pulsar:    producer -&gt; TOPIC -&gt; brokers (compute) -&gt; BookKeeper bookies (storage)
+           (storage/compute separated -&gt; scale independently; subscriptions pick model)
+Kafka:     producer -&gt; PARTITION log -&gt; consumer group advances an OFFSET</code></pre>
+<p>Note Pulsar's key architectural difference: it <em>separates compute (brokers) from storage (BookKeeper)</em>, so you can scale storage without adding brokers — the opposite of Kafka where a broker owns its partitions' data.</p>
+
+<div class="box note">
+  <span class="box-title">Worked example — a RabbitMQ work queue</span>
+  <div class="code-label label-cmd">Fan work out to competing consumers</div>
+  <pre><code># Declare a durable queue and publish a task
+rabbitmqadmin declare queue name=tasks durable=true
+rabbitmqadmin publish routing_key=tasks payload='resize image 42'
+
+# Two workers compete; each message goes to exactly ONE of them, acked when done
+rabbitmqadmin get queue=tasks ackmode=ack_requeue_false count=1</code></pre>
+  <div class="code-label label-output">One message, delivered once, then removed</div>
+  <pre><code>+-------------+----------+---------------+
+| routing_key | payload  | message_count |
++-------------+----------+---------------+
+| tasks       | resize.. | 0             |   # gone after ack (unlike Kafka)
++-------------+----------+---------------+</code></pre>
+</div>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes when choosing</span>
+  <ul>
+    <li><strong>Kafka as a task queue with priorities/TTL.</strong> It has none of these natively — you'll fight the tool. Use RabbitMQ/SQS for work queues.</li>
+    <li><strong>NATS core for data you can't lose.</strong> Core NATS is at-most-once, in-memory; enable <strong>JetStream</strong> for persistence and replay.</li>
+    <li><strong>Adopting Pulsar for its features but ignoring its ops cost.</strong> Running brokers <em>and</em> a BookKeeper cluster is more moving parts than a single Kafka cluster — worth it only if you need its multi-tenancy/geo features.</li>
+  </ul>
+</div>
+
+<h2 id="other-gateways">24. Other API Gateways</h2>
+<p class="section-intro">Kong is one option. The category also includes cloud-native and mesh-integrated gateways — pick based on your platform.</p>
+<table>
+  <tr><th>Gateway</th><th>Best for</th></tr>
+  <tr><td><strong>Kong</strong></td><td>Feature-rich, plugin ecosystem, multi-platform</td></tr>
+  <tr><td><strong>NGINX / NGINX Ingress</strong></td><td>Simple, ubiquitous, high performance</td></tr>
+  <tr><td><strong>Envoy / Contour</strong></td><td>Modern, mesh-aligned, dynamic config</td></tr>
+  <tr><td><strong>AWS API Gateway</strong></td><td>Serverless-native, managed, pay-per-use</td></tr>
+  <tr><td><strong>Traefik</strong></td><td>Container-native, auto-discovery, easy TLS</td></tr>
+  <tr><td><strong>Apigee / Azure APIM</strong></td><td>Full API management, monetization, enterprise</td></tr>
+</table>
+
+<h4>Why the category has so many players</h4>
+<p>"API gateway" spans a spectrum: at one end a lightweight reverse proxy (NGINX/Traefik), in the middle a programmable gateway with a plugin ecosystem (Kong, Envoy), and at the far end full API-management platforms with billing, quotas, and developer marketplaces (Apigee, Azure APIM). Cloud vendors also offer managed, serverless gateways (AWS API Gateway) that trade flexibility for zero ops. They coexist because teams sit at different points on the "control vs convenience" and "self-hosted vs managed" axes.</p>
+
+<h4>How they differ architecturally</h4>
+<div class="code-label label-output">Config model &amp; data path at a glance</div>
+<pre><code>NGINX Ingress : file/template config, reload on change   — simple, very fast
+Traefik       : auto-discovers services (labels/CRDs)     — great for containers
+Envoy/Contour : dynamic config via xDS API (no reloads)   — mesh-aligned, hot updates
+AWS API GW    : fully managed, config in AWS, pay-per-call — no servers to run
+Kong          : plugins + declarative/CRD config          — feature-rich, portable
+Apigee/APIM   : gateway + full lifecycle/monetization      — enterprise API products</code></pre>
+<p>Envoy's <strong>xDS</strong> dynamic-config API is the notable one: control planes push route/cluster updates over gRPC with <em>no reload</em>, which is why service meshes (Istio) build on it.</p>
+
+<div class="box warn">
+  <span class="box-title">Common mistakes when picking</span>
+  <ul>
+    <li><strong>Choosing an enterprise APM platform for a handful of internal APIs.</strong> You pay in cost and complexity for monetization/portal features you won't use.</li>
+    <li><strong>Managed gateway lock-in surprise.</strong> AWS API Gateway is great until you need a plugin it doesn't offer or want to move clouds — weigh portability.</li>
+    <li><strong>Running a full gateway where an Ingress would do.</strong> If you only need TLS + path routing, a plain NGINX/Traefik Ingress is less to operate than Kong.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">From doorman to full concierge service</span>
+  <p>NGINX/Traefik are a doorman who checks tickets and points the way. Kong/Envoy are a concierge with a toolkit (auth, limits, transforms) you can extend. Apigee/APIM are a whole guest-services department that also bills guests and runs the loyalty program. Pick the level of service the venue actually needs — hiring a concierge team to guard a garden gate is overkill.</p>
+</div>
+
+<h2 id="choosing">25. Choosing the Right Tool</h2>
+<div class="box best"><span class="box-title">A decision framework</span><ul>
+  <li><strong>Need event streaming, replay, many consumers, analytics?</strong> → Kafka (or Pulsar/Kinesis).</li>
+  <li><strong>Need task queues, complex routing, RPC?</strong> → RabbitMQ (or SQS on AWS).</li>
+  <li><strong>Need ultra-low-latency service signaling?</strong> → NATS.</li>
+  <li><strong>Fronting microservices on Kubernetes?</strong> → Kong / Envoy-based gateway, moving to Gateway API.</li>
+  <li><strong>All-in on serverless/AWS?</strong> → API Gateway + SQS/SNS/EventBridge.</li>
+  <li><strong>Full API product with external devs?</strong> → Kong Enterprise / Apigee / APIM.</li>
+</ul><p>The skill isn't memorizing one tool — it's recognizing the <em>pattern</em> (log vs queue, gateway vs mesh) and matching it to requirements.</p></div>
+
+<h4>Why start from requirements, not tools</h4>
+<p>Every tool in this guide is excellent at what it was designed for and mediocre outside it. Leading with "we'll use Kafka" (because it's popular) instead of "we need replayable, high-throughput events consumed by many independent teams" is how teams end up bending a tool against its grain — fighting Kafka's lack of per-message acks, or fighting RabbitMQ's lack of replay. Nail the requirement first; the tool usually becomes obvious.</p>
+
+<h4>How to reason it through</h4>
+<div class="code-label label-output">A quick decision tree</div>
+<pre><code>Do consumers need to REPLAY history or is the data read by MANY teams?
+  ├─ yes -&gt; LOG        (Kafka; Pulsar/Kinesis as alternatives)
+  └─ no  -&gt; is it discrete WORK handled once, maybe with priority/retry?
+            ├─ yes -&gt; QUEUE   (RabbitMQ; SQS on AWS)
+            └─ no  -&gt; just low-latency service-to-service signaling?
+                      └─ yes -&gt; NATS (JetStream if it must persist)
+
+Fronting HTTP APIs?
+  ├─ on Kubernetes, want plugins/portability -&gt; Kong / Envoy-based + Gateway API
+  ├─ all-in on AWS serverless               -&gt; AWS API Gateway + SQS/SNS/EventBridge
+  └─ need monetization / external dev portal -&gt; Kong Enterprise / Apigee / APIM</code></pre>
+
+<div class="box warn">
+  <span class="box-title">Common decision mistakes</span>
+  <ul>
+    <li><strong>Résumé-driven design.</strong> Picking the trendiest tool over the fitting one adds ops burden your team pays for forever.</li>
+    <li><strong>One tool to rule them all.</strong> Real systems often run <em>both</em> a log and a queue — Kafka for events, RabbitMQ/SQS for tasks. That's healthy, not a failure.</li>
+    <li><strong>Ignoring operational reality.</strong> A managed service (MSK, SQS, API Gateway) you can actually run beats a self-hosted best-in-class tool your team can't operate at 3am.</li>
+  </ul>
+</div>
+
+<div class="box eli5">
+  <span class="box-title">Match the vehicle to the trip</span>
+  <p>You wouldn't take a sports car to move house or a moving truck to a race. Kafka, RabbitMQ, NATS, Kong, and API Gateway are different vehicles tuned for different trips. The expert move isn't loving one vehicle — it's describing the trip (how far, how much cargo, how fast, who's driving) and letting that pick the vehicle.</p>
+</div>
+
+<div class="box eli5"><span class="box-title">You now know the messaging &amp; gateway landscape</span><p>From Kafka fundamentals through replication/ISR, exactly-once, Streams, Connect, tuning and security — plus Kong from basics to hybrid clustering, plugins, and Gateway API — and how the whole category compares (RabbitMQ, NATS, Pulsar, and alternative gateways). You can now choose and operate the right messaging and API-gateway tools for any architecture.</p></div>
+
+<h2 id="best-practices">26. Best Practices — the checklist</h2>
+<div class="box best"><span class="box-title">Kafka + Kong production checklist</span><ul>
+  <li><strong>Kafka:</strong> replication factor 3, <code>min.insync.replicas=2</code>, spread across AZs, KRaft mode, Schema Registry, monitor consumer lag.</li>
+  <li><strong>Kafka consumers:</strong> idempotent processing; assume at-least-once; size partitions for future scale.</li>
+  <li><strong>Kong:</strong> declarative/GitOps config; auth + rate-limit on every public route; TLS termination; Prometheus plugin.</li>
+  <li><strong>Both:</strong> run via operators (Strimzi/Kong Ingress Controller) on Kubernetes; export metrics &amp; traces to your <a href="observability-k8s-guide.html">observability stack</a>.</li>
+  <li>Manage all of it as code through <a href="cicd-complete-guide.html">CI/CD</a>.</li>
+</ul></div>
+
+<h2 id="troubleshooting">27. Troubleshooting Playbook</h2>
+<div class="trouble"><h4>Kafka: consumer lag growing</h4><p>Consumers can't keep up. Add consumers (up to partition count), optimize processing, or increase partitions. Check for a stuck/failing consumer causing constant rebalances.</p></div>
+<div class="trouble"><h4>Kafka: messages out of order</h4><p>Order is only guaranteed <em>within</em> a partition. Ensure related messages share a key so they land in the same partition. Cross-partition ordering isn't a Kafka guarantee.</p></div>
+<div class="trouble"><h4>Kafka: "NotEnoughReplicas" on produce</h4><p>Fewer in-sync replicas than <code>min.insync.replicas</code> (a broker is down). Restore the broker; producers with <code>acks=all</code> correctly refuse to risk data loss.</p></div>
+<div class="trouble"><h4>Kong: 401/403 on a route</h4><p>An auth plugin is active but credentials are missing/invalid. Verify the consumer &amp; credential exist and the client sends the right header/key. Check plugin scope (global vs route).</p></div>
+<div class="trouble"><h4>Kong: 502/503 upstream errors</h4><p>Kong can't reach the backend. Check the Service <code>url</code>/upstream targets, that the pod/service is healthy, and DNS resolves inside the cluster.</p></div>
+
+<div class="box note"><span class="box-title">Where to go next</span><p>Run both on the <a href="kubernetes-complete-guide.html">Kubernetes guide</a>'s cluster, watch them with the <a href="observability-k8s-guide.html">Observability guide</a>, and secure them with the <a href="security-devsecops-guide.html">Security guide</a>. Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>

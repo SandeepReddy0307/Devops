@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Mastery — The Complete Learning Path</title>
+<style>
+  :root{
+    --bg:#080b10; --bg2:#0e131b; --panel:#141b24; --panel2:#1a222d; --border:#26313d;
+    --text:#c9d4e0; --dim:#8a97a6; --head:#ffffff; --accent:#5cc8ff; --accent2:#7ee787;
+    --linux:#f5be2d;--prog:#4d9fff;--git:#f05133;--net:#3fb950;--docker:#2496ed;--cicd:#2dba7f;
+    --aws:#ff9900;--tf:#8b5cf6;--ansible:#ee0000;--k8s:#326ce5;--data:#e07b39;--msg:#00c2e0;
+    --obs:#f46800;--sec:#e5484d;--sre:#4285f4;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; font-size:clamp(15px,0.5vw+13px,18px);}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.7;
+    background-image:radial-gradient(900px 500px at 80% -100px,rgba(92,200,255,.10),transparent 60%),radial-gradient(700px 500px at 10% 200px,rgba(126,231,135,.07),transparent 55%);}
+  a{color:var(--accent);text-decoration:none;}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 6rem;}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0;flex-wrap:wrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--head);font-size:1.05rem;}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#5cc8ff,#7ee787);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .topnav{display:flex;gap:8px;flex-wrap:wrap;}
+  .topnav a{font-size:.8rem;color:var(--dim);border:1px solid var(--border);padding:6px 12px;border-radius:999px;}
+  .topnav a:hover{color:var(--accent);border-color:var(--accent);}
+
+  /* hero */
+  .hero{text-align:center;padding:clamp(40px,7vw,90px) 0 8px;}
+  .hero .kicker{display:inline-block;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);border:1px solid var(--border);border-radius:999px;padding:7px 16px;margin-bottom:24px;background:rgba(126,231,135,.05);}
+  .hero h1{font-size:clamp(2.2rem,5.5vw,4rem);line-height:1.05;margin:0 0 18px;color:var(--head);font-weight:800;letter-spacing:-.02em;}
+  .hero h1 .g{background:linear-gradient(90deg,#5cc8ff,#7ee787);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{font-size:clamp(1rem,1.6vw,1.22rem);color:var(--dim);max-width:660px;margin:0 auto;}
+  .hero .cta{display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .btn{padding:13px 26px;border-radius:11px;font-weight:700;font-size:.95rem;display:inline-block;}
+  .btn-p{background:linear-gradient(90deg,#2b8fff,#5cc8ff);color:#04121f;}
+  .btn-p:hover{filter:brightness(1.08);}
+  .btn-g{border:1px solid var(--border);color:var(--text);background:var(--panel);}
+  .btn-g:hover{border-color:var(--accent);}
+  .metrics{display:flex;gap:clamp(20px,5vw,56px);justify-content:center;flex-wrap:wrap;margin-top:46px;}
+  .metric b{display:block;font-size:clamp(1.6rem,3vw,2rem);color:var(--head);font-weight:800;}
+  .metric span{font-size:.8rem;color:var(--dim);}
+
+  /* section heads */
+  .shead{text-align:center;margin:clamp(28px,4vw,44px) 0 6px;}
+  .shead h2{font-size:clamp(1.5rem,3vw,2rem);color:var(--head);margin:0;font-weight:800;}
+  .shead p{color:var(--dim);max-width:640px;margin:8px auto 0;}
+
+  /* what-is panel */
+  .about{background:var(--panel);border:1px solid var(--border);border-left:4px solid #d2a8ff;border-radius:16px;padding:24px 28px;margin:24px 0;}
+  .about h3{margin:0 0 8px;color:#d2a8ff;font-size:1.05rem;}
+
+  /* roadmap phase band (horizontal, scrolls on small screens) */
+  .phases{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:26px 0;}
+  @media(max-width:900px){.phases{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.phases{grid-template-columns:1fr;}}
+  .phase{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+  .phase::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--pc);}
+  .phase .pnum{font-size:.7rem;font-weight:800;letter-spacing:.1em;color:var(--pc);}
+  .phase h4{margin:6px 0 4px;color:var(--head);font-size:1rem;}
+  .phase p{margin:0;font-size:.8rem;color:var(--dim);}
+
+  /* guide grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:18px;margin:26px 0;}
+  .card{display:block;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;transition:transform .16s,border-color .16s,background .16s;overflow:hidden;}
+  .card:hover{transform:translateY(-4px);border-color:var(--c);background:var(--panel2);}
+  .card .step{position:absolute;top:16px;right:18px;font-size:2.2rem;font-weight:800;color:var(--c);opacity:.16;line-height:1;}
+  .card .ic{width:46px;height:46px;border-radius:12px;background:color-mix(in srgb,var(--c) 20%,transparent);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px;}
+  .card h3{margin:0 0 4px;color:var(--head);font-size:1.15rem;}
+  .card .tag{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c);}
+  .card p{margin:8px 0 0;font-size:.86rem;color:var(--dim);}
+  .card .go{margin-top:14px;font-size:.8rem;font-weight:700;color:var(--c);}
+
+  /* tips */
+  .tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;margin:24px 0;}
+  .tip{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .tip .e{font-size:22px;} .tip h4{margin:8px 0 4px;color:var(--head);font-size:.98rem;} .tip p{margin:0;font-size:.84rem;color:var(--dim);}
+
+  code{background:#0c1219;border:1px solid var(--border);padding:1px 6px;border-radius:5px;font-family:"SF Mono",Consolas,monospace;font-size:.82em;color:#ffb787;}
+  footer{text-align:center;color:var(--dim);font-size:.8rem;margin-top:70px;border-top:1px solid var(--border);padding-top:26px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div class="brand"><span class="logo">🚀</span> Sudo Learn DevOps</div>
+  <nav class="topnav">
+    <a href="#roadmap">Roadmap</a>
+    <a href="#guides">All 15 guides</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <span class="kicker">Zero → Hero · 15 in-depth guides</span>
+  <h1>Master DevOps<br> <span class="g">Zero to Hero</span></h1>
+  <p>Break things in the guide so you don't break them in prod. 💥</p>
+</header>
+
+<section id="roadmap" class="shead">
+  <h2>The learning path — 5 phases</h2>
+  <p>The order follows the community's most-used DevOps roadmaps. Move through the phases in order; each builds on the last.</p>
+</section>
+<div class="phases">
+  <div class="phase" style="--pc:var(--linux)"><div class="pnum">PHASE 1</div><h4>Foundations</h4><p>Linux, Programming, Git, Networking</p></div>
+  <div class="phase" style="--pc:var(--aws)"><div class="pnum">PHASE 2</div><h4>Infrastructure</h4><p>Cloud/AWS, Terraform, Ansible</p></div>
+  <div class="phase" style="--pc:var(--docker)"><div class="pnum">PHASE 3</div><h4>Build &amp; Ship</h4><p>Docker, CI/CD</p></div>
+  <div class="phase" style="--pc:var(--k8s)"><div class="pnum">PHASE 4</div><h4>Scale &amp; Data</h4><p>Kubernetes, Databases, Messaging</p></div>
+  <div class="phase" style="--pc:var(--sre)"><div class="pnum">PHASE 5</div><h4>Operate &amp; Harden</h4><p>Observability, Security, SRE</p></div>
+</div>
+
+<section id="guides" class="shead">
+  <h2>All 15 guides — in learning order</h2>
+  <p>Click any card to open the full guide. The big number is your step in the path.</p>
+</section>
+<div class="grid">
+  <a class="card" style="--c:var(--linux)" href="linux-complete-guide.html"><span class="step">1</span><div class="ic">🐧</div><span class="tag">Foundations</span><h3>Linux &amp; Shell</h3><p>The OS everything runs on: terminal, filesystem, permissions, processes, systemd, and shell scripting.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--prog)" href="programming-automation-guide.html"><span class="step">2</span><div class="ic">‹/›</div><span class="tag">Foundations</span><h3>Programming</h3><p>Python, Go &amp; Bash for automation: APIs, cloud SDKs, testing, error handling, packaging.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--git)" href="git-complete-guide.html"><span class="step">3</span><div class="ic">⎇</div><span class="tag">Foundations</span><h3>Git</h3><p>Version control &amp; collaboration: branching, merging, rebase, PRs, hooks, recovery.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--net)" href="networking-dns-complete-guide.html"><span class="step">4</span><div class="ic">🌐</div><span class="tag">Foundations</span><h3>Networking &amp; DNS</h3><p>OSI/TCP-IP, subnetting, DNS, HTTP/TLS, load balancing, and diagnostics.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--aws)" href="cloud-aws-complete-guide.html"><span class="step">5</span><div class="ic">☁️</div><span class="tag">Infrastructure</span><h3>Cloud &amp; AWS</h3><p>EC2, VPC, IAM, storage, databases, serverless, landing zones, cost, Well-Architected.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--tf)" href="terraform-complete-guide.html"><span class="step">6</span><div class="ic">△</div><span class="tag">Infrastructure</span><h3>Terraform &amp; IaC</h3><p>HCL, state, modules, workspaces, policy-as-code, Terragrunt, large-scale patterns.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--ansible)" href="ansible-complete-guide.html"><span class="step">7</span><div class="ic">◎</div><span class="tag">Infrastructure</span><h3>Ansible</h3><p>Config management: playbooks, roles, idempotency, Vault, dynamic inventory, rolling updates.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--docker)" href="docker-complete-guide.html"><span class="step">8</span><div class="ic">🐳</div><span class="tag">Build &amp; Ship</span><h3>Docker</h3><p>Containers, images, Dockerfiles, multi-stage builds, Compose, BuildKit, multi-arch.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--cicd)" href="cicd-complete-guide.html"><span class="step">9</span><div class="ic">⟲</div><span class="tag">Build &amp; Ship</span><h3>CI/CD</h3><p>Build → test → ship: pipelines, GitHub Actions/Jenkins/GitLab, strategies, DORA, GitOps.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--k8s)" href="kubernetes-complete-guide.html"><span class="step">10</span><div class="ic">⎈</div><span class="tag">Scale &amp; Data</span><h3>Kubernetes</h3><p>Pods, Deployments, Services, Ingress, autoscaling, Helm, operators, service mesh, GitOps.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--data)" href="databases-data-complete-guide.html"><span class="step">11</span><div class="ic">🗄️</div><span class="tag">Scale &amp; Data</span><h3>Databases &amp; Data</h3><p>SQL, indexing, ACID, NoSQL, CAP, replication, sharding, ETL/ELT, warehouses, streaming.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--msg)" href="kafka-kong-complete-guide.html"><span class="step">12</span><div class="ic">✉️</div><span class="tag">Scale &amp; Data</span><h3>Messaging &amp; Gateways</h3><p>Kafka, RabbitMQ, NATS, Pulsar &amp; API gateways (Kong): topics, streams, routing, rate limiting.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--obs)" href="observability-k8s-guide.html"><span class="step">13</span><div class="ic">📊</div><span class="tag">Operate</span><h3>Observability</h3><p>Metrics (Prometheus), logs (Loki), traces (OpenTelemetry), dashboards, SLOs, alerting.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--sec)" href="security-devsecops-guide.html"><span class="step">14</span><div class="ic">🔒</div><span class="tag">Harden</span><h3>Security &amp; DevSecOps</h3><p>Threat modeling, crypto/TLS, SAST/DAST, secrets/Vault, supply chain, Zero Trust.</p><div class="go">Open guide →</div></a>
+  <a class="card" style="--c:var(--sre)" href="sre-complete-guide.html"><span class="step">15</span><div class="ic">⏱️</div><span class="tag">Capstone</span><h3>SRE &amp; Reliability</h3><p>SLIs/SLOs, error budgets, failure modes, chaos engineering, on-call, postmortems, AIOps.</p><div class="go">Open guide →</div></a>
+</div>
+
+<footer>
+  DevOps Mastery · 15 connected guides · absolute basics → lead-engineer level<br>
+  Linux · Programming · Git · Networking · Cloud/AWS · Terraform · Ansible · Docker · CI/CD · Kubernetes · Databases · Messaging &amp; API Gateways · Observability · Security · SRE
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRE Complete Guide — Site Reliability Engineering</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-alt: #161b22; --bg-code: #1e242c; --sidebar: #11151c;
+    --text: #c9d1d9; --text-dim: #8b949e; --heading: #ffffff;
+    --accent: #58a6ff; --accent2: #7ee787; --border: #30363d;
+    --brand: #4285f4; --warn: #f0883e; --danger: #ff7b72; --tip: #56d364;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .layout { display: flex; }
+  .sidebar { width: 320px; background: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; padding: 0 0 40px 0; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--sidebar); z-index: 10; }
+  .sidebar-header h1 { font-size: 18px; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header .logo { width: 28px; height: 28px; background: var(--brand); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 13px; }
+  .sidebar-header p { font-size: 12px; color: var(--text-dim); margin: 6px 0 0; }
+  .search-box { width: 100%; padding: 8px 12px; margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+  .nav { padding: 10px 0; }
+  .nav-group-title { padding: 12px 20px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 700; }
+  .nav a { display: block; padding: 6px 20px 6px 28px; color: var(--text-dim); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; }
+  .nav a:hover { color: var(--accent); background: rgba(88,166,255,0.06); }
+  .nav a.active { color: var(--accent); border-left-color: var(--brand); background: rgba(66,133,244,0.12); }
+  .content { margin-left: 320px; padding: 40px 60px 120px; max-width: 1000px; }
+  @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 100; } .sidebar.open { transform: translateX(0); } .content { margin-left: 0; padding: 20px; } .menu-toggle { display: inline-flex !important; } }
+  .menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--brand); color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  h1, h2, h3, h4 { color: var(--heading); line-height: 1.3; scroll-margin-top: 20px; }
+  h1 { font-size: 34px; border-bottom: 2px solid var(--brand); padding-bottom: 12px; margin-top: 10px; }
+  h2 { font-size: 27px; margin-top: 56px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 21px; margin-top: 36px; color: var(--accent); }
+  h4 { font-size: 17px; margin-top: 24px; color: var(--accent2); }
+  p { margin: 12px 0; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: #e6edf3; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  code { background: var(--bg-code); padding: 2px 6px; border-radius: 4px; font-family: "SF Mono", "Fira Code", Consolas, Monaco, monospace; font-size: 13.5px; color: #ffa657; }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; position: relative; margin: 16px 0; }
+  pre code { background: none; padding: 0; color: #c9d1d9; display: block; }
+  .code-label { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px 4px 0 0; font-weight: 700; margin-top: 16px; margin-bottom: -8px; }
+  .label-cmd { background: #347d39; color: white; }
+  .label-promql { background: #e6522c; color: white; }
+  .label-output { background: #444c56; color: #c9d1d9; }
+  .label-config { background: #1f6feb; color: white; }
+  .box { border-radius: 8px; padding: 14px 18px; margin: 18px 0; border-left: 4px solid; background: var(--bg-alt); }
+  .box p:first-child { margin-top: 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; display: block; margin-bottom: 6px; }
+  .tip { border-color: var(--tip); } .tip .box-title { color: var(--tip); }
+  .warn { border-color: var(--warn); } .warn .box-title { color: var(--warn); }
+  .danger { border-color: var(--danger); } .danger .box-title { color: var(--danger); }
+  .note { border-color: var(--accent); } .note .box-title { color: var(--accent); }
+  .best { border-color: var(--brand); background: rgba(66,133,244,0.06); } .best .box-title { color: var(--brand); } .best .box-title::before { content: "★ "; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); color: var(--heading); }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .trouble { background: rgba(255,123,114,0.05); border: 1px solid rgba(255,123,114,0.3); border-radius: 8px; padding: 4px 18px; margin: 18px 0; }
+  .trouble h4 { color: var(--danger); }
+  .lead { font-size: 18px; color: var(--text-dim); }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; background: var(--brand); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 20px; opacity: 0; transition: opacity .3s; z-index: 50; }
+  .back-to-top.show { opacity: 0.9; }
+  .section-intro { font-size: 16px; color: var(--text-dim); margin-bottom: 20px; }
+  figure.diagram { margin: 24px 0; padding: 20px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+  figure.diagram svg { max-width: 100%; height: auto; }
+  figure.diagram figcaption { margin-top: 12px; font-size: 13px; color: var(--text-dim); font-style: italic; }
+  .svg-label { font: 600 13px -apple-system, sans-serif; fill: #c9d1d9; }
+  .svg-sub { font: 400 11px -apple-system, sans-serif; fill: #8b949e; }
+  .svg-title { font: 700 14px -apple-system, sans-serif; fill: #fff; }
+  .eli5 { border-color: #d2a8ff; background: rgba(210,168,255,0.06); }
+  .eli5 .box-title { color: #d2a8ff; } .eli5 .box-title::before { content: "🧑‍🏫 "; }
+
+  /* ===== Responsive & zoom-friendly overrides (round 7) ===== */
+  :root { --sb-w: clamp(240px, 22vw, 320px); }
+  html { font-size: clamp(15px, 0.55vw + 13px, 18px); }
+  .sidebar { width: var(--sb-w); }
+  .content { margin-left: var(--sb-w); max-width: 68rem; width: auto; padding: 2.5rem clamp(16px, 4vw, 60px) 7rem; }
+  img, svg, video, canvas { max-width: 100%; height: auto; }
+  figure.diagram svg { width: 100%; height: auto; }
+  pre { max-width: 100%; overflow-x: auto; }
+  table { display: block; overflow-x: auto; max-width: 100%; }
+  .content { overflow-wrap: anywhere; }
+  @media (max-width: 1200px) { .content { max-width: none; } }
+  @media (max-width: 900px) {
+    .sidebar { width: min(85vw, 320px); transform: translateX(-100%); transition: transform .3s; z-index: 100; }
+    .sidebar.open { transform: translateX(0); }
+    .content { margin-left: 0; padding: 3.2rem 1rem 5rem; }
+    .menu-toggle { display: inline-flex !important; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.7rem; } h2 { font-size: 1.4rem; } h3 { font-size: 1.15rem; }
+    .content { padding: 3.2rem .8rem 4rem; }
+  }
+
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1><span class="logo">SRE</span> Site Reliability Eng.</h1>
+    <p>Reliability as an engineering discipline</p>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:9px 18px;background:var(--brand,#4285f4);color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);">⏱ Home</a>
+    <input type="text" class="search-box" id="navSearch" placeholder="Filter sections..." onkeyup="filterNav()">
+  </div>
+  <nav class="nav" id="navList">
+    <div class="nav-group-title">Part 1 — Foundations</div>
+    <a href="#intro">0. How to use this guide</a>
+    <a href="#what-is-sre">1. What is SRE?</a>
+    <a href="#sre-vs-devops">2. SRE vs DevOps</a>
+    <a href="#toil">3. Toil &amp; Automation</a>
+
+    <div class="nav-group-title">Part 2 — Reliability Math</div>
+    <a href="#sli-slo">4. SLIs, SLOs &amp; SLAs</a>
+    <a href="#error-budgets">5. Error Budgets</a>
+    <a href="#nines">6. The Nines of Availability</a>
+
+    <div class="nav-group-title">Part 3 — Operating</div>
+    <a href="#monitoring">7. Monitoring &amp; the Golden Signals</a>
+    <a href="#oncall">8. On-Call &amp; Incident Management</a>
+    <a href="#postmortems">9. Blameless Postmortems</a>
+    <a href="#capacity">10. Capacity Planning</a>
+
+    <div class="nav-group-title">Part 4 — Resilience</div>
+    <a href="#resilience">11. Designing for Failure</a>
+    <a href="#chaos">12. Chaos Engineering</a>
+    <a href="#release">13. Safe Releases</a>
+
+    <div class="nav-group-title">Part 5 — Reliability Engineering</div>
+    <a href="#reliability-math">14. Reliability Math &amp; Modeling</a>
+    <a href="#slo-engineering">15. SLO Engineering Deep</a>
+    <a href="#failure-modes">16. Distributed Failure Modes</a>
+    <a href="#load-shedding">17. Load Shedding &amp; Backpressure</a>
+    <a href="#capacity-deep">18. Capacity Modeling Deep</a>
+
+    <div class="nav-group-title">Part 6 — Operations Maturity</div>
+    <a href="#dr-bcp">19. DR &amp; Business Continuity</a>
+    <a href="#chaos-deep">20. Advanced Chaos Engineering</a>
+    <a href="#oncall-maturity">21. On-Call Maturity</a>
+    <a href="#prr">22. Production Readiness Reviews</a>
+    <a href="#toil-deep">23. Toil Taxonomy &amp; Automation</a>
+    <a href="#culture">24. SRE Org &amp; Culture</a>
+
+    <div class="nav-group-title">Part 7 — Modern &amp; AI</div>
+    <a href="#aiops">25. AIOps &amp; AI-Assisted DevOps</a>
+
+    <div class="nav-group-title">Part 8 — Reference</div>
+    <a href="#best-practices">26. Best Practices</a>
+    <a href="#troubleshooting">27. Reliability Playbook</a>
+  </nav>
+</aside>
+
+<main class="content" id="top">
+<h1 id="intro">Site Reliability Engineering: The Complete Guide</h1>
+<p class="lead">Reliability treated as an engineering problem: measure it with SLOs, budget for failure, automate away toil, and respond to incidents calmly — the discipline that keeps large systems dependable.</p>
+
+<div class="box note">
+  <span class="box-title">📖 How to read this guide</span>
+  <p>SRE is where all the other guides converge into an operating philosophy. Each topic: <strong>the idea</strong>, <strong>why it works</strong>, and <strong>★ how to apply it</strong>. It builds directly on the <a href="observability-k8s-guide.html">Observability guide</a> (the data) and the <a href="cicd-complete-guide.html">CI/CD guide</a> (safe delivery).</p>
+</div>
+
+<h2 id="what-is-sre">1. What is SRE?</h2>
+<p class="section-intro">Site Reliability Engineering, born at Google, is "what happens when you ask a software engineer to design an operations team." It applies software engineering to operations problems — reliability, scale, and toil reduction.</p>
+
+<div class="box eli5">
+  <span class="box-title">SRE = treating reliability like a product feature you can measure</span>
+  <p>Most teams treat "keep it running" as a vague, heroic effort. SRE makes it concrete and measurable: decide <em>exactly</em> how reliable the service needs to be (an SLO), measure it continuously, and spend engineering effort precisely where the numbers say it's needed. It replaces "try harder" with data-driven decisions — and accepts that 100% reliability is neither possible nor worth the cost.</p>
+</div>
+
+<h4>Why SRE exists</h4>
+<p>Traditional ops teams were rewarded for stability and dev teams for velocity, so they pulled in opposite directions: dev wanted to ship, ops wanted to freeze. As systems grew, the manual "keep it running" work grew linearly with them, and the only way to cope was to hire more operators — which doesn't scale and burns people out. SRE exists to break that trap by treating operations as a <em>software problem</em>: if a task is repetitive, you write code to do it; if reliability is contested, you measure it and let the data decide. The result is a team whose workload grows sub-linearly with the system it runs.</p>
+
+<h4>How it works under the hood</h4>
+<p>SRE rests on three mechanisms that interlock: (1) an <strong>SLO</strong> — a numeric reliability target measured from the user's perspective; (2) an <strong>error budget</strong> — the allowed unreliability derived directly from the SLO (<code>budget = 1 − SLO</code>); and (3) a <strong>toil cap</strong> — a hard limit (~50%) on manual work so engineers always have time to build automation. The SLO turns "is it reliable enough?" into arithmetic, the error budget converts that arithmetic into a spending decision (ship features vs. fix reliability), and the toil cap guarantees the capacity to actually do the engineering.</p>
+
+<div class="box note"><span class="box-title">Worked example — the reliability decision as math</span>
+<p>Suppose the checkout API has an SLO of 99.9% availability over 28 days. That is a monthly error budget of <code>0.1% × 40,320 min ≈ 40.3 min</code> of allowed badness. Say a bad deploy already burned 32 minutes this month:</p>
+<div class="code-label label-output">error budget status</div>
+<pre><code>SLO target        = 99.90%
+Budget (28d)      = 40.3 minutes
+Consumed          = 32.0 minutes  (79% spent)
+Remaining         = 8.3 minutes   (21% left)
+Decision          = SLOW DOWN: freeze risky launches, spend
+                    remaining budget only on must-ship fixes</code></pre>
+<p>No meeting, no politics — the 21% figure decides whether the next risky migration ships this week or waits.</p>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Chasing 100%.</strong> Every extra nine multiplies cost while users rarely notice past ~99.9%. Pick "reliable enough," not "perfect."</li>
+  <li><strong>SRE as a rebranded ops queue.</strong> If the team only fights fires and never gets its toil cap, it isn't SRE — it's ops with a new title.</li>
+  <li><strong>SLOs nobody enforces.</strong> An SLO without an error-budget policy is decoration; it must actually change behavior when breached.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>SRE is a household budget for downtime. You decide up front how much "unreliability" you can afford to spend each month, then you either splurge on shipping fast or tighten up and fix things — based on how much budget is left, not on who argues loudest.</p></div>
+
+<h2 id="sre-vs-devops">2. SRE vs DevOps</h2>
+<p class="section-intro">They're complementary, not competing. DevOps is a culture/philosophy; SRE is a specific, prescriptive implementation of it.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 300" role="img" aria-label="DevOps principles mapped to concrete SRE practices">
+  <text x="410" y="26" text-anchor="middle" class="svg-title">"class SRE implements DevOps" — each principle → a mechanism</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="52" width="330" height="222" rx="10" fill="#21262d" stroke="#4285f4" stroke-width="2"/>
+    <text x="195" y="76" text-anchor="middle" class="svg-label" fill="#4285f4">DevOps — the philosophy (what/why)</text>
+    <rect x="460" y="52" width="330" height="222" rx="10" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="625" y="76" text-anchor="middle" class="svg-label" fill="#7ee787">SRE — the implementation (how)</text>
+    <g class="svg-sub">
+      <text x="50" y="110">• Reduce silos</text>
+      <text x="50" y="142">• Accept failure as normal</text>
+      <text x="50" y="174">• Implement change gradually</text>
+      <text x="50" y="206">• Leverage automation</text>
+      <text x="50" y="238">• Measure everything</text>
+      <text x="480" y="110">→ Shared error-budget ownership</text>
+      <text x="480" y="142">→ Blameless postmortems</text>
+      <text x="480" y="174">→ Canary + progressive delivery</text>
+      <text x="480" y="206">→ Toil cap &amp; automation</text>
+      <text x="480" y="238">→ SLIs / SLOs</text>
+    </g>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="360" y1="105" x2="458" y2="105" marker-end="url(#sre-devops)"/>
+      <line x1="360" y1="137" x2="458" y2="137" marker-end="url(#sre-devops)"/>
+      <line x1="360" y1="169" x2="458" y2="169" marker-end="url(#sre-devops)"/>
+      <line x1="360" y1="201" x2="458" y2="201" marker-end="url(#sre-devops)"/>
+      <line x1="360" y1="233" x2="458" y2="233" marker-end="url(#sre-devops)"/>
+    </g>
+  </g>
+  <defs><marker id="sre-devops" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>DevOps names five broad principles; SRE supplies one concrete, testable mechanism for each. You don't pick between them — SRE is a specific way to <em>do</em> DevOps well.</figcaption>
+</figure>
+
+<table>
+  <tr><th></th><th>DevOps</th><th>SRE</th></tr>
+  <tr><td>What it is</td><td>A culture &amp; set of practices</td><td>A concrete engineering role/discipline</td></tr>
+  <tr><td>Focus</td><td>Break down dev/ops silos, automate delivery</td><td>Measure &amp; engineer reliability with SLOs</td></tr>
+  <tr><td>Key artifact</td><td>Pipelines, collaboration</td><td>SLOs, error budgets, postmortems</td></tr>
+  <tr><td>Analogy</td><td>The philosophy</td><td>One concrete way to live it</td></tr>
+</table>
+<div class="box note"><span class="box-title">"class SRE implements DevOps"</span><p>Google's own framing: DevOps defines <em>what</em> (culture of shared ownership, automation, measurement); SRE provides <em>how</em> (specific practices like error budgets and toil caps). If you've followed the other guides, you've been doing DevOps — SRE adds the reliability engineering rigor on top.</p></div>
+
+<h4>Why the distinction matters</h4>
+<p>The two are often pitted against each other in job ads and org charts, but that framing causes real harm: teams adopt "DevOps" as a vague cultural aspiration with no measurable outcome, or hire "SREs" who are just on-call ops with no mandate to change the system. Clarifying the relationship — DevOps is the <em>what/why</em>, SRE is a concrete <em>how</em> — lets you keep the culture (shared ownership, automation) while adopting the specific, testable practices (SLOs, error budgets, toil caps) that make it real.</p>
+
+<h4>How they connect under the hood</h4>
+<p>DevOps names five pillars: reduce silos, accept failure as normal, implement change gradually, leverage tooling/automation, and measure everything. SRE supplies a concrete mechanism for each: cross-functional error-budget ownership (silos), blameless postmortems (accept failure), canary + progressive delivery (gradual change), toil elimination (automation), and SLIs/SLOs (measure). So "class SRE implements DevOps" is literal — each abstract DevOps principle has a specific SRE practice that instantiates it.</p>
+
+<div class="box note"><span class="box-title">Worked example — same goal, two levels of specificity</span>
+<p>DevOps principle: "implement change gradually." That's aspirational. SRE makes it executable and gateable in CI:</p>
+<div class="code-label label-config">progressive rollout gated on the error budget (Argo Rollouts style)</div>
+<pre><code>strategy:
+  canary:
+    steps:
+      - setWeight: 10          # send 10% of traffic to the new version
+      - analysis:              # SRE mechanism: measure before proceeding
+          templates: [success-rate]
+          args: [{ name: slo, value: "0.999" }]
+      - setWeight: 50
+      - pause: { duration: 10m }
+      - setWeight: 100
+# Abort &amp; roll back automatically if measured success-rate &lt; SLO.</code></pre>
+<p>DevOps says "go gradually"; SRE says "10% → measure against 99.9% → 50% → 100%, auto-rollback on breach." The second is testable.</p>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Treating them as rivals.</strong> You don't choose one; SRE is a way to do DevOps well.</li>
+  <li><strong>Cargo-culting SRE titles</strong> without the practices (no SLOs, no toil cap) — you get the burnout without the benefit.</li>
+  <li><strong>Culture without mechanism.</strong> "We do DevOps" with no measurable reliability target is just optimism.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>DevOps is "eat healthy." SRE is the specific meal plan with calorie counts. One is a good idea; the other tells you exactly what to put on the plate today.</p></div>
+
+<h2 id="toil">3. Toil &amp; Automation</h2>
+<p class="section-intro">Toil is manual, repetitive, automatable work that scales with the system and has no lasting value. SRE deliberately measures and eliminates it.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Toil grows with scale unless automated">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Toil scales linearly; automation flattens it</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="70" y1="160" x2="760" y2="160" stroke="#8b949e" stroke-width="1.5"/>
+    <line x1="70" y1="160" x2="70" y2="50" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="415" y="185" text-anchor="middle" class="svg-sub">system scale →</text>
+    <line x1="70" y1="160" x2="740" y2="60" stroke="#ff7b72" stroke-width="2.5"/>
+    <text x="640" y="70" class="svg-sub" fill="#ff7b72">manual toil</text>
+    <path d="M70,160 Q300,120 740,140" stroke="#7ee787" stroke-width="2.5" fill="none"/>
+    <text x="600" y="130" class="svg-sub" fill="#7ee787">with automation</text>
+  </g>
+</svg>
+<figcaption>Without automation, ops effort grows with the system until the team drowns. SRE caps toil (Google's target: &lt;50% of time) and invests the rest in engineering that scales.</figcaption>
+</figure>
+
+<div class="box best"><span class="box-title">The toil budget</span><p>Cap toil at ~50% of an SRE's time; the rest goes to engineering that reduces future toil. If toil exceeds the cap, that's a signal to stop and automate. Track it explicitly — untracked toil silently consumes teams and burns people out.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 220" role="img" aria-label="Healthy versus unhealthy split of toil and engineering time">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Toil cap: keep engineering time from being eaten alive</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="210" y="58" text-anchor="middle" class="svg-label" fill="#7ee787">Healthy (≤50% toil)</text>
+    <rect x="90" y="72" width="240" height="34" rx="6" fill="#ff7b72" opacity="0.85"/>
+    <text x="210" y="94" text-anchor="middle" class="svg-sub" fill="#0d1117">toil 45%</text>
+    <rect x="90" y="112" width="240" height="34" rx="6" fill="#7ee787" opacity="0.85"/>
+    <text x="210" y="134" text-anchor="middle" class="svg-sub" fill="#0d1117">engineering 55%</text>
+    <text x="210" y="176" text-anchor="middle" class="svg-sub">automation compounds → toil shrinks over time</text>
+
+    <text x="610" y="58" text-anchor="middle" class="svg-label" fill="#f0883e">Death spiral (toil unbounded)</text>
+    <rect x="490" y="72" width="240" height="60" rx="6" fill="#ff7b72" opacity="0.9"/>
+    <text x="610" y="107" text-anchor="middle" class="svg-sub" fill="#0d1117">toil 85%</text>
+    <rect x="490" y="138" width="240" height="16" rx="6" fill="#7ee787" opacity="0.6"/>
+    <text x="610" y="176" text-anchor="middle" class="svg-sub">no time to automate → toil keeps growing</text>
+  </g>
+</svg>
+<figcaption>The 50% cap isn't a preference — it's the firewall that reserves engineering capacity by force. Cross it and the team has no time to build the automation that would end the toil, so it only grows: the death spiral on the right.</figcaption>
+</figure>
+
+<h4>Why capping toil is non-negotiable</h4>
+<p>Toil is insidious because each individual instance feels small and "just faster to do by hand." But toil scales with the system, so as traffic and services grow, the same manual tasks recur more often until they consume the entire team — leaving zero time to build the automation that would end them. That's a death spiral: the busier you get, the less able you are to fix why you're busy. The cap exists to reserve engineering capacity by force, before the spiral starts.</p>
+
+<h4>How to compute it under the hood</h4>
+<p>Toil is measured, not guessed. Tag operational tickets/alerts as toil vs. engineering, sum the hours over a window, and divide by total hours. The formula is simply <code>toil% = toil_hours / total_working_hours</code>. When a task's toil crosses a threshold, compare its ongoing cost to the one-time automation cost to decide payback.</p>
+
+<div class="box note"><span class="box-title">Worked example — is it worth automating?</span>
+<p>A nightly cert rotation is done by hand: 15 minutes, 30 times a month, across a 6-person rotation.</p>
+<div class="code-label label-output">toil &amp; automation payback</div>
+<pre><code>Manual cost   = 15 min × 30/month        = 450 min/month = 7.5 hrs/month
+Team capacity = 6 people × 160 hrs        = 960 hrs/month
+Toil share    = 7.5 / 960                 = 0.78% (this task alone)
+
+Automation cost (one-time build+test)     = 12 hrs
+Monthly saving                            = 7.5 hrs
+Payback period = 12 / 7.5                  ≈ 1.6 months  → AUTOMATE</code></pre>
+<p>Anything with a payback under ~a few months is a clear win; the automation also removes the human error and the 3 a.m. version of the task.</p>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Not tracking toil</strong> — untracked toil is invisible and always loses to "urgent" work.</li>
+  <li><strong>Automating rare/one-off tasks</strong> — automation itself is work; low-frequency toil may not pay back.</li>
+  <li><strong>Confusing toil with all ops work</strong> — designing an architecture or handling a novel incident is engineering, not toil.</li>
+  <li><strong>Automating a broken process</strong> — first simplify, then automate; encoding a bad workflow just makes it fail faster.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Toil is doing your dishes by hand every night forever. The toil cap says: spend one weekend installing a dishwasher. You lose the weekend once, then get every future night back.</p></div>
+
+<h2 id="sli-slo">4. SLIs, SLOs &amp; SLAs</h2>
+<p class="section-intro">The vocabulary of reliability. Getting these three straight is the foundation of everything SRE.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 210" role="img" aria-label="SLI measured, SLO target, SLA contract">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">SLI → SLO → SLA</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="70" width="220" height="80" rx="10" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="150" y="98" text-anchor="middle" class="svg-label" fill="#58a6ff">SLI (Indicator)</text>
+    <text x="150" y="120" text-anchor="middle" class="svg-sub">what you measure</text>
+    <text x="150" y="138" text-anchor="middle" class="svg-sub">e.g. % requests &lt;300ms</text>
+    <rect x="300" y="70" width="220" height="80" rx="10" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="410" y="98" text-anchor="middle" class="svg-label" fill="#7ee787">SLO (Objective)</text>
+    <text x="410" y="120" text-anchor="middle" class="svg-sub">your internal target</text>
+    <text x="410" y="138" text-anchor="middle" class="svg-sub">e.g. 99.9% do</text>
+    <rect x="560" y="70" width="220" height="80" rx="10" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="670" y="98" text-anchor="middle" class="svg-label" fill="#f0883e">SLA (Agreement)</text>
+    <text x="670" y="120" text-anchor="middle" class="svg-sub">contract w/ penalty</text>
+    <text x="670" y="138" text-anchor="middle" class="svg-sub">e.g. 99.5% or refund</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="260" y1="110" x2="298" y2="110" marker-end="url(#sr)"/><line x1="520" y1="110" x2="558" y2="110" marker-end="url(#sr)"/></g>
+  </g>
+  <defs><marker id="sr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>SLI is the measurement, SLO is the target you hold yourselves to, SLA is the (looser) promise to customers with consequences. Always set your SLO stricter than your SLA.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Term</th><th>Definition</th><th>Example</th></tr>
+  <tr><td><strong>SLI</strong></td><td>A metric of service health</td><td>Fraction of successful requests</td></tr>
+  <tr><td><strong>SLO</strong></td><td>Target value for an SLI (internal)</td><td>99.9% success over 30 days</td></tr>
+  <tr><td><strong>SLA</strong></td><td>Contractual promise (external, with penalty)</td><td>99.5% or service credits</td></tr>
+</table>
+<div class="box tip"><span class="box-title">Pick SLIs from the user's perspective</span><p>Good SLIs measure what users actually experience — availability, latency, correctness — not internal noise like CPU. The RED method (Rate, Errors, Duration) is a great starting template. See the <a href="observability-k8s-guide.html#slo">Observability SLO section</a> for implementing them in Prometheus.</p></div>
+
+<h4>Why three separate terms</h4>
+<p>People conflate these and it causes real damage: promising customers a number you measure internally (turning your target into a contractual liability), or setting a target with no measurement behind it. Separating them clarifies ownership — the SLI is what your monitoring computes, the SLO is the bar <em>engineering</em> commits to and always sets stricter, and the SLA is what <em>legal/sales</em> promise externally with money attached. The gap between SLO and SLA is your safety margin: you want to breach your internal target and start reacting long before you ever breach the customer contract.</p>
+
+<h4>How an SLI is computed under the hood</h4>
+<p>An SLI is a ratio of <strong>good events</strong> to <strong>valid events</strong>, always between 0 and 1: <code>SLI = good_events / valid_events</code>. "Valid" deliberately excludes noise (health-check probes, requests you don't serve). "Good" is defined per SLI type — for availability, non-5xx responses; for latency, requests served under a threshold. Because it's a ratio of counts, it's cheap to compute continuously and aggregates cleanly over any window.</p>
+
+<div class="box note"><span class="box-title">Worked example — availability SLI in PromQL</span>
+<div class="code-label label-promql">good events / valid events over a rolling 28-day window</div>
+<pre><code>sum(rate(http_requests_total{job="api", code!~"5.."}[28d]))
+/
+sum(rate(http_requests_total{job="api"}[28d]))
+# health checks excluded by not scraping /healthz into this metric</code></pre>
+<div class="code-label label-output">result</div>
+<pre><code>{}  0.99923      # 99.923% good over 28 days
+# SLO = 99.9%  → currently PASSING (0.99923 &gt; 0.999)
+# SLA = 99.5%  → comfortable margin above the contractual floor</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Measuring internals, not users.</strong> CPU% is not an SLI; "% of checkouts that succeeded" is.</li>
+  <li><strong>Counting health checks as valid events</strong> — they inflate the number and hide real user pain.</li>
+  <li><strong>Setting the SLO equal to the SLA.</strong> Leave headroom; breach your own target first, on purpose.</li>
+  <li><strong>Averages instead of percentiles for latency</strong> — a good average can hide a terrible p99.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>SLI is the speedometer reading. SLO is the speed limit you set yourself ("I won't go over 65"). SLA is the ticket you promised the cop you'd never trigger ("I'll never exceed 75"). You watch the speedometer, discipline yourself with the limit, and keep a buffer before the ticket.</p></div>
+
+<h2 id="error-budgets">5. Error Budgets</h2>
+<p class="section-intro">The most powerful idea in SRE: if your SLO is 99.9%, you have a <em>budget</em> of 0.1% unreliability to spend. This turns reliability from an argument into math.</p>
+
+<div class="box eli5">
+  <span class="box-title">Error budget = permission to take risks</span>
+  <p>100% reliability is impossible and pointless to chase (users can't tell 99.999% from 100%, but it costs a fortune). So you agree on "good enough" — say 99.9%. The remaining 0.1% is your <strong>error budget</strong>: a currency you can spend on shipping features fast, running experiments, or doing risky migrations. Budget healthy? Ship boldly. Budget spent? Slow down and fix reliability. No more dev-vs-ops fights — the number decides.</p>
+</div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Error budget burn-down over a 30-day window">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Error-budget burn-down (30-day window)</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="70" y1="210" x2="770" y2="210" stroke="#8b949e" stroke-width="1.5"/>
+    <line x1="70" y1="210" x2="70" y2="50" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="420" y="238" text-anchor="middle" class="svg-sub">time → (day 0 to day 30)</text>
+    <text x="40" y="60" class="svg-sub">100%</text>
+    <text x="48" y="212" class="svg-sub">0%</text>
+    <line x1="70" y1="60" x2="770" y2="210" stroke="#8b949e" stroke-width="1.2" stroke-dasharray="5 5"/>
+    <text x="500" y="150" class="svg-sub" fill="#8b949e" transform="rotate(12 500 150)">ideal "burn rate = 1" line</text>
+    <polyline points="70,60 200,120 330,132 460,190 590,205 700,208" fill="none" stroke="#ff7b72" stroke-width="2.5"/>
+    <circle cx="460" cy="190" r="5" fill="#f0883e"/>
+    <text x="470" y="182" class="svg-sub" fill="#f0883e">fast burn (incident) — below the line → FREEZE</text>
+    <polyline points="70,60 200,72 330,85 460,96 590,110 700,120" fill="none" stroke="#7ee787" stroke-width="2.5"/>
+    <text x="600" y="105" class="svg-sub" fill="#7ee787">healthy: budget remaining → ship</text>
+  </g>
+</svg>
+<figcaption>The dashed line is "spend the budget evenly." Stay above it (green) and you can keep shipping. Drop below it (red, after an incident) and the error-budget policy kicks in: freeze features, fix reliability, earn the budget back.</figcaption>
+</figure>
+
+<table>
+  <tr><th>SLO</th><th>Monthly error budget (downtime)</th></tr>
+  <tr><td>99.9% ("three nines")</td><td>~43 minutes/month</td></tr>
+  <tr><td>99.95%</td><td>~22 minutes/month</td></tr>
+  <tr><td>99.99% ("four nines")</td><td>~4.3 minutes/month</td></tr>
+</table>
+<div class="box best"><span class="box-title">The error-budget policy</span><p>Agree in advance what happens when the budget is exhausted: freeze feature releases and dedicate the team to reliability until it recovers. Write it down, get leadership buy-in. This policy is what gives the error budget teeth — and stops both reckless shipping and paralysis. Automate it with <a href="observability-k8s-guide.html#burn-rate">burn-rate alerts</a>.</p></div>
+
+<h4>Why the budget is derived from the SLO</h4>
+<p>The whole trick is that unreliability isn't a failure to eliminate — it's a resource to allocate. Once you accept an SLO below 100%, the leftover is automatically a permitted amount of failure you may as well spend deliberately (on velocity, experiments, migrations) rather than waste by being needlessly cautious. Deriving it straight from the SLO means the "how much risk can we take?" question already has a numeric answer nobody has to negotiate.</p>
+
+<h4>How burn rate works under the hood</h4>
+<p>Error budget = <code>1 − SLO</code>, expressed as an allowed bad-event fraction over the SLO window. <strong>Burn rate</strong> is how fast you're consuming it relative to "even" consumption: a burn rate of 1 means you'll exactly exhaust the budget at the end of the window; a burn rate of 14.4 means you'd exhaust a 30-day budget in about 2 days. Multi-window burn-rate alerting pages only when a <em>fast</em> window (e.g., 1h) <em>and</em> a slower confirming window (e.g., 5m or 6h) both exceed a threshold — catching real fast burns while ignoring one-off blips.</p>
+
+<div class="box note"><span class="box-title">Worked example — multi-window burn-rate alert</span>
+<div class="code-label label-promql">error rate as a fraction of the 99.9% budget</div>
+<pre><code># burn rate = observed error ratio / (1 - SLO)
+(
+  sum(rate(http_requests_total{code=~"5..",job="api"}[1h]))
+  / sum(rate(http_requests_total{job="api"}[1h]))
+) / (1 - 0.999)</code></pre>
+<div class="code-label label-config">page only when fast AND slow windows agree</div>
+<pre><code>- alert: ErrorBudgetFastBurn
+  expr: burn_rate_1h &gt; 14.4 and burn_rate_5m &gt; 14.4
+  for: 2m
+  labels: { severity: page }
+  annotations:
+    summary: "Burning 30d budget in ~2 days — respond now"</code></pre>
+<div class="code-label label-output">what 14.4 means</div>
+<pre><code>Budget window     = 30 days
+Burn rate         = 14.4
+Time to exhaust   = 30d / 14.4 ≈ 2.08 days  → page-worthy
+(A burn rate of 1 would take the full 30 days = normal)</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>An error-budget policy with no teeth.</strong> If nothing actually freezes when the budget is gone, the budget is fiction.</li>
+  <li><strong>Alerting on raw error rate</strong> instead of burn rate — you page on harmless blips (alert fatigue) and miss slow bleeds.</li>
+  <li><strong>Hoarding the budget.</strong> Unspent budget at month-end isn't a prize — it means you were too cautious and shipped too slowly.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>The error budget is a prepaid gift card for downtime. Burn rate is how fast you're swiping it. Swipe slowly and you can shop all month; swipe 14× too fast and the card's empty in two days — time to stop spending and go earn it back.</p></div>
+
+<h2 id="nines">6. The Nines of Availability</h2>
+<p class="section-intro">"How many nines?" is shorthand for a reliability target — but more nines cost exponentially more.</p>
+<div class="box warn"><span class="box-title">Don't over-buy reliability</span><p>Each extra nine can multiply cost and complexity (more redundancy, more on-call, slower shipping). Match the target to real user and business needs: a batch analytics job doesn't need four nines; a payment API might. Ask "what does the user actually notice and what does downtime cost?" — then pick the cheapest target that meets it. Over-engineering reliability is as wasteful as under-engineering it.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Nines of availability versus allowed downtime per year on a log scale">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Each nine cuts allowed downtime by 10× (log scale)</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="120" y1="220" x2="770" y2="220" stroke="#8b949e" stroke-width="1.5"/>
+    <line x1="120" y1="220" x2="120" y2="50" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="445" y="248" text-anchor="middle" class="svg-sub">availability target →</text>
+    <g class="svg-sub" text-anchor="middle">
+      <rect x="150" y="70" width="70" height="150" rx="6" fill="#ff7b72" opacity="0.85"/><text x="185" y="238">99%</text><text x="185" y="62">3.65 d</text>
+      <rect x="270" y="120" width="70" height="100" rx="6" fill="#f0883e" opacity="0.85"/><text x="305" y="238">99.9%</text><text x="305" y="112">8.77 h</text>
+      <rect x="390" y="160" width="70" height="60" rx="6" fill="#e3b341" opacity="0.85"/><text x="425" y="238">99.95%</text><text x="425" y="152">4.38 h</text>
+      <rect x="510" y="185" width="70" height="35" rx="6" fill="#58a6ff" opacity="0.85"/><text x="545" y="238">99.99%</text><text x="545" y="177">52.6 m</text>
+      <rect x="630" y="203" width="70" height="17" rx="6" fill="#7ee787" opacity="0.85"/><text x="665" y="238">99.999%</text><text x="665" y="196">5.26 m</text>
+    </g>
+    <text x="445" y="42" text-anchor="middle" class="svg-sub">bar height = downtime allowed per YEAR</text>
+  </g>
+</svg>
+<figcaption>Going from three nines (8.77 h/yr) to five nines (5.26 min/yr) shrinks your downtime budget 100×. The engineering cost, though, rises far faster than linearly — buy the vehicle the trip actually needs.</figcaption>
+</figure>
+
+<h4>Why nines are a logarithmic scale</h4>
+<p>"Nines" exist as shorthand because reliability improvements are multiplicative, not additive. Each additional nine cuts allowed downtime by 10×, but the engineering to achieve it doesn't get 10% harder — it often gets an order of magnitude harder (more redundancy, faster automated recovery, tighter change control, larger on-call investment). Expressing targets in nines makes the exponential cost curve visible so you don't casually promise "five nines" without understanding it means ~5 minutes of downtime <em>per year</em>.</p>
+
+<h4>How to convert nines to a time budget</h4>
+<p>Downtime allowed = <code>(1 − availability) × period</code>. A year is 525,600 minutes; a 30-day month is 43,200 minutes. So three nines is <code>0.001 × 525,600 ≈ 526 min/year ≈ 8.77 hrs</code>. Crucially, whether you can meet a target depends on your recovery speed: availability ≈ <code>MTBF / (MTBF + MTTR)</code>, so cutting MTTR (via automation and rollback) buys nines more cheaply than trying never to fail.</p>
+
+<div class="box note"><span class="box-title">Worked example — what one more nine really costs you</span>
+<div class="code-label label-output">downtime budget per nine (per 30-day month)</div>
+<pre><code>99%     (two nines)   = 0.01   × 43,200 = 432   min  (7.2 hrs)
+99.9%   (three nines) = 0.001  × 43,200 = 43.2  min
+99.99%  (four nines)  = 0.0001 × 43,200 = 4.32  min
+99.999% (five nines)  = 0.00001× 43,200 = 0.43  min (26 sec)
+
+Going 99.9% → 99.99% means: a single 5-minute deploy blip
+would blow your ENTIRE monthly budget. That forces zero-downtime
+deploys, multi-AZ redundancy, and automated failover — a big jump
+in cost for one extra nine.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Chasing 100%.</strong> The last fraction costs the most and users can't perceive it — a fool's errand.</li>
+  <li><strong>One nine for everything.</strong> A batch report and a payments API need very different targets; over-buying reliability wastes money and slows delivery.</li>
+  <li><strong>Ignoring dependencies.</strong> You can't be more available than the floor set by your hard dependencies (see the series math in §16).</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Each nine is like adding another backup generator, another spare tire, another safety net. Going from three to five nines isn't "a bit better" — it's the difference between a family car and a spacecraft. Buy the vehicle the trip actually needs.</p></div>
+
+<h2 id="monitoring">7. Monitoring &amp; the Golden Signals</h2>
+<p class="section-intro">You can't be reliable if you can't see. SRE watches four "golden signals" as the minimum viable monitoring for any user-facing service.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 240" role="img" aria-label="The four golden signals of monitoring">
+  <text x="410" y="26" text-anchor="middle" class="svg-title">The four golden signals</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="60" width="170" height="140" rx="10" fill="#21262d" stroke="#58a6ff" stroke-width="2"/>
+    <text x="125" y="92" text-anchor="middle" class="svg-label" fill="#58a6ff">Latency</text>
+    <text x="125" y="120" text-anchor="middle" class="svg-sub">how long?</text>
+    <text x="125" y="140" text-anchor="middle" class="svg-sub">watch p99, split</text>
+    <text x="125" y="158" text-anchor="middle" class="svg-sub">success vs error</text>
+    <rect x="230" y="60" width="170" height="140" rx="10" fill="#21262d" stroke="#7ee787" stroke-width="2"/>
+    <text x="315" y="92" text-anchor="middle" class="svg-label" fill="#7ee787">Traffic</text>
+    <text x="315" y="120" text-anchor="middle" class="svg-sub">how much demand?</text>
+    <text x="315" y="140" text-anchor="middle" class="svg-sub">requests / sec</text>
+    <rect x="420" y="60" width="170" height="140" rx="10" fill="#21262d" stroke="#ff7b72" stroke-width="2"/>
+    <text x="505" y="92" text-anchor="middle" class="svg-label" fill="#ff7b72">Errors</text>
+    <text x="505" y="120" text-anchor="middle" class="svg-sub">what fraction fail?</text>
+    <text x="505" y="140" text-anchor="middle" class="svg-sub">page on this</text>
+    <rect x="610" y="60" width="170" height="140" rx="10" fill="#21262d" stroke="#f0883e" stroke-width="2"/>
+    <text x="695" y="92" text-anchor="middle" class="svg-label" fill="#f0883e">Saturation</text>
+    <text x="695" y="120" text-anchor="middle" class="svg-sub">how full?</text>
+    <text x="695" y="140" text-anchor="middle" class="svg-sub">leading indicator —</text>
+    <text x="695" y="158" text-anchor="middle" class="svg-sub">warns before failure</text>
+    <text x="410" y="224" text-anchor="middle" class="svg-sub">Latency + Traffic + Errors ≈ RED (request-centric) · Saturation ≈ USE (resource-centric)</text>
+  </g>
+</svg>
+<figcaption>The minimal set that answers "is the service healthy from the user's point of view?" — speed, demand, correctness, and how close you are to falling over. Everything else is diagnostic detail you consult after one of these four alerts.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Signal</th><th>Question it answers</th></tr>
+  <tr><td><strong>Latency</strong></td><td>How long do requests take? (watch p99, and split success vs error latency)</td></tr>
+  <tr><td><strong>Traffic</strong></td><td>How much demand? (requests/sec)</td></tr>
+  <tr><td><strong>Errors</strong></td><td>What fraction fail?</td></tr>
+  <tr><td><strong>Saturation</strong></td><td>How full is the system? (the resource closest to its limit)</td></tr>
+</table>
+<div class="box note"><span class="box-title">Golden Signals ≈ RED + USE</span><p>Latency/Traffic/Errors overlap with the RED method (request-centric); Saturation is the key USE-method signal (resource-centric). The <a href="observability-k8s-guide.html">Observability guide</a> shows how to instrument and dashboard all of these with Prometheus/Grafana, and its <a href="observability-k8s-guide.html#alerting-strategy">alerting section</a> covers how to page on them without noise.</p></div>
+
+<h4>Why exactly these four signals</h4>
+<p>You could collect thousands of metrics, but on-call humans can't reason about thousands of things at 3 a.m. The golden signals are the minimal set that answers "is the service healthy from the user's point of view?" — together they cover speed (latency), demand (traffic), correctness (errors), and how close you are to falling over (saturation). Everything else is diagnostic detail you consult <em>after</em> one of these four tells you something is wrong.</p>
+
+<h4>How saturation and percentiles work under the hood</h4>
+<p>Latency must be measured as <strong>percentiles</strong> (p50/p90/p99), not averages, because averages hide the tail where real users suffer — Prometheus histograms let you compute <code>histogram_quantile()</code> from bucket counts. Saturation is measured against the resource <em>closest to its limit</em> (CPU, memory, connection pool, queue depth) and is a <em>leading</em> indicator: it climbs before errors appear, giving you warning time. That's why you alert on user-facing symptoms (errors/latency) but watch saturation to predict them.</p>
+
+<div class="box note"><span class="box-title">Worked example — the four signals in PromQL</span>
+<div class="code-label label-promql">golden signals for the api job</div>
+<pre><code># Traffic (req/s)
+sum(rate(http_requests_total{job="api"}[5m]))
+
+# Errors (% failing)
+sum(rate(http_requests_total{job="api",code=~"5.."}[5m]))
+/ sum(rate(http_requests_total{job="api"}[5m]))
+
+# Latency (p99, from histogram buckets)
+histogram_quantile(0.99,
+  sum by (le) (rate(http_request_duration_seconds_bucket{job="api"}[5m])))
+
+# Saturation (worker pool utilization)
+sum(active_workers{job="api"}) / sum(max_workers{job="api"})</code></pre>
+<div class="code-label label-output">reading it</div>
+<pre><code>traffic  = 820 req/s
+errors   = 0.4%        ← within SLO
+p99      = 0.28 s      ← under 300ms target
+saturation = 0.91      ← 91% of workers busy: page-ahead warning,
+                         scale out BEFORE latency/errors climb</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Averaging latency.</strong> Mean latency can look fine while p99 is disastrous for 1-in-100 users.</li>
+  <li><strong>Alerting on causes, not symptoms.</strong> "CPU &gt; 80%" pages constantly and often harmlessly; page on the user-visible error/latency instead.</li>
+  <li><strong>Not splitting success vs error latency</strong> — fast failures can make your latency graph look great while everything is broken.</li>
+  <li><strong>Dashboards as wallpaper</strong> — hundreds of panels nobody reads; keep the golden four front and center.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>The golden signals are your car's dashboard: speed (latency), how hard you're driving (traffic), the check-engine light (errors), and the fuel/temperature gauge (saturation). You don't need to watch every bolt in the engine — those four tell you when to pull over.</p></div>
+
+<h2 id="oncall">8. On-Call &amp; Incident Management</h2>
+<p class="section-intro">Someone must respond when reliability slips. SRE makes on-call humane and incident response structured.</p>
+<div class="box best"><span class="box-title">Humane, effective on-call</span><ul>
+  <li><strong>Only page on actionable, user-impacting symptoms</strong> — protect people from alert fatigue.</li>
+  <li>Every alert links to a <strong>runbook</strong> — no reverse-engineering at 3 a.m.</li>
+  <li>Reasonable rotation size (Google targets ≤2 incidents per on-call shift).</li>
+  <li>Clear roles in a major incident: Incident Commander, Ops, Comms, Scribe.</li>
+  <li><strong>Mitigate first, diagnose second</strong> — restore service (roll back, scale, failover), then find root cause.</li>
+  <li>Track MTTD/MTTA/MTTR to measure and improve response.</li>
+</ul><p>Full incident lifecycle and roles are in the <a href="observability-k8s-guide.html#incident-response">Observability incident-response section</a>.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Incident lifecycle from detect to postmortem">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Incident lifecycle — mitigate first, diagnose second</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="70" width="120" height="55" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/><text x="80" y="94" text-anchor="middle" class="svg-sub">1. Detect</text><text x="80" y="112" text-anchor="middle" class="svg-sub">alert fires</text>
+    <rect x="160" y="70" width="120" height="55" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/><text x="220" y="94" text-anchor="middle" class="svg-sub">2. Triage</text><text x="220" y="112" text-anchor="middle" class="svg-sub">assign IC/roles</text>
+    <rect x="300" y="70" width="120" height="55" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/><text x="360" y="94" text-anchor="middle" class="svg-sub">3. Mitigate</text><text x="360" y="112" text-anchor="middle" class="svg-sub">roll back/failover</text>
+    <rect x="440" y="70" width="120" height="55" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="500" y="94" text-anchor="middle" class="svg-sub">4. Resolve</text><text x="500" y="112" text-anchor="middle" class="svg-sub">service restored</text>
+    <rect x="580" y="70" width="110" height="55" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="635" y="94" text-anchor="middle" class="svg-sub">5. Recover</text><text x="635" y="112" text-anchor="middle" class="svg-sub">full service</text>
+    <rect x="710" y="70" width="90" height="55" rx="8" fill="#21262d" stroke="#d2a8ff" stroke-width="2"/><text x="755" y="94" text-anchor="middle" class="svg-sub">6. Learn</text><text x="755" y="112" text-anchor="middle" class="svg-sub">postmortem</text>
+    <g stroke="#8b949e" stroke-width="2">
+      <line x1="140" y1="97" x2="158" y2="97" marker-end="url(#sre-inc)"/>
+      <line x1="280" y1="97" x2="298" y2="97" marker-end="url(#sre-inc)"/>
+      <line x1="420" y1="97" x2="438" y2="97" marker-end="url(#sre-inc)"/>
+      <line x1="560" y1="97" x2="578" y2="97" marker-end="url(#sre-inc)"/>
+      <line x1="690" y1="97" x2="708" y2="97" marker-end="url(#sre-inc)"/>
+    </g>
+    <path d="M755,127 C755,165 360,175 360,127" fill="none" stroke="#d2a8ff" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#sre-inc)"/>
+    <text x="540" y="172" text-anchor="middle" class="svg-sub" fill="#d2a8ff">action items feed back into mitigation guardrails</text>
+  </g>
+  <defs><marker id="sre-inc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Detect → triage → <strong>mitigate</strong> → resolve → recover → learn. The golden rule sits at step 3: restore service (roll back, failover, scale) <em>before</em> chasing root cause. The postmortem's action items loop back to harden the earlier stages.</figcaption>
+</figure>
+
+<h4>Why structure beats heroics</h4>
+<p>Under pressure, an ad-hoc response produces duplicated effort, missed communication, and tunnel vision — several smart people all debugging the same thing while nobody talks to customers. Formal incident management exists to reduce cognitive load: predefined roles mean nobody wonders "who's in charge?", and the "mitigate first" rule keeps responders from disappearing down a root-cause rabbit hole while users suffer. It converts a stressful scramble into a rehearsed procedure.</p>
+
+<h4>How the roles and metrics work under the hood</h4>
+<p>The <strong>Incident Commander (IC)</strong> owns decisions but does no hands-on work; <strong>Ops</strong> makes the changes; <strong>Comms</strong> updates stakeholders; <strong>Scribe</strong> timestamps everything for the postmortem. The response is measured by a chain of times: <strong>MTTD</strong> (detect) → <strong>MTTA</strong> (acknowledge) → <strong>MTTR</strong> (resolve). Each is a separate lever — slow detection means better monitoring; slow ack means paging/rotation problems; slow resolution means better runbooks and automation.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="MTTD MTTA MTTR timeline of an incident">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">MTTD → MTTA → MTTR: where the time goes</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="40" y1="120" x2="780" y2="120" stroke="#8b949e" stroke-width="2" marker-end="url(#sre-mttr)"/>
+    <g class="svg-sub" text-anchor="middle">
+      <circle cx="80" cy="120" r="6" fill="#ff7b72"/><text x="80" y="150">fault begins</text>
+      <circle cx="300" cy="120" r="6" fill="#f0883e"/><text x="300" y="150">detected</text>
+      <circle cx="420" cy="120" r="6" fill="#58a6ff"/><text x="420" y="150">acknowledged</text>
+      <circle cx="720" cy="120" r="6" fill="#7ee787"/><text x="720" y="150">resolved</text>
+    </g>
+    <g stroke-width="1.5" stroke-dasharray="4 4">
+      <line x1="80" y1="120" x2="80" y2="80" stroke="#ff7b72"/>
+      <line x1="300" y1="120" x2="300" y2="70" stroke="#f0883e"/>
+      <line x1="420" y1="120" x2="420" y2="80" stroke="#58a6ff"/>
+      <line x1="720" y1="120" x2="720" y2="70" stroke="#7ee787"/>
+    </g>
+    <g class="svg-sub" text-anchor="middle">
+      <text x="190" y="66" fill="#f0883e">MTTD (detect)</text>
+      <text x="360" y="60" fill="#58a6ff">MTTA (ack)</text>
+      <text x="570" y="66" fill="#7ee787">MTTR (resolve, end-to-end)</text>
+    </g>
+    <g stroke-width="1.5">
+      <line x1="82" y1="90" x2="298" y2="90" stroke="#f0883e" marker-end="url(#sre-mttr)"/>
+      <line x1="302" y1="82" x2="418" y2="82" stroke="#58a6ff" marker-end="url(#sre-mttr)"/>
+      <line x1="82" y1="104" x2="718" y2="104" stroke="#7ee787" marker-end="url(#sre-mttr)"/>
+    </g>
+  </g>
+  <defs><marker id="sre-mttr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Each interval is a separate lever: slow <strong>MTTD</strong> means better monitoring, slow <strong>MTTA</strong> means paging/rotation fixes, slow <strong>MTTR</strong> means better runbooks and automation. Attack the biggest slice first.</figcaption>
+</figure>
+
+<div class="box note"><span class="box-title">Worked example — decomposing an incident timeline</span>
+<div class="code-label label-output">where the time actually went</div>
+<pre><code>08:00  bad deploy goes out
+08:12  first customer error spike   → MTTD = 12 min (monitoring gap!)
+08:14  pager acknowledged           → MTTA = 2 min  (good)
+08:15  IC declares incident, roles assigned
+08:19  Ops rolls back the deploy    (mitigate first)
+08:23  errors return to baseline    → MTTR = 23 min total
+
+Biggest lever = MTTD (12m). Add a burn-rate alert on the deploy's
+error signal to cut detection to &lt;2m next time.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Diagnosing before mitigating.</strong> Restore service first (roll back / failover / scale), investigate after.</li>
+  <li><strong>No single IC.</strong> Without one owner, decisions stall and effort collides.</li>
+  <li><strong>Alert fatigue.</strong> Too many non-actionable pages train responders to ignore the pager — the one that matters gets missed.</li>
+  <li><strong>Silent response.</strong> No Comms role means customers and leadership are left guessing, amplifying the incident's blast radius.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A major incident is a house fire. You don't want everyone grabbing hoses randomly — you want one fire chief (IC) directing, firefighters (Ops) on the hose, someone briefing the neighbors (Comms), and someone noting what happened (Scribe). And you put the fire out <em>before</em> investigating how it started.</p></div>
+
+<h2 id="postmortems">9. Blameless Postmortems</h2>
+<p class="section-intro">Every significant incident produces a blameless postmortem — the mechanism that turns failures into permanent reliability gains.</p>
+<div class="box eli5"><span class="box-title">Blameless = fix the system, not the person</span><p>People don't cause outages out of malice — systems allow honest mistakes to have big consequences. A blameless postmortem asks "what about our tooling, process, or design let this happen, and how do we make it impossible next time?" Punishing individuals just teaches everyone to hide problems, which makes you <em>less</em> reliable. Psychological safety is a reliability tool.</p></div>
+<div class="box note"><span class="box-title">Structure &amp; follow-through</span><p>Summary/impact, timeline, root cause (5 whys), what went well/poorly, and <strong>owned, dated action items tracked to completion</strong>. The action items are the whole point — a postmortem whose fixes never ship is theater. See the <a href="observability-k8s-guide.html#postmortems">Observability postmortem section</a> for the template.</p></div>
+
+<h4>Why blameless specifically</h4>
+<p>Humans are the most adaptable part of any system, which is exactly why blaming them is counterproductive: the operator who "caused" the outage was usually doing the reasonable thing given the information and tools available. If you punish them, everyone learns to hide mistakes and near-misses — destroying the very signal you need to get more reliable. Blamelessness isn't about being nice; it's a hard engineering requirement for honest data.</p>
+
+<h4>How root-cause analysis works under the hood</h4>
+<p>The core technique is the <strong>5 Whys</strong>: keep asking "why did that happen?" until you reach a systemic cause you can actually fix, not a person to blame. A well-run postmortem stops at the layer where a durable fix lives (tooling, guardrail, test) rather than at "human made a typo." The output is <strong>owned, dated action items</strong> tracked like features — because a postmortem whose fixes never ship changes nothing.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 260" role="img" aria-label="Five whys drilling from symptom to systemic root cause">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">5 Whys — drill past the person to the systemic fix</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="120" y="44" width="580" height="30" rx="6" fill="#21262d" stroke="#ff7b72" stroke-width="2"/><text x="410" y="64" text-anchor="middle" class="svg-sub">Symptom: checkout down 23 min after a deploy</text>
+    <rect x="150" y="86" width="520" height="26" rx="6" fill="#21262d" stroke="#f0883e"/><text x="410" y="104" text-anchor="middle" class="svg-sub">Why? config set DB pool to 2</text>
+    <rect x="180" y="122" width="460" height="26" rx="6" fill="#21262d" stroke="#f0883e"/><text x="410" y="140" text-anchor="middle" class="svg-sub">Why? a typo in the values file (200 → 2)</text>
+    <rect x="210" y="158" width="400" height="26" rx="6" fill="#21262d" stroke="#e3b341"/><text x="410" y="176" text-anchor="middle" class="svg-sub">Why? no validation on the value range</text>
+    <rect x="240" y="194" width="340" height="26" rx="6" fill="#21262d" stroke="#58a6ff"/><text x="410" y="212" text-anchor="middle" class="svg-sub">Why? config isn't schema-checked in CI</text>
+    <rect x="270" y="230" width="280" height="26" rx="6" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="410" y="248" text-anchor="middle" class="svg-sub" fill="#7ee787">ROOT: no config schema/linter — fixable!</text>
+    <g stroke="#8b949e" stroke-width="1.5">
+      <line x1="410" y1="74" x2="410" y2="85" marker-end="url(#sre-5why)"/>
+      <line x1="410" y1="112" x2="410" y2="121" marker-end="url(#sre-5why)"/>
+      <line x1="410" y1="148" x2="410" y2="157" marker-end="url(#sre-5why)"/>
+      <line x1="410" y1="184" x2="410" y2="193" marker-end="url(#sre-5why)"/>
+      <line x1="410" y1="220" x2="410" y2="229" marker-end="url(#sre-5why)"/>
+    </g>
+  </g>
+  <defs><marker id="sre-5why" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Keep asking "why?" until you reach a systemic cause a durable fix can address — not a person to blame. "Operator typed the wrong value" is a symptom; "CI never validated the config" is the root you can permanently close.</figcaption>
+</figure>
+
+<div class="box note"><span class="box-title">Worked example — 5 Whys reaching a systemic fix</span>
+<div class="code-label label-output">from symptom to durable fix</div>
+<pre><code>Incident: checkout down 23 min after a deploy.
+1. Why down?      A config change set the DB pool to 2.
+2. Why 2?         A typo in the values file (200 → 2).
+3. Why shipped?   No validation on the config value range.
+4. Why no guard?  Config isn't schema-checked in CI.
+5. Why not?       We never added a config schema/linter. ← ROOT
+
+Action items (owned, dated):
+  [P1] Add JSON-schema validation for config in CI  — @alex, Fri
+  [P2] Add min/max bounds on pool size at startup    — @sam,  next sprint
+  (Note: "be more careful" is NOT an action item.)</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Stopping at human error.</strong> "Operator made a mistake" is a symptom, not a root cause — ask why the system allowed it.</li>
+  <li><strong>Action items with no owner or date</strong> — they never ship, and the same incident recurs.</li>
+  <li><strong>Postmortem theater.</strong> Writing the doc but never doing the work is worse than nothing — it creates false confidence.</li>
+  <li><strong>Only doing them for huge outages</strong> — near-misses are free lessons; capture them too.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A blameless postmortem treats an outage like an air-crash investigation. Investigators don't fire the pilot — they find the design flaw or missing checklist and fix it so <em>no</em> pilot can make that mistake again. That's why flying is so safe, and it's how you make systems reliable.</p></div>
+
+<h2 id="capacity">10. Capacity Planning</h2>
+<p class="section-intro">Run out of capacity and you have an outage; over-provision and you burn money. SRE plans capacity from data.</p>
+<div class="box best"><span class="box-title">Data-driven capacity</span><ul>
+  <li><strong>Forecast demand</strong> from historical growth + known events (launches, sales).</li>
+  <li><strong>Load test</strong> to find the real limit per instance (don't guess).</li>
+  <li>Keep <strong>headroom</strong> for spikes and failures (e.g., survive losing an AZ).</li>
+  <li>Combine <a href="kubernetes-complete-guide.html#autoscaling-deep">autoscaling</a> for elasticity with a provisioned baseline for predictable load.</li>
+  <li>Feed cost back in — right-size continuously (see <a href="kubernetes-complete-guide.html#cost">K8s FinOps</a>).</li>
+</ul></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Latency knee as utilization approaches saturation">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The utilization "knee" — why you keep headroom</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="80" y1="210" x2="770" y2="210" stroke="#8b949e" stroke-width="1.5"/>
+    <line x1="80" y1="210" x2="80" y2="50" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="425" y="238" text-anchor="middle" class="svg-sub">utilization →  0% ............ 70% ...... 85% .. 100%</text>
+    <text x="40" y="130" text-anchor="middle" class="svg-sub" transform="rotate(-90 40 130)">latency (p99)</text>
+    <path d="M80,200 L360,192 L520,178 L620,150 L690,95 L740,55" fill="none" stroke="#58a6ff" stroke-width="2.5"/>
+    <line x1="620" y1="50" x2="620" y2="210" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <text x="628" y="70" class="svg-sub" fill="#f0883e">the knee (~85%)</text>
+    <rect x="80" y="50" width="540" height="160" fill="#7ee787" opacity="0.06"/>
+    <rect x="620" y="50" width="120" height="160" fill="#ff7b72" opacity="0.10"/>
+    <text x="340" y="120" text-anchor="middle" class="svg-sub" fill="#7ee787">safe operating zone (headroom)</text>
+    <text x="685" y="200" text-anchor="middle" class="svg-sub" fill="#ff7b72">danger:</text>
+    <text x="685" y="185" text-anchor="middle" class="svg-sub" fill="#ff7b72">latency explodes</text>
+  </g>
+</svg>
+<figcaption>Latency stays flat until utilization nears saturation, then rises sharply (queueing theory's knee). That non-linear cliff is why capacity plans keep 15–30% headroom — the last few percent of "free" capacity costs enormous latency, and a spike past the knee becomes an outage.</figcaption>
+</figure>
+
+<h4>Why plan capacity at all</h4>
+<p>Capacity is a two-sided risk: too little and you have an outage the moment traffic spikes; too much and you burn money on idle machines. Autoscaling helps but isn't magic — it reacts with a lag, has ceilings, and can't conjure capacity that isn't provisioned (or quota that isn't granted). Planning exists to make sure the elastic layer has a sane baseline to scale from and enough headroom to absorb both spikes and the loss of a failure domain.</p>
+
+<h4>How the numbers combine under the hood</h4>
+<p>The model chains four inputs: <strong>per-instance capacity</strong> (from load testing, not guessing), <strong>forecast peak demand</strong>, <strong>redundancy</strong> (N+1/N+2 so you survive losing an instance or AZ), and <strong>headroom</strong> (a % buffer for spikes and autoscaler lag). A useful sanity check is Little's Law — <code>concurrency = arrival_rate × latency</code> — which ties throughput and latency to how many in-flight requests (and thus workers) you need.</p>
+
+<div class="box note"><span class="box-title">Worked example — sizing with redundancy and headroom</span>
+<div class="code-label label-output">from load test to fleet size</div>
+<pre><code>Load test result:  1 instance = 500 req/s at p99 &lt; 300ms
+Forecast peak:     10,000 req/s
+
+Base need   = 10,000 / 500              = 20 instances
+Survive 1 AZ of 3 (lose ~1/3):  20 / (2/3) = 30 instances (N+ AZ)
++ 25% headroom for spikes/lag:  30 × 1.25 = 38 instances
+
+Little's Law check: 10,000 req/s × 0.25 s = 2,500 concurrent
+                    2,500 / 38 ≈ 66 in-flight per instance  ✓ (sane)</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Guessing per-instance limits</strong> instead of load testing — you discover the real ceiling during the outage.</li>
+  <li><strong>Planning for average, not peak</strong> (and forgetting known events like sales/launches).</li>
+  <li><strong>No failure headroom</strong> — sized for 100% of nodes healthy, so losing one AZ tips you over.</li>
+  <li><strong>Relying on autoscaling alone</strong> — cold starts and scale-up lag mean a hard spike still overruns you.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Capacity planning is booking a restaurant for a party. You don't reserve exactly the number coming — you add a few extra seats for surprise guests (headroom) and pick a place that can pull in another table if needed (autoscaling), because being one seat short ruins the night.</p></div>
+
+<h2 id="resilience">11. Designing for Failure</h2>
+<p class="section-intro">At scale, failure is constant — a disk dies, a zone blips, a dependency slows. Reliable systems <em>expect</em> this and degrade gracefully instead of collapsing.</p>
+<table>
+  <tr><th>Pattern</th><th>What it does</th></tr>
+  <tr><td><strong>Timeouts</strong></td><td>Never wait forever on a dependency</td></tr>
+  <tr><td><strong>Retries + backoff + jitter</strong></td><td>Recover from transient blips without stampeding</td></tr>
+  <tr><td><strong>Circuit breaker</strong></td><td>Stop hammering a failing dependency; fail fast</td></tr>
+  <tr><td><strong>Bulkheads</strong></td><td>Isolate resources so one failure can't sink everything</td></tr>
+  <tr><td><strong>Graceful degradation</strong></td><td>Serve reduced function (cached/partial) instead of erroring</td></tr>
+  <tr><td><strong>Redundancy</strong></td><td>Multi-AZ/replica so single failures are invisible</td></tr>
+</table>
+<div class="box warn"><span class="box-title">Retries can make outages worse</span><p>Naive retries during an incident multiply load on an already-struggling service — a "retry storm." Always combine retries with exponential backoff, jitter, a cap, and ideally a circuit breaker. A <a href="kubernetes-complete-guide.html#service-mesh">service mesh</a> can enforce these consistently across services.</p></div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Series versus parallel reliability composition">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Series multiplies risk · parallel multiplies safety</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="210" y="56" text-anchor="middle" class="svg-label" fill="#ff7b72">Series (hard dependencies)</text>
+    <rect x="60" y="74" width="90" height="44" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="105" y="100" text-anchor="middle" class="svg-sub">A 99.9%</text>
+    <rect x="180" y="74" width="90" height="44" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="225" y="100" text-anchor="middle" class="svg-sub">B 99.9%</text>
+    <rect x="300" y="74" width="90" height="44" rx="8" fill="#21262d" stroke="#ff7b72"/><text x="345" y="100" text-anchor="middle" class="svg-sub">C 99.9%</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="150" y1="96" x2="178" y2="96" marker-end="url(#sre-rel)"/><line x1="270" y1="96" x2="298" y2="96" marker-end="url(#sre-rel)"/></g>
+    <text x="210" y="150" text-anchor="middle" class="svg-sub" fill="#ff7b72">0.999³ = 99.7% — LOWER than any part</text>
+
+    <text x="620" y="56" text-anchor="middle" class="svg-label" fill="#7ee787">Parallel (redundant replicas)</text>
+    <rect x="500" y="70" width="90" height="40" rx="8" fill="#21262d" stroke="#7ee787"/><text x="545" y="94" text-anchor="middle" class="svg-sub">R1 99%</text>
+    <rect x="500" y="120" width="90" height="40" rx="8" fill="#21262d" stroke="#7ee787"/><text x="545" y="144" text-anchor="middle" class="svg-sub">R2 99%</text>
+    <rect x="670" y="95" width="90" height="40" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="715" y="119" text-anchor="middle" class="svg-sub">LB</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="590" y1="90" x2="668" y2="110" marker-end="url(#sre-rel)"/><line x1="590" y1="140" x2="668" y2="120" marker-end="url(#sre-rel)"/></g>
+    <text x="620" y="185" text-anchor="middle" class="svg-sub" fill="#7ee787">1−(0.01×0.01)=99.99% — HIGHER than either</text>
+  </g>
+  <defs><marker id="sre-rel" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Chaining hard dependencies <em>multiplies</em> their availabilities, so the whole is always less reliable than its weakest part. Redundant parallel replicas multiply their <em>failure</em> probabilities, so two 99% replicas together reach 99.99%. Reduce series depth; add parallel redundancy.</figcaption>
+</figure>
+
+<h4>Why design for failure</h4>
+<p>At scale, failure isn't an exception — it's the steady state. With thousands of disks, nodes, and network links, something is always broken; a design that assumes "everything works" is guaranteed to fail constantly. Designing for failure flips the assumption: components <em>will</em> die, dependencies <em>will</em> slow down, so the system must contain and absorb those events instead of amplifying them into a full outage.</p>
+
+<h4>How a circuit breaker trips under the hood</h4>
+<p>A circuit breaker is a state machine wrapping a dependency call. It watches the recent failure ratio; when failures cross a threshold it flips from <strong>CLOSED</strong> (calls pass) to <strong>OPEN</strong> (calls fail instantly, no waiting). After a cooldown it goes <strong>HALF-OPEN</strong> and lets a few trial calls through — success closes it again, failure re-opens it. This stops the caller from piling threads onto a dead dependency (the mechanism behind cascading failure) and lets the dependency recover. Retries must pair with <strong>exponential backoff + jitter</strong> so recovering services aren't hit by a synchronized retry wave.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Circuit breaker state machine closed open half-open">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Circuit breaker state machine</text>
+  <g font-family="-apple-system, sans-serif">
+    <circle cx="140" cy="140" r="60" fill="#21262d" stroke="#7ee787" stroke-width="2.5"/>
+    <text x="140" y="135" text-anchor="middle" class="svg-label" fill="#7ee787">CLOSED</text>
+    <text x="140" y="156" text-anchor="middle" class="svg-sub">calls pass</text>
+    <circle cx="410" cy="140" r="60" fill="#21262d" stroke="#ff7b72" stroke-width="2.5"/>
+    <text x="410" y="135" text-anchor="middle" class="svg-label" fill="#ff7b72">OPEN</text>
+    <text x="410" y="156" text-anchor="middle" class="svg-sub">fail fast (~1ms)</text>
+    <circle cx="680" cy="140" r="60" fill="#21262d" stroke="#f0883e" stroke-width="2.5"/>
+    <text x="680" y="130" text-anchor="middle" class="svg-label" fill="#f0883e">HALF-OPEN</text>
+    <text x="680" y="151" text-anchor="middle" class="svg-sub">trial calls</text>
+    <g stroke="#8b949e" stroke-width="2" fill="none">
+      <path d="M200,125 C280,95 330,95 355,115" marker-end="url(#sre-cb)"/>
+      <path d="M470,155 C510,185 560,185 625,158" marker-end="url(#sre-cb)"/>
+      <path d="M625,120 C560,90 300,80 195,120" marker-end="url(#sre-cb)"/>
+      <path d="M690,200 C720,230 700,150 700,150" marker-end="url(#sre-cb)"/>
+    </g>
+    <g class="svg-sub">
+      <text x="245" y="92" fill="#ff7b72">failures ≥ threshold</text>
+      <text x="500" y="200" fill="#f0883e">after cooldown</text>
+      <text x="360" y="72" fill="#7ee787">trials succeed → close</text>
+      <text x="700" y="225" fill="#ff7b72">trial fails → re-open</text>
+    </g>
+  </g>
+  <defs><marker id="sre-cb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>CLOSED passes calls and watches the failure ratio. Cross the threshold → OPEN (fail instantly, no hanging threads). After a cooldown → HALF-OPEN sends a few trial calls: success closes the breaker, failure re-opens it. This is the mechanism that stops a slow dependency from cascading into a full outage.</figcaption>
+</figure>
+
+<div class="box note"><span class="box-title">Worked example — circuit breaker config and behavior</span>
+<div class="code-label label-config">breaker on the payments dependency</div>
+<pre><code>circuitBreaker:
+  failureRateThreshold: 50%     # open if &gt;=50% of calls fail
+  slidingWindow: 20 requests    # measured over last 20 calls
+  waitInOpenState: 30s          # cooldown before HALF-OPEN
+  halfOpenTrialCalls: 3
+retry:
+  maxAttempts: 3
+  backoff: exponential          # 100ms, 200ms, 400ms ...
+  jitter: true                  # spread retries to avoid herds</code></pre>
+<div class="code-label label-output">state transitions during an outage</div>
+<pre><code>t0   CLOSED   payments healthy, calls pass
+t1   11/20 calls fail (55%)  → trips to OPEN
+t1+  OPEN     calls fail fast in ~1ms (no 30s hangs!) 
+t1+30s HALF-OPEN  3 trial calls → all succeed → CLOSED
+Result: caller threads never exhausted; no cascading failure.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Retries without backoff/jitter/cap</strong> — turns a blip into a retry storm that keeps the dependency down.</li>
+  <li><strong>No timeouts</strong> — one slow dependency blocks all your threads and cascades into a full outage.</li>
+  <li><strong>Breaker with no fallback</strong> — tripping fast is good, but pair it with a cached/degraded response where possible.</li>
+  <li><strong>Untested failure paths</strong> — the fallback code that never runs in prod is the code that fails when you finally need it.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A circuit breaker is the fuse box in your house. When a wire shorts out, the fuse trips and cuts power to that circuit <em>fast</em> — protecting the rest of the house from catching fire. After you fix the wire, you flip it back on. Failing fast beats letting the whole house burn.</p></div>
+
+<h2 id="chaos">12. Chaos Engineering</h2>
+<p class="section-intro">Deliberately inject failure in a controlled way to verify your system really is resilient — before reality tests it for you.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 190" role="img" aria-label="Chaos engineering experiment loop">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">The chaos experiment loop</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="30" y="70" width="150" height="55" rx="8" fill="#21262d" stroke="#7ee787"/><text x="105" y="94" text-anchor="middle" class="svg-sub">1. hypothesis</text><text x="105" y="111" text-anchor="middle" class="svg-sub">"kill a pod = ok"</text>
+    <rect x="215" y="70" width="150" height="55" rx="8" fill="#21262d" stroke="#f0883e"/><text x="290" y="94" text-anchor="middle" class="svg-sub">2. inject</text><text x="290" y="111" text-anchor="middle" class="svg-sub">small blast radius</text>
+    <rect x="400" y="70" width="150" height="55" rx="8" fill="#21262d" stroke="#58a6ff"/><text x="475" y="94" text-anchor="middle" class="svg-sub">3. observe</text><text x="475" y="111" text-anchor="middle" class="svg-sub">did SLO hold?</text>
+    <rect x="585" y="70" width="180" height="55" rx="8" fill="#21262d" stroke="#d2a8ff"/><text x="675" y="94" text-anchor="middle" class="svg-sub">4. fix &amp; expand</text><text x="675" y="111" text-anchor="middle" class="svg-sub">or roll back</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="180" y1="97" x2="213" y2="97" marker-end="url(#ce)"/><line x1="365" y1="97" x2="398" y2="97" marker-end="url(#ce)"/><line x1="550" y1="97" x2="583" y2="97" marker-end="url(#ce)"/></g>
+  </g>
+  <defs><marker id="ce" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8b949e"/></marker></defs>
+</svg>
+<figcaption>Start with a hypothesis, inject failure with a tiny blast radius, verify the SLO holds, then expand. Tools: Chaos Mesh, LitmusChaos, AWS FIS, Gremlin.</figcaption>
+</figure>
+<div class="box best"><span class="box-title">Start small, in staging, then production carefully</span><p>Netflix's Chaos Monkey randomly kills instances to force resilience. Begin in a test environment with a single component and a clear abort condition. Only run controlled game-days in production once you trust your recovery — always with a way to stop instantly.</p></div>
+
+<h4>Why deliberately break things</h4>
+<p>Resilience features (failover, retries, breakers) are the least-tested code in your system because they only run during rare failures — so they're exactly the parts most likely to be broken when you finally need them. Chaos engineering exists to exercise those paths on your schedule, in daylight, with the team watching, rather than discovering they don't work during a 3 a.m. outage. It converts unknown failure behavior into known, verified behavior.</p>
+
+<h4>How a controlled experiment works under the hood</h4>
+<p>The method is scientific: state a <strong>hypothesis</strong> ("if we kill one pod, the SLO holds"), define the <strong>steady state</strong> (the metric that proves health), limit the <strong>blast radius</strong> (one pod, small % of traffic), inject the fault, and compare the steady-state metric against the hypothesis — with an <strong>abort condition</strong> that halts the experiment if it starts hurting real users. You only expand the blast radius after each smaller experiment passes.</p>
+
+<div class="box note"><span class="box-title">Worked example — a pod-kill experiment (Chaos Mesh)</span>
+<div class="code-label label-config">kill one api pod, tiny blast radius</div>
+<pre><code>apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata: { name: kill-one-api }
+spec:
+  action: pod-kill
+  mode: one                 # exactly one pod = small blast radius
+  selector:
+    labelSelectors: { app: api }
+  duration: "60s"</code></pre>
+<div class="code-label label-output">steady-state check during the experiment</div>
+<pre><code>Hypothesis:  killing 1 of 6 pods keeps success-rate &gt;= 99.9%
+Steady state (success rate):
+  before  99.94%
+  during  99.92%   ← still above SLO ✓  (traffic rebalanced)
+  after   99.95%   ← pod rescheduled, recovered
+Verdict: PASS → next expand to "kill an entire AZ" as a game day.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>No abort/stop button.</strong> Every experiment needs a fast kill switch before it touches prod.</li>
+  <li><strong>Big blast radius on day one.</strong> Start with one component in staging; expand only after each level passes.</li>
+  <li><strong>No steady-state metric.</strong> Without a defined health signal you can't tell whether the system actually coped.</li>
+  <li><strong>Running blind, unannounced in prod</strong> — chaos is a controlled experiment, not sabotage; the team should be watching.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Chaos engineering is a fire drill. You don't wait for a real fire to find out the exits are locked — you practice the evacuation on a calm afternoon, notice the jammed door, and fix it. Better to trip over a small planned problem than a big surprise one.</p></div>
+
+<h2 id="release">13. Safe Releases</h2>
+<p class="section-intro">Most incidents are triggered by changes. SRE makes releasing changes low-risk through progressive, observable, reversible delivery.</p>
+<div class="box best"><span class="box-title">The safe-release toolkit</span><ul>
+  <li><strong>Progressive delivery</strong> — canary/blue-green with automated metric analysis (<a href="cicd-complete-guide.html#progressive-delivery">CI/CD Argo Rollouts</a>).</li>
+  <li><strong>Feature flags</strong> — decouple deploy from release; turn features on/off without redeploying.</li>
+  <li><strong>Fast, tested rollback</strong> — the most important safety net; practice it.</li>
+  <li><strong>Observe every release</strong> against SLOs; auto-abort on regression.</li>
+  <li>Gate risky releases on <strong>error-budget</strong> health.</li>
+</ul></div>
+
+<h4>Why releases are the top risk</h4>
+<p>The majority of incidents are triggered by change — a deploy, a config edit, a flag flip. That's actually good news: unlike hardware failures, change is something you fully control, so making change safe is the single highest-leverage reliability investment. Safe releases exist to shrink the blast radius of every change and make undoing it trivial, so a bad release harms 1% of users for 2 minutes instead of 100% for an hour.</p>
+
+<h4>How progressive delivery works under the hood</h4>
+<p>Instead of flipping 100% of traffic at once, you route a small slice (canary) to the new version, automatically <strong>analyze</strong> its golden signals against the stable version, and only proceed if it passes — otherwise auto-rollback. <strong>Feature flags</strong> decouple <em>deploy</em> (code is present) from <em>release</em> (feature is on), so you can ship dark and turn features on gradually, or kill a bad feature instantly without a redeploy.</p>
+
+<div class="box note"><span class="box-title">Worked example — canary analysis gate</span>
+<div class="code-label label-config">promote only if the canary meets the SLO</div>
+<pre><code>analysis:
+  metrics:
+    - name: success-rate
+      interval: 1m
+      successCondition: result &gt;= 0.999
+      failureLimit: 2                # 2 bad samples → abort
+      provider:
+        prometheus:
+          query: |
+            sum(rate(http_requests_total{ver="canary",code!~"5.."}[1m]))
+            / sum(rate(http_requests_total{ver="canary"}[1m]))</code></pre>
+<div class="code-label label-output">rollout decision</div>
+<pre><code>10% canary:  success-rate = 0.9991  ✓ proceed
+50% canary:  success-rate = 0.9987  ✗ below 0.999 (2 samples)
+             → AUTO-ROLLBACK to stable, page owner
+Blast radius contained to 50% for &lt; 2 minutes; no manual action.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Untested rollback.</strong> The rollback path is your most important safety net — practice it; don't assume it works.</li>
+  <li><strong>Big-bang deploys</strong> to 100% at once — no canary means the whole user base is your test group.</li>
+  <li><strong>Canary with no automated analysis</strong> — a human eyeballing a dashboard misses regressions; gate on metrics.</li>
+  <li><strong>Ignoring the error budget</strong> — shipping risky changes when the budget is already spent compounds the problem.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A safe release is tasting the soup before serving the whole pot. You give a spoonful to a few diners (canary), check they like it (metric analysis), and only then serve everyone — with the pot of old soup still on the stove in case you need to switch back (rollback).</p></div>
+
+<h2 id="reliability-math">14. Reliability Math &amp; Modeling</h2>
+<p class="section-intro">Reliability is quantitative. Understanding the math — how components combine, what "nines" really cost, and how redundancy helps — lets you design to a target instead of hoping.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="Series versus parallel reliability">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Series (dependencies multiply risk) vs Parallel (redundancy)</text>
+  <g font-family="-apple-system, sans-serif">
+    <text x="205" y="55" text-anchor="middle" class="svg-label" fill="#ff7b72">Series (chain)</text>
+    <rect x="50" y="75" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="95" y="100" text-anchor="middle" class="svg-sub">A 99.9%</text>
+    <rect x="170" y="75" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="215" y="100" text-anchor="middle" class="svg-sub">B 99.9%</text>
+    <rect x="290" y="75" width="90" height="40" rx="6" fill="#21262d" stroke="#8b949e"/><text x="335" y="100" text-anchor="middle" class="svg-sub">C 99.9%</text>
+    <g stroke="#8b949e" stroke-width="2"><line x1="140" y1="95" x2="168" y2="95"/><line x1="260" y1="95" x2="288" y2="95"/></g>
+    <text x="215" y="140" text-anchor="middle" class="svg-sub" fill="#ff7b72">combined = 99.9%³ = 99.7% (worse!)</text>
+
+    <text x="615" y="55" text-anchor="middle" class="svg-label" fill="#7ee787">Parallel (redundant)</text>
+    <rect x="560" y="70" width="110" height="35" rx="6" fill="#21262d" stroke="#7ee787"/><text x="615" y="93" text-anchor="middle" class="svg-sub">A 99%</text>
+    <rect x="560" y="115" width="110" height="35" rx="6" fill="#21262d" stroke="#7ee787"/><text x="615" y="138" text-anchor="middle" class="svg-sub">A' 99%</text>
+    <text x="615" y="175" text-anchor="middle" class="svg-sub" fill="#7ee787">combined = 1-(1%)² = 99.99% (better!)</text>
+  </g>
+</svg>
+<figcaption>Dependencies in <strong>series</strong> multiply — three 99.9% services chained give only 99.7%. Redundant components in <strong>parallel</strong> dramatically improve availability. This math drives architecture decisions.</figcaption>
+</figure>
+
+<div class="box eli5"><span class="box-title">Why more dependencies = less reliable</span><p>If your service needs three others to all work, and each is up 99.9% of the time, your service can only be up 99.9% × 99.9% × 99.9% ≈ 99.7% — worse than any single one. Every hard dependency is a risk you inherit. This is why SREs minimize dependencies, add redundancy (parallel paths), and design graceful degradation so one failed dependency doesn't take you fully down.</p></div>
+
+<table>
+  <tr><th>Availability</th><th>Downtime/year</th><th>Downtime/month</th><th>Downtime/week</th></tr>
+  <tr><td>99% (two nines)</td><td>3.65 days</td><td>7.3 hours</td><td>1.7 hours</td></tr>
+  <tr><td>99.9% (three)</td><td>8.77 hours</td><td>43.8 min</td><td>10.1 min</td></tr>
+  <tr><td>99.99% (four)</td><td>52.6 min</td><td>4.4 min</td><td>1.0 min</td></tr>
+  <tr><td>99.999% (five)</td><td>5.26 min</td><td>26 sec</td><td>6 sec</td></tr>
+</table>
+<div class="box note"><span class="box-title">MTBF, MTTR &amp; availability</span><p>Availability = MTBF / (MTBF + MTTR), where <strong>MTBF</strong> is mean time between failures and <strong>MTTR</strong> is mean time to recovery. Key insight: you improve availability either by failing <em>less often</em> (higher MTBF — hard) or <em>recovering faster</em> (lower MTTR — often easier). SRE invests heavily in fast recovery (automation, rollback, good observability) because it's the higher-leverage lever.</p></div>
+
+<h4>Why do the math instead of hoping</h4>
+<p>Architects constantly make availability decisions — add a replica, take a new dependency, split a service — often on intuition. The math exists because intuition is badly wrong here: chaining "reliable" services makes things <em>worse</em>, and redundancy helps far <em>more</em> than people expect. Quantifying it lets you design to a target and predict whether an architecture can even reach the SLO you've promised.</p>
+
+<h4>How series and parallel availability combine</h4>
+<p><strong>Series</strong> (hard dependencies, all must work): multiply the availabilities — <code>A_total = A₁ × A₂ × … × Aₙ</code>. Every dependency can only drag you down. <strong>Parallel</strong> (redundant, any one suffices): multiply the <em>unavailabilities</em> — <code>A_total = 1 − (1−A₁)(1−A₂)…</code>. Redundancy shrinks failure geometrically. And availability itself comes from <code>A = MTBF / (MTBF + MTTR)</code>, which shows recovering faster (lower MTTR) is usually cheaper than failing less often (higher MTBF).</p>
+
+<div class="box note"><span class="box-title">Worked example — series vs parallel, with numbers</span>
+<div class="code-label label-output">the same 99.9% component, two ways</div>
+<pre><code>SERIES: service needs auth AND db AND cache, each 99.9%
+  A = 0.999 × 0.999 × 0.999 = 0.99700  → 99.70%
+  Downtime = 0.30% × 43,200 = 129.6 min/month  (WORSE than any part!)
+
+PARALLEL: two redundant replicas, each only 99%
+  A = 1 - (1-0.99)(1-0.99) = 1 - 0.0001 = 0.9999  → 99.99%
+  Downtime = 0.01% × 43,200 = 4.3 min/month
+
+MTTR lever: A = MTBF/(MTBF+MTTR)
+  MTBF=720h, MTTR=1h  → 720/721   = 99.86%
+  Halve MTTR to 0.5h  → 720/720.5 = 99.93%  (one change, +one nine-ish)</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Assuming your SLO can exceed your dependencies.</strong> Series math caps you below the product of hard dependencies.</li>
+  <li><strong>Adding "just one more" dependency</strong> without accounting for the availability tax it imposes.</li>
+  <li><strong>Chasing MTBF only.</strong> Reducing MTTR (automation, rollback, observability) is usually the cheaper nine.</li>
+  <li><strong>Treating correlated replicas as independent</strong> — if both replicas share an AZ/power/dependency, the parallel math overstates real availability.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Series dependencies are a paper chain — it's only as strong as the whole thing holding, and every added link is another place to snap. Parallel redundancy is a backup rope: for both to fail at once is far less likely than either failing alone.</p></div>
+
+<h2 id="slo-engineering">15. SLO Engineering Deep</h2>
+<p class="section-intro">Setting good SLOs is a craft. Bad SLOs are either meaningless (always met) or noisy (always breached). Here's how to engineer them properly.</p>
+<div class="code-label label-promql">A well-formed availability SLI in Prometheus</div>
+<pre><code># SLI = good events / valid events (a ratio, always 0..1)
+sum(rate(http_requests_total{status!~"5..",job="api"}[28d]))
+/
+sum(rate(http_requests_total{job="api"}[28d]))
+
+# Latency SLI: fraction of requests faster than the threshold
+sum(rate(http_request_duration_seconds_bucket{le="0.3",job="api"}[28d]))
+/
+sum(rate(http_request_duration_seconds_count{job="api"}[28d]))</code></pre>
+<div class="box best"><span class="box-title">SLO engineering principles</span><ul>
+  <li><strong>Measure at the user's vantage point</strong> — the load balancer or client, not deep internals.</li>
+  <li><strong>Use a rolling window</strong> (28–30 days), not calendar month, to avoid month-boundary resets.</li>
+  <li><strong>Define "valid events" carefully</strong> — exclude health checks; decide how to count timeouts.</li>
+  <li><strong>Start loose, tighten with data</strong> — set an achievable target, then raise it as you improve.</li>
+  <li><strong>Fewer, meaningful SLOs</strong> beat dozens nobody watches — pick the journeys that matter.</li>
+</ul></div>
+
+<h4>Why SLO design is hard</h4>
+<p>A badly-engineered SLO is worse than none: one that's always met tells you nothing and gives false comfort, while one that's always breaching trains everyone to ignore it. The craft exists because reliability targets have to be simultaneously <em>meaningful</em> to users, <em>measurable</em> from real telemetry, and <em>achievable</em> given your architecture — hitting all three takes deliberate engineering, not a round number picked in a meeting.</p>
+
+<h4>How windows and event-counting work under the hood</h4>
+<p>Use a <strong>rolling window</strong> (28–30 days) rather than a calendar month so the budget doesn't magically reset at midnight on the 1st and hide a slow bleed. Define <strong>valid events</strong> precisely: exclude synthetic health checks, and decide deliberately how timeouts, retries, and 4xx (client's fault) count — each choice shifts the number. The SLI is still <code>good/valid</code>, but the definitions of "good" and "valid" are where most SLOs live or die.</p>
+
+<div class="box note"><span class="box-title">Worked example — multi-burn-rate policy from one SLO</span>
+<div class="code-label label-config">two burn-rate alerts derived from a 99.9% / 30d SLO</div>
+<pre><code># Fast burn: 2% of budget in 1h → page (something is on fire now)
+- alert: SLOFastBurn
+  expr: burn_rate[1h] &gt; 14.4 and burn_rate[5m] &gt; 14.4
+  labels: { severity: page }
+
+# Slow burn: 10% of budget in 6h → ticket (a slow leak)
+- alert: SLOSlowBurn
+  expr: burn_rate[6h] &gt; 6 and burn_rate[30m] &gt; 6
+  labels: { severity: ticket }</code></pre>
+<div class="code-label label-output">why two windows</div>
+<pre><code>Fast (14.4×): exhausts 30d budget in ~2 days → wake someone
+Slow (6×):    exhausts 30d budget in ~5 days → file a ticket, fix in hours
+The short confirming window (5m/30m) prevents a 30-second blip
+from paging — killing alert fatigue while still catching real burns.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Too many SLOs.</strong> Dozens nobody watches beats one good one — cover the critical user journeys only.</li>
+  <li><strong>Calendar windows</strong> that reset and mask slow burns; use rolling windows.</li>
+  <li><strong>Vague "valid events."</strong> If health checks or 4xx sneak in, your SLI lies.</li>
+  <li><strong>Setting the target aspirationally.</strong> Start achievable, tighten with data — a permanently-red SLO gets ignored.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Engineering an SLO is setting a fair, useful pass mark on a test. Too low and everyone passes without learning anything; too high and everyone fails and stops caring. You want the mark where crossing it genuinely means "we need to act."</p></div>
+
+<h2 id="failure-modes">16. Distributed Systems Failure Modes</h2>
+<p class="section-intro">Distributed systems fail in ways single machines don't. Recognizing these patterns lets you design defenses before they bite in production.</p>
+<table>
+  <tr><th>Failure mode</th><th>What happens</th><th>Defense</th></tr>
+  <tr><td>Cascading failure</td><td>One overloaded service takes down its callers, spreading</td><td>Circuit breakers, load shedding, bulkheads</td></tr>
+  <tr><td>Thundering herd</td><td>Many clients retry/reconnect simultaneously</td><td>Exponential backoff + jitter</td></tr>
+  <tr><td>Retry storm</td><td>Retries multiply load on a struggling service</td><td>Retry budgets, circuit breakers</td></tr>
+  <tr><td>Metastable failure</td><td>System stuck in a bad state even after trigger is gone</td><td>Load shedding, careful capacity margin</td></tr>
+  <tr><td>Gray failure</td><td>Partial degradation the system doesn't detect as "down"</td><td>Good SLIs from the user's view</td></tr>
+  <tr><td>Split brain</td><td>Network partition; both sides think they're primary</td><td>Quorum/consensus (Raft), fencing</td></tr>
+</table>
+<div class="box danger"><span class="box-title">Cascading failure — the outage multiplier</span><p>A service slows → callers' threads block waiting → callers exhaust their own capacity → <em>they</em> fail → their callers fail. A single slow dependency becomes a full outage. Defenses: <strong>timeouts</strong> (never wait forever), <strong>circuit breakers</strong> (stop calling a failing dependency), <strong>bulkheads</strong> (isolate resource pools), and <strong>load shedding</strong> (drop excess load to protect the core). Design these in <em>before</em> the incident.</p></div>
+
+<h4>Why these modes are unique to distributed systems</h4>
+<p>On a single machine, a component either works or crashes. Across a network, you get a third state — <em>slow/partial/ambiguous</em> — and that's where distributed failures breed: you can't tell "dependency is down" from "dependency is slow" from "network dropped my request." Recognizing the named patterns matters because each has a specific, non-obvious defense; without the vocabulary, teams keep re-discovering cascading failure the hard way.</p>
+
+<h4>How a cascading failure builds under the hood</h4>
+<p>The mechanism is feedback amplification: a dependency slows → callers' request threads block waiting on it → the caller's thread/connection pool fills → the caller can't serve <em>anything</em> and appears down → <em>its</em> callers block on <em>it</em> → the failure climbs the call graph. A <strong>metastable</strong> failure is the nasty variant where even after the original trigger is gone, retries and full queues keep the system pinned in the bad state — it won't self-recover until you shed load.</p>
+
+<div class="box note"><span class="box-title">Worked example — thread-pool exhaustion cascade</span>
+<div class="code-label label-output">how one slow dependency takes down the caller</div>
+<pre><code>API server: 200 worker threads, dependency normally 20ms.
+Dependency degrades to 2000ms (100× slower), no timeout set.
+
+Little's Law: threads_busy = arrival_rate × latency
+  100 req/s × 2.0 s = 200 concurrent  → ALL 200 threads blocked
+  New requests queue → time out → API appears fully DOWN
+
+Fix (timeout 200ms + breaker):
+  100 req/s × 0.2 s = 20 threads busy  → 180 free
+  Slow calls fail fast; breaker opens; API stays up (degraded).</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Unbounded retries</strong> that turn a blip into a self-sustaining retry storm / metastable failure.</li>
+  <li><strong>No timeouts</strong> — the root enabler of thread-pool exhaustion and cascades.</li>
+  <li><strong>Ignoring gray failures</strong> — the node reports "healthy" while quietly serving 30% errors; only user-view SLIs catch it.</li>
+  <li><strong>Assuming the network is reliable</strong> — partitions and split-brain need quorum/fencing, not optimism.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Cascading failure is a traffic jam. One car brakes, the car behind brakes harder, and the wave of stopping propagates backward for miles — long after the first car has driven off. Timeouts and load shedding are the on-ramp metering lights that stop the jam from forming.</p></div>
+
+<h2 id="load-shedding">17. Load Shedding &amp; Backpressure</h2>
+<p class="section-intro">When demand exceeds capacity, you have a choice: degrade gracefully or collapse. Load shedding and backpressure are how you choose graceful.</p>
+<figure class="diagram">
+<svg viewBox="0 0 820 200" role="img" aria-label="Load shedding drops excess to protect the core">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Load shedding: serve most, reject excess, stay up</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="40" y="70" width="150" height="60" rx="8" fill="#21262d" stroke="#f0883e"/><text x="115" y="95" text-anchor="middle" class="svg-sub">1000 req/s</text><text x="115" y="113" text-anchor="middle" class="svg-sub">(capacity: 800)</text>
+    <rect x="330" y="70" width="160" height="60" rx="8" fill="#21262d" stroke="#58a6ff" stroke-width="2"/><text x="410" y="95" text-anchor="middle" class="svg-label" fill="#58a6ff">shed &gt;800</text><text x="410" y="113" text-anchor="middle" class="svg-sub">reject 200 fast (429)</text>
+    <rect x="620" y="55" width="160" height="40" rx="6" fill="#21262d" stroke="#7ee787"/><text x="700" y="80" text-anchor="middle" class="svg-sub">800 served OK ✓</text>
+    <rect x="620" y="110" width="160" height="40" rx="6" fill="#21262d" stroke="#ff7b72"/><text x="700" y="135" text-anchor="middle" class="svg-sub">200 rejected fast</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="190" y1="100" x2="328" y2="100" marker-end="url(#ls)"/><line x1="490" y1="90" x2="618" y2="75" marker-end="url(#ls)"/><line x1="490" y1="110" x2="618" y2="130" marker-end="url(#ls)"/></g>
+  </g>
+  <defs><marker id="ls" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>Serving 800 requests well and cleanly rejecting 200 beats trying to serve all 1000 and crashing so <em>zero</em> succeed. Fast rejection (HTTP 429) also lets clients back off instead of piling on.</figcaption>
+</figure>
+<div class="box eli5"><span class="box-title">Backpressure = telling upstream to slow down</span><p>Imagine a checkout line that's too long. Load shedding turns some customers away at the door (reject excess). Backpressure is the cashier signalling "stop sending people" up the queue so the crowd doesn't build. In systems: bounded queues, rate limits, and 429 responses propagate "I'm full" upstream so producers slow down instead of overwhelming you. Both keep the system in a serving state instead of collapsing.</p></div>
+
+<h4>Why shedding beats trying to serve everything</h4>
+<p>When demand exceeds capacity, attempting to serve every request means each one gets a fraction of the resources, latency climbs for <em>all</em> of them, timeouts and retries pile on, and the system melts down so that <em>zero</em> requests succeed. Load shedding exists to make the humane trade: intentionally sacrifice the excess so the majority get a good, fast response. Serving 800 well beats serving 1000 badly and crashing.</p>
+
+<h4>How shedding and backpressure work under the hood</h4>
+<p><strong>Load shedding</strong> rejects requests <em>fast</em> (HTTP 429) once a concurrency/queue limit is hit — the fast rejection is key, because a quick "no" lets clients back off instead of holding a connection. <strong>Backpressure</strong> propagates "I'm full" <em>upstream</em> via bounded queues and flow-control so producers slow down at the source. Prioritized shedding drops low-value traffic first (health-check retries, background jobs) and protects critical paths (checkout, auth).</p>
+
+<div class="box note"><span class="box-title">Worked example — admission control with a concurrency limit</span>
+<div class="code-label label-config">shed above capacity, protect the core</div>
+<pre><code>admissionControl:
+  maxConcurrentRequests: 800     # measured safe limit
+  queueTimeout: 50ms             # don't let requests rot in queue
+  onReject: return 429 + Retry-After: 2
+priority:                        # shed low value first
+  - { match: path=/checkout, class: critical, neverShed: true }
+  - { match: path=/recommendations, class: sheddable }</code></pre>
+<div class="code-label label-output">behavior under a 1000 req/s spike (capacity 800)</div>
+<pre><code>Served OK        : 800 req/s  (p99 stays &lt; 300ms)  ✓
+Shed (429 fast)  : 200 req/s  (rejected in ~1ms, clients back off)
+Checkout path    : 100% served (never shed)         ✓
+vs. no shedding  : all 1000 slow to &gt;5s, timeouts, 0% effective ✗</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Slow rejection.</strong> If shedding itself is expensive (or holds the connection), it doesn't relieve pressure.</li>
+  <li><strong>Unbounded queues</strong> — they just hide the overload and add latency until everything times out (metastable).</li>
+  <li><strong>Shedding blindly</strong> — dropping checkout traffic while serving recommendations; prioritize by value.</li>
+  <li><strong>No Retry-After / backoff signal</strong> — clients immediately retry, so you shed the same load again and again.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Load shedding is a nightclub at capacity: the bouncer turns extra people away at the door (fast 429) so the folks inside can actually move and be served. Backpressure is radioing the crowd down the street to stop walking over. Cramming everyone in just means nobody can move and the fire marshal shuts you down.</p></div>
+
+<h2 id="capacity-deep">18. Capacity Modeling Deep</h2>
+<p class="section-intro">Capacity planning turns "how many servers?" from guesswork into a model driven by load tests and demand forecasts.</p>
+<div class="code-label label-output">A simple capacity model</div>
+<pre><code>Given (from load testing):
+  1 instance handles ~500 req/s at acceptable latency
+
+Forecast peak demand:      12,000 req/s (with growth + headroom)
+Base instances needed:     12,000 / 500 = 24 instances
++ N+2 redundancy (AZ loss): 26 instances
++ 30% headroom for spikes:  ~34 instances
+
+Validate assumptions with a real load test at peak+margin BEFORE you rely on it.</code></pre>
+<div class="box best"><span class="box-title">Capacity planning discipline</span><ul><li><strong>Measure real per-instance limits</strong> via load testing — don't guess.</li><li><strong>Forecast</strong> from historical growth + known events (launches, marketing).</li><li><strong>Keep headroom</strong> for spikes and for losing a zone (N+1 or N+2).</li><li><strong>Combine autoscaling</strong> (elasticity) with a provisioned baseline (fast response) — see <a href="kubernetes-complete-guide.html#autoscaling-deep">K8s autoscaling</a>.</li><li><strong>Re-model regularly</strong> — traffic patterns and per-instance efficiency drift.</li></ul></div>
+
+<h4>Why model rather than eyeball</h4>
+<p>"Add servers until it feels safe" either wastes money or leaves you one traffic spike from an outage — and you won't know which until it's too late. A capacity model makes the assumptions explicit and testable, so you can answer "can we survive Black Friday?" with a number and a load test instead of a hopeful shrug. It also tells you <em>when</em> you'll run out, turning capacity from a surprise into a scheduled purchase.</p>
+
+<h4>How the queuing math works under the hood</h4>
+<p>Two laws do the heavy lifting. <strong>Little's Law</strong>: <code>L = λ × W</code> (concurrent requests = arrival rate × latency) sizes your worker/connection pools. <strong>Utilization &amp; latency</strong>: as utilization ρ approaches 1, queuing latency blows up roughly like <code>1/(1−ρ)</code> — which is why you plan for ~60–70% utilization, not 95%. The knee of that curve is exactly why "just a bit more load" suddenly tips a healthy system into meltdown.</p>
+
+<div class="box note"><span class="box-title">Worked example — the utilization knee</span>
+<div class="code-label label-output">why you don't run at 95% utilization</div>
+<pre><code>Relative queue latency ≈ 1 / (1 - ρ):
+  ρ = 0.50 → 2.0×    (comfortable)
+  ρ = 0.70 → 3.3×    (target ceiling)
+  ρ = 0.90 → 10×     (getting scary)
+  ρ = 0.95 → 20×     (a 5% traffic bump doubles latency!)
+  ρ = 0.99 → 100×    (cliff edge)
+
+Little's Law pool sizing:
+  λ = 10,000 req/s, W = 0.05 s  →  L = 500 concurrent
+  At 70% target util: provision 500 / 0.7 ≈ 715 worker slots.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Targeting high utilization</strong> to "save money" — you land on the latency cliff where a tiny spike is catastrophic.</li>
+  <li><strong>Modeling only steady state</strong> — ignoring autoscaler lag and cold starts during the spike itself.</li>
+  <li><strong>Stale models</strong> — per-instance efficiency drifts with every release; re-measure regularly.</li>
+  <li><strong>Forgetting the dependency's capacity</strong> — you scaled the API but the database is now the bottleneck.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Utilization is like a highway. At 50% full, traffic flows. Somewhere past 85% one extra car triggers stop-and-go for everyone — a tiny increase in load causes a huge increase in delay. Capacity modeling keeps you on the free-flowing part of the curve, not the jam.</p></div>
+
+<h2 id="dr-bcp">19. Disaster Recovery &amp; Business Continuity</h2>
+<p class="section-intro">SRE owns not just day-to-day reliability but surviving catastrophes — a region loss, data corruption, or a major incident.</p>
+<table>
+  <tr><th>Concept</th><th>Meaning</th></tr>
+  <tr><td><strong>RTO</strong></td><td>Recovery Time Objective — how fast must you be back up?</td></tr>
+  <tr><td><strong>RPO</strong></td><td>Recovery Point Objective — how much data can you afford to lose?</td></tr>
+  <tr><td><strong>BCP</strong></td><td>Business Continuity Plan — keeping the business running during disaster</td></tr>
+  <tr><td><strong>DR test / game day</strong></td><td>Regularly <em>practicing</em> recovery so it works when real</td></tr>
+</table>
+<div class="box warn"><span class="box-title">An untested backup is not a backup</span><p>The most common DR failure: backups that were never test-restored, and turn out corrupt or incomplete when disaster strikes. <strong>Regularly restore from backups</strong> and run DR game days that actually fail over to the secondary. RTO/RPO on paper mean nothing until you've proven them under realistic conditions. See the <a href="cloud-aws-complete-guide.html#dr">Cloud DR strategies</a> for the technical implementation.</p></div>
+
+<h4>Why DR is separate from everyday reliability</h4>
+<p>Day-to-day resilience handles the common failures (a node, a pod, a bad deploy). DR handles the rare, correlated catastrophes that blow past those defenses: an entire region goes dark, data gets corrupted and replicated to your replicas, ransomware encrypts your primary. Those need a fundamentally different response — a second location, point-in-time backups, a rehearsed failover — because your normal redundancy shares the very thing that just failed.</p>
+
+<h4>How RTO and RPO drive architecture and cost</h4>
+<p><strong>RPO</strong> (how much data you can lose) is set by your <em>backup/replication frequency</em>: snapshot hourly → up to 1h RPO; synchronous replication → near-zero RPO. <strong>RTO</strong> (how fast you're back) is set by your <em>recovery strategy</em>, and the two trade directly against cost: backup-and-restore is cheap but slow (hours), pilot-light and warm-standby are faster and pricier, and active-active is near-instant but doubles infrastructure. You pick the cheapest tier that meets the business's tolerance.</p>
+
+<div class="box note"><span class="box-title">Worked example — DR strategy tiers vs RTO/RPO/cost</span>
+<div class="code-label label-output">choosing a tier for a payments service</div>
+<pre><code>Strategy         RTO        RPO         Relative cost
+Backup &amp; restore ~hours     ~hours      $        (cold)
+Pilot light      ~10-30 min ~minutes    $$
+Warm standby     ~minutes   ~seconds    $$$
+Active-active    ~seconds   ~zero       $$$$    (2× infra)
+
+Payments needs RTO &lt; 5 min, RPO &lt; 10 s → Warm standby
+  (sync-replicate the DB, keep a scaled-down standby hot,
+   scale it up on failover). Prove it with a quarterly DR game day.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Untested backups.</strong> The classic disaster: restore fails or is corrupt exactly when you need it. Test-restore regularly.</li>
+  <li><strong>RTO/RPO on paper only</strong> — never actually failing over, so the runbook is fiction.</li>
+  <li><strong>Backups in the same failure domain</strong> — same region/account as prod, wiped by the same event or bad actor.</li>
+  <li><strong>Replicating corruption.</strong> Sync replication also copies the bad DELETE; keep point-in-time backups too.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>DR is home insurance plus a fire drill. RPO is "how many of today's photos would I lose?" and RTO is "how fast can I move into a new house?" But insurance you never verify is worthless — the DR game day is checking the policy actually pays out before the fire.</p></div>
+
+<h2 id="chaos-deep">20. Advanced Chaos Engineering</h2>
+<p class="section-intro">Beyond "kill a pod" — mature chaos engineering runs continuous, automated experiments across failure dimensions, with game days involving the whole team.</p>
+<table>
+  <tr><th>Experiment type</th><th>Simulates</th></tr>
+  <tr><td>Instance/pod termination</td><td>Hardware/node failure</td></tr>
+  <tr><td>Network latency/loss injection</td><td>Degraded/partitioned network</td></tr>
+  <tr><td>Resource exhaustion (CPU/mem/disk)</td><td>Noisy neighbor, leaks</td></tr>
+  <tr><td>Dependency failure</td><td>A downstream service down/slow</td></tr>
+  <tr><td>Zone/region failure</td><td>Cloud AZ/region outage (the big test)</td></tr>
+  <tr><td>Clock skew</td><td>Time-related bugs</td></tr>
+</table>
+<div class="box best"><span class="box-title">Game days build muscle memory</span><p>A <strong>game day</strong> is a planned exercise where the team injects a realistic failure (or a "simulated incident") and practices the full response: detection, triage, mitigation, communication. It surfaces gaps in runbooks, tooling, and on-call readiness in a controlled setting — so the real incident isn't the first time you've practiced. Tools: Chaos Mesh, LitmusChaos, AWS FIS, Gremlin.</p></div>
+
+<h4>Why go beyond "kill a pod"</h4>
+<p>Basic chaos verifies one failure dimension; real outages are combinations — a slow dependency <em>plus</em> a traffic spike <em>plus</em> a node loss. Mature chaos exists to test the interactions and the <em>human</em> response, not just the automation. It also runs continuously, because a resilience property that passed six months ago quietly breaks as the system evolves; a one-off test proves nothing about today.</p>
+
+<h4>How advanced experiments and game days work under the hood</h4>
+<p>You expand along two axes: <strong>failure dimensions</strong> (latency injection, packet loss, resource exhaustion, dependency and full zone/region failure, clock skew) and <strong>blast radius</strong> (one pod → one service → one AZ). A <strong>game day</strong> scripts a realistic scenario and exercises the whole incident lifecycle — detection, triage, mitigation, comms — measuring MTTD/MTTR and, crucially, whether the runbooks and on-call actually work under pressure.</p>
+
+<div class="box note"><span class="box-title">Worked example — a zone-failure game day plan</span>
+<div class="code-label label-output">quarterly AZ-loss exercise</div>
+<pre><code>Hypothesis: losing AZ-a keeps checkout SLO (99.9%) intact.
+Steady state: checkout success-rate, p99 latency.
+Abort if: success-rate &lt; 99% for &gt; 2 min.
+
+Timeline (measured):
+  T+0    inject: cordon+drain all AZ-a nodes (fault injection)
+  T+0:45 detection: burn-rate alert fires  → MTTD 45s ✓
+  T+1:30 traffic rebalances to AZ-b/-c; success-rate dips to 99.7% ✓
+  T+3:00 HPA scales remaining AZs to absorb load
+  Findings: runbook link was stale; DB failover took 90s (target 30s)
+  Action items: fix runbook (@sam), tune DB failover (@alex) — dated.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Chaos as a one-off demo.</strong> If it isn't continuous/scheduled, drift silently breaks resilience between runs.</li>
+  <li><strong>Testing tech but not people</strong> — skipping the on-call/comms practice that game days exist to provide.</li>
+  <li><strong>No hypothesis or steady state</strong> — you injected failure but can't say whether the system "passed."</li>
+  <li><strong>Never graduating to region/AZ tests</strong> — the big correlated failures are the ones that actually cause outages.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Basic chaos is checking one smoke detector. Advanced chaos and game days are a full building evacuation drill with the fire department — you find out the stairwell is blocked and the new hires don't know the muster point, while it's still just a drill.</p></div>
+
+<h2 id="oncall-maturity">21. On-Call Maturity</h2>
+<p class="section-intro">On-call quality is a leading indicator of system and team health. Mature on-call is sustainable, effective, and continuously improving.</p>
+<table>
+  <tr><th>Maturity level</th><th>Characteristics</th></tr>
+  <tr><td>Immature</td><td>Constant pages, no runbooks, hero culture, burnout, high MTTR</td></tr>
+  <tr><td>Developing</td><td>Some runbooks, alert tuning started, rotations defined</td></tr>
+  <tr><td>Mature</td><td>Only actionable pages, every alert has a runbook, low page volume, blameless follow-up</td></tr>
+  <tr><td>Optimizing</td><td>Automated remediation, self-healing, on-call is calm &amp; rare</td></tr>
+</table>
+<div class="box best"><span class="box-title">Sustainable on-call</span><ul><li><strong>Compensate on-call</strong> and cap consecutive shifts; respect the human cost.</li><li><strong>Track page volume per shift</strong> (Google's rule: ≤2 incidents/shift) — more means fix the alerts or the system.</li><li><strong>Every page → runbook</strong>; every incident → follow-up that reduces future pages.</li><li><strong>Onboard on-call</strong> with shadowing and clear escalation paths.</li><li><strong>Measure &amp; review</strong> MTTA/MTTR and page volume as team health metrics.</li></ul></div>
+
+<h4>Why on-call quality is a leading indicator</h4>
+<p>Page volume is a proxy for system health you can't fake: a system that's genuinely reliable and well-automated is quiet, so a noisy pager means the underlying system (or the alerting) is broken — long before it shows up in churn or missed SLOs. Treating on-call as a measurable, improvable practice exists to protect the scarcest resource (engineers' attention and wellbeing) and to catch reliability debt early via the pages themselves.</p>
+
+<h4>How maturity is measured under the hood</h4>
+<p>You track a few numbers per rotation: <strong>pages per shift</strong> (Google's guidance: ≤2), the <strong>actionable ratio</strong> (fraction of pages that required a human action — should trend toward 1), and <strong>MTTA/MTTR</strong>. Each level of maturity moves work down the automation ladder: manual firefighting → runbooked response → automated triggers → self-healing. The endpoint is on-call that is <em>calm and rare</em>, not heroic.</p>
+
+<div class="box note"><span class="box-title">Worked example — reading rotation health</span>
+<div class="code-label label-output">two teams, same headcount</div>
+<pre><code>Team A (immature):
+  pages/week = 47   actionable = 34%   MTTR = 41 min
+  → 66% of pages were noise → alert fatigue, burnout risk
+  Action: delete non-actionable alerts, move warnings to tickets.
+
+Team B (mature):
+  pages/week = 3    actionable = 92%   MTTR = 8 min
+  → quiet pager, fast recovery → sustainable
+
+Health rule applied: pages/shift ≤ 2. Team A = 6.7/shift → RED.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Hero culture.</strong> Rewarding the person who's always firefighting hides the systemic problem and burns them out.</li>
+  <li><strong>Never tuning alerts</strong> — noise accumulates until the real page is lost in it (alert fatigue).</li>
+  <li><strong>Uncompensated, unbounded on-call</strong> — ignores the human cost and drives attrition.</li>
+  <li><strong>No follow-up loop</strong> — every page should either be automated away or feed a fix, or you'll get it again.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A mature pager is a smoke detector that only beeps for real fires. An immature one beeps every time you make toast — so eventually you rip out the battery, and that's the night the kitchen actually catches fire. Fewer, truer alerts keep people trusting the alarm.</p></div>
+
+<h2 id="prr">22. Production Readiness Reviews</h2>
+<p class="section-intro">Before a service goes live (or an SRE team takes it on), a Production Readiness Review (PRR) checks it meets reliability standards — catching problems before they page anyone.</p>
+<div class="box note"><span class="box-title">A PRR checklist</span><ul>
+  <li><strong>SLOs defined</strong> and monitored; dashboards exist.</li>
+  <li><strong>Alerting</strong> on symptoms, with runbooks linked.</li>
+  <li><strong>Health checks</strong> (liveness/readiness) and graceful shutdown.</li>
+  <li><strong>Resource limits</strong>, autoscaling, and capacity validated.</li>
+  <li><strong>Dependencies</strong> mapped; failure modes handled (timeouts, retries, circuit breakers).</li>
+  <li><strong>Rollback</strong> tested; deploys are progressive.</li>
+  <li><strong>Backups &amp; DR</strong> in place and tested.</li>
+  <li><strong>Security</strong> review passed (see <a href="security-devsecops-guide.html">Security guide</a>).</li>
+</ul><p>The PRR turns "we think it's ready" into "we verified it's ready" — and creates shared ownership between dev and SRE.</p></div>
+
+<h4>Why gate services before production</h4>
+<p>The cheapest bug to fix is the one caught before launch; the most expensive is the one that pages someone at 3 a.m. six months in. A PRR exists to shift reliability work <em>left</em> — to make "is this operable?" a checklist answered before go-live rather than discovered in production. It also creates shared ownership: the review is where dev and SRE agree on what "ready" means and who owns what.</p>
+
+<h4>How a PRR works under the hood</h4>
+<p>A PRR is a structured review against a standard checklist covering SLOs, alerting+runbooks, health checks, resource limits/capacity, dependency failure handling, tested rollback, backups/DR, and security. Each item is <em>verified</em>, not asserted — "rollback tested" means a rollback was actually performed in staging, not "we're pretty sure it works." The output is a go/no-go with owned action items for any gaps.</p>
+
+<div class="box note"><span class="box-title">Worked example — a PRR scorecard</span>
+<div class="code-label label-output">go/no-go for a new service</div>
+<pre><code>[✓] SLOs defined + dashboard            (99.9% avail, p99&lt;300ms)
+[✓] Symptom alerts w/ runbook links
+[✓] Liveness/readiness probes + graceful shutdown
+[✓] Resource limits set; load-tested to 3× forecast peak
+[✗] Rollback: NOT yet tested in staging     ← BLOCKER
+[✗] Dependency timeouts/breakers: missing on payments call ← BLOCKER
+[✓] Backups configured + one test-restore done
+[✓] Security review passed
+
+Verdict: NO-GO. 2 blockers.
+  AI-1 test rollback in staging      — @dev-lead, before launch
+  AI-2 add timeout+breaker on payments — @dev-lead, before launch</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Rubber-stamp reviews.</strong> Ticking boxes without verifying defeats the purpose — demand evidence.</li>
+  <li><strong>PRR only at launch</strong> — services drift; re-review on major changes or ownership handoff.</li>
+  <li><strong>Treating it as a gate SRE imposes</strong> rather than a shared checklist — kills the collaboration it should build.</li>
+  <li><strong>No follow-through</strong> on the action items, so the same gaps ship anyway.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>A PRR is the pre-flight checklist pilots run before every takeoff. It's boring and it's the same list every time — and that's exactly why planes rarely fall out of the sky. You verify the landing gear works <em>before</em> you're in the air, not after.</p></div>
+
+<h2 id="toil-deep">23. Toil Taxonomy &amp; Automation</h2>
+<p class="section-intro">Not all operational work is toil, and not all toil is worth automating immediately. A taxonomy helps you prioritize.</p>
+<div class="box eli5"><span class="box-title">What counts as toil (and what doesn't)</span><p>Toil is work that is <strong>manual, repetitive, automatable, tactical, and scales with the system</strong> — like manually restarting a service every night. Work that requires human judgment (designing an architecture, handling a novel incident) is <em>not</em> toil — it's engineering. The goal isn't zero operational work; it's eliminating the mindless, repetitive kind so humans do the valuable, creative kind.</p></div>
+<table>
+  <tr><th>Prioritize automating toil that is...</th><th>Because</th></tr>
+  <tr><td>High-frequency</td><td>Small savings × many occurrences = big win</td></tr>
+  <tr><td>Error-prone when manual</td><td>Automation reduces risk, not just effort</td></tr>
+  <tr><td>Growing with scale</td><td>Will drown you as the system grows</td></tr>
+  <tr><td>Well-understood</td><td>Safe to automate; clear correct behavior</td></tr>
+</table>
+<div class="box best"><span class="box-title">The automation ladder</span><p>Progress each toilsome task up the ladder: <strong>documented</strong> (runbook) → <strong>scripted</strong> (one command) → <strong>self-service</strong> (anyone can run safely) → <strong>automated trigger</strong> (runs on a signal) → <strong>self-healing</strong> (system fixes itself, no human). Aim to move the highest-frequency toil toward the top rungs first.</p></div>
+
+<h4>Why a taxonomy, not just "automate everything"</h4>
+<p>Automation is itself work, and it carries risk — auto-remediating the wrong thing can turn a small incident into a big one. A taxonomy exists so you spend your limited engineering time where it pays back most: high-frequency, error-prone, well-understood toil first; rare or judgment-heavy work last (or never). It prevents both extremes — drowning in manual toil, and over-automating fragile edge cases nobody understands.</p>
+
+<h4>How to prioritize and the automation ladder</h4>
+<p>Score each toil item by <strong>frequency × time-per-occurrence × risk-when-manual</strong>, then check the automation payback (<code>payback = build_cost / monthly_saving</code>). Then move it up the <strong>automation ladder</strong>: documented (runbook) → scripted (one command) → self-service (anyone runs it safely) → triggered (runs on a signal) → self-healing (system fixes itself). Aim the highest-scoring toil at the top rungs first.</p>
+
+<div class="box note"><span class="box-title">Worked example — prioritizing a toil backlog</span>
+<div class="code-label label-output">score = freq/mo × min × risk(1-3), then payback</div>
+<pre><code>Task                    freq  min  risk  score   payback   → rung
+Restart stuck worker    120   5    2     1200    0.8 mo    self-healing
+Rotate expiring certs    30   15   3      1350   1.6 mo    triggered
+Provision test env       10   40   1       400   3.0 mo    self-service
+Clear rare cache bug      1   30   2        60   18 mo     document only
+
+Attack order: certs &amp; worker restarts first (highest score,
+fast payback) → automate to the top rungs. Leave the 1×/mo
+edge case as a runbook; automating it wouldn't pay back.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Automating the rare edge case</strong> because it's annoying, while ignoring the high-frequency drudgery that actually drains the team.</li>
+  <li><strong>Jumping straight to self-healing</strong> on poorly-understood tasks — auto-remediation of the wrong thing amplifies incidents.</li>
+  <li><strong>Automating a broken process</strong> instead of fixing it first — you just make the bad outcome faster and harder to see.</li>
+  <li><strong>Not tracking payback</strong> — some toil genuinely isn't worth automating; a runbook is the right answer.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>Think of toil like household chores. You buy a dishwasher (daily dishes, big payback) before a self-folding laundry robot (rare, expensive, barely worth it). And you don't automate a chore you do wrong — you'd just make a bigger mess, faster.</p></div>
+
+<h2 id="culture">24. SRE Organization &amp; Culture</h2>
+<p class="section-intro">SRE is as much about culture and org structure as tools. How teams are structured and how they collaborate with developers determines whether SRE succeeds.</p>
+<table>
+  <tr><th>Model</th><th>How it works</th><th>Best for</th></tr>
+  <tr><td>Embedded SRE</td><td>SREs sit within product teams</td><td>Deep domain focus, smaller orgs</td></tr>
+  <tr><td>Centralized SRE</td><td>One SRE team serves many products</td><td>Consistency, platform tooling</td></tr>
+  <tr><td>Platform/enabling</td><td>SRE builds paved-road tooling; devs self-serve</td><td>Scaling reliability across many teams</td></tr>
+  <tr><td>Consulting SRE</td><td>SREs advise, devs own operations</td><td>Spreading practices widely</td></tr>
+</table>
+<div class="box best"><span class="box-title">Cultural pillars of SRE</span><ul>
+  <li><strong>Blameless culture</strong> — psychological safety so people surface problems (see <a href="#postmortems">postmortems</a>).</li>
+  <li><strong>Shared ownership</strong> — devs share on-call/reliability, via error-budget policy.</li>
+  <li><strong>Data over opinion</strong> — SLOs and metrics settle "how reliable?" debates.</li>
+  <li><strong>Engineering, not firefighting</strong> — cap toil so SREs improve systems, not just react.</li>
+  <li><strong>Gradual adoption</strong> — start with SLOs on one critical service, expand as value is shown.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">You now understand SRE end to end</span><p>From SRE fundamentals and SLOs through reliability math, failure modes, load shedding, capacity modeling, DR, advanced chaos, on-call maturity, production readiness, toil automation, and org/culture. SRE is the discipline that ties every other guide together into dependable, well-run systems — the essence of operating at lead-engineer level.</p></div>
+
+<h4>Why culture makes or breaks SRE</h4>
+<p>You can adopt every SRE practice on paper and still fail if the culture fights it: error budgets mean nothing if leadership overrides the freeze whenever a VP wants a feature; blameless postmortems collapse the first time someone gets fired for an outage. The org structure and cultural pillars exist because the practices only work when incentives align — shared ownership, data over hierarchy, and psychological safety are the soil the mechanisms grow in.</p>
+
+<h4>How the org models trade off under the hood</h4>
+<p>The models differ in how SRE effort is <em>allocated</em>: <strong>embedded</strong> maximizes domain depth but doesn't scale (one SRE per team); <strong>centralized</strong> gives consistency but can become a bottleneck; <strong>platform/enabling</strong> scales best by building a "paved road" so dev teams self-serve reliability; <strong>consulting</strong> spreads practices widely but owns nothing directly. Most mature orgs blend them — a platform team for tooling plus embedded/consulting SREs for the highest-stakes services.</p>
+
+<div class="box note"><span class="box-title">Worked example — matching model to org stage</span>
+<div class="code-label label-output">choosing a structure as you grow</div>
+<pre><code>Startup (5 services, 15 eng):
+  → Consulting/embedded — teams own on-call, 1-2 SREs advise.
+
+Scale-up (40 services, 150 eng):
+  → Platform/enabling — build the paved road (SLO tooling,
+    golden-path CI, self-serve dashboards) so 40 teams don't
+    each reinvent reliability. Embed SREs on the 3 critical services.
+
+Enterprise (300+ services):
+  → Blend: central platform team + embedded SRE on tier-1 systems
+    + consulting to spread practices to the long tail.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Error-budget policy without leadership teeth.</strong> The first override ("ship it anyway") tells everyone the budget is fake.</li>
+  <li><strong>SRE as the "ops team" that owns everyone's pager</strong> — removes dev incentive to build reliable software.</li>
+  <li><strong>Centralizing too early</strong> (bottleneck) or embedding forever (doesn't scale) — evolve the model with size.</li>
+  <li><strong>Big-bang rollout.</strong> Start with SLOs on one critical service, show value, then expand — culture change is gradual.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>SRE practices are seeds; culture is the soil. Plant the best seeds in toxic soil (blame, ignored budgets, hero worship) and nothing grows. Get the soil right — safety, shared ownership, data over opinion — and even modest practices flourish.</p></div>
+
+<h2 id="aiops">25. AIOps &amp; AI-Assisted DevOps</h2>
+<p class="section-intro">The newest shift in the field: using machine learning and generative AI to <em>operate</em> systems — detecting anomalies, correlating alerts, summarizing incidents, and assisting engineers. This is where reliability engineering is heading, and it's a fast-growing part of the modern DevOps skill set.</p>
+
+<div class="box eli5">
+  <span class="box-title">AIOps = a tireless junior engineer watching your dashboards</span>
+  <p>A human can't watch millions of metrics across hundreds of services at 3 a.m. <strong>AIOps</strong> (AI for IT Operations) puts a model on that job: it learns what "normal" looks like, flags the odd blip a static threshold would miss, groups 200 related alerts into one incident, and can even draft the first-response summary. It doesn't replace the on-call engineer — it hands them a head start so they fix things faster.</p>
+</div>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 230" role="img" aria-label="AIOps pipeline from signals to action">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">AIOps: from raw signals to faster action</text>
+  <g font-family="-apple-system, sans-serif">
+    <rect x="20" y="80" width="150" height="55" rx="8" fill="#21262d" stroke="#8b949e" stroke-width="1.5"/><text x="95" y="104" text-anchor="middle" class="svg-sub">metrics · logs</text><text x="95" y="122" text-anchor="middle" class="svg-sub">traces · events</text>
+    <rect x="210" y="80" width="160" height="55" rx="8" fill="#21262d" stroke="#4285f4" stroke-width="2"/><text x="290" y="100" text-anchor="middle" class="svg-label" fill="#4285f4">detect</text><text x="290" y="120" text-anchor="middle" class="svg-sub">anomaly detection (ML)</text>
+    <rect x="410" y="80" width="160" height="55" rx="8" fill="#21262d" stroke="#f0883e" stroke-width="2"/><text x="490" y="100" text-anchor="middle" class="svg-label" fill="#f0883e">correlate</text><text x="490" y="120" text-anchor="middle" class="svg-sub">group alerts → 1 incident</text>
+    <rect x="610" y="80" width="180" height="55" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="2"/><text x="700" y="100" text-anchor="middle" class="svg-label" fill="#7ee787">assist</text><text x="700" y="120" text-anchor="middle" class="svg-sub">summarize · suggest fix</text>
+    <g stroke="#58a6ff" stroke-width="2"><line x1="170" y1="107" x2="208" y2="107" marker-end="url(#ai)"/><line x1="370" y1="107" x2="408" y2="107" marker-end="url(#ai)"/><line x1="570" y1="107" x2="608" y2="107" marker-end="url(#ai)"/></g>
+    <text x="410" y="175" text-anchor="middle" class="svg-sub">Reduces alert noise &amp; MTTR — the human still decides &amp; acts, but starts from a synthesized picture.</text>
+  </g>
+  <defs><marker id="ai" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#58a6ff"/></marker></defs>
+</svg>
+<figcaption>AIOps ingests all your telemetry, detects anomalies statically thresholds miss, correlates a storm of alerts into a single incident, and drafts a summary — cutting both alert fatigue and mean-time-to-resolve.</figcaption>
+</figure>
+
+<h3>Where AI helps a DevOps engineer today</h3>
+<table>
+  <tr><th>Area</th><th>How AI helps</th><th>Example tools</th></tr>
+  <tr><td><strong>Anomaly detection</strong></td><td>Learns normal patterns; flags deviations no static threshold would catch</td><td>Prometheus + ML, Datadog Watchdog, Dynatrace Davis</td></tr>
+  <tr><td><strong>Alert correlation</strong></td><td>Groups related alerts into one incident; finds the likely root cause</td><td>PagerDuty AIOps, BigPanda, Moogsoft</td></tr>
+  <tr><td><strong>Log summarization</strong></td><td>LLM reads thousands of log lines and summarizes the error &amp; likely cause</td><td>k8sgpt, LLM + log pipeline</td></tr>
+  <tr><td><strong>Incident assist / ChatOps</strong></td><td>Drafts incident summaries, runbooks, and postmortems; answers "what changed?"</td><td>Copilot, Claude, incident bots</td></tr>
+  <tr><td><strong>Capacity forecasting</strong></td><td>Predicts future load &amp; cost from historical trends</td><td>Forecasting models, cloud cost tools</td></tr>
+  <tr><td><strong>Author automation</strong></td><td>Generate/refactor scripts, IaC, and pipeline YAML from a prompt</td><td>GitHub Copilot, Claude, Cursor</td></tr>
+</table>
+
+<div class="code-label label-cmd">Hands-on: AI triage of a failing pod with k8sgpt</div>
+<pre><code># k8sgpt scans your cluster and explains problems in plain English (optionally via an LLM)
+k8sgpt analyze --explain --backend openai
+# Example output:
+#   Pod default/web-7f8 is in CrashLoopBackOff.
+#   → The container exits because env var DB_HOST is unset.
+#   → Suggested fix: add DB_HOST to the deployment's env or the referenced ConfigMap.
+
+# Or ask an LLM to summarize a wall of logs from the CLI
+kubectl logs deploy/web --tail=500 | \
+  llm "summarize the errors and the most likely root cause in 3 bullets"</code></pre>
+
+<div class="box best"><span class="box-title">Using AI responsibly in operations</span><ul>
+  <li><strong>Keep a human in the loop</strong> for anything that changes production — AI suggests, humans approve. Never let a model auto-remediate prod unsupervised.</li>
+  <li><strong>Don't paste secrets/PII</strong> into public LLMs; use enterprise/self-hosted models for sensitive logs (this is a real <a href="security-devsecops-guide.html">security</a> concern).</li>
+  <li><strong>Verify AI output</strong> — generated commands, IaC, and "root causes" can be confidently wrong. Treat them as a fast first draft, not truth.</li>
+  <li><strong>Feed it good signals</strong> — AIOps is only as good as your <a href="observability-k8s-guide.html">observability</a> data (structured logs, labeled metrics, traces).</li>
+  <li><strong>Start narrow</strong> — anomaly detection on one key metric, or log summarization for one noisy service, before broad rollout.</li>
+</ul></div>
+
+<div class="box note"><span class="box-title">AI-assisted scripting &amp; IaC (the everyday win)</span><p>Beyond incident response, the most common practical use is <strong>authoring</strong>: ask an AI assistant to draft a Bash/Python script, a Dockerfile, a Terraform module, or a Kubernetes manifest, then review and test it. It accelerates the boring parts covered in the <a href="programming-automation-guide.html">Programming</a>, <a href="terraform-complete-guide.html">Terraform</a>, and <a href="kubernetes-complete-guide.html">Kubernetes</a> guides. The skill is knowing enough to <em>review</em> what it produces — which is exactly what this whole learning path gives you.</p></div>
+
+<div class="box warn"><span class="box-title">AI is a tool, not a replacement for fundamentals</span><p>An AI assistant makes a skilled engineer faster, but it makes an unskilled one <em>dangerous</em> — because they can't tell when the output is wrong. Everything else in these guides (how systems actually work, how to debug, what "good" looks like) is what lets you use AI safely and well. Learn the fundamentals first; then let AI amplify them.</p></div>
+
+<h4>Why AIOps now</h4>
+<p>Telemetry has outgrown human attention: a mid-size platform emits millions of metric series and billions of log lines, far past what static thresholds and on-call eyeballs can reason about. AIOps exists to close that gap — not to replace judgment, but to do the pattern-matching at scale that humans can't, so the engineer starts an incident from a synthesized picture instead of a wall of raw alerts.</p>
+
+<h4>How the AIOps pipeline works under the hood</h4>
+<p>Three stages: <strong>detect</strong> — models learn each metric's normal seasonal pattern and flag statistical deviations a fixed threshold would miss (a drop that's normal at 3 a.m. but alarming at noon); <strong>correlate</strong> — a storm of alerts is clustered by time, topology, and causality into a single incident with a probable root cause; <strong>assist</strong> — an LLM reads logs/changes and drafts a summary or suggested fix. The human stays the decision-maker; AI compresses the time-to-understanding.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 820 250" role="img" aria-label="Learned seasonal baseline versus static threshold anomaly detection">
+  <text x="410" y="24" text-anchor="middle" class="svg-title">Anomaly detection: learned baseline beats a static threshold</text>
+  <g font-family="-apple-system, sans-serif">
+    <line x1="70" y1="200" x2="770" y2="200" stroke="#8b949e" stroke-width="1.5"/>
+    <line x1="70" y1="200" x2="70" y2="45" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="420" y="228" text-anchor="middle" class="svg-sub">time of day (00:00 → 24:00)</text>
+    <path d="M70,180 C180,60 260,55 360,150 C460,60 560,55 660,175 L740,180" fill="none" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+    <path d="M70,110 C180,-10 260,-15 360,80 C460,-10 560,-15 660,105 L740,110" fill="none" stroke="#58a6ff" stroke-width="1" opacity="0.5"/>
+    <path d="M70,145 C180,25 260,20 360,115 C460,25 560,20 660,140 L740,145" fill="none" stroke="#7ee787" stroke-width="2.5"/>
+    <text x="150" y="70" class="svg-sub" fill="#58a6ff">expected ± band (learned seasonality)</text>
+    <line x1="70" y1="165" x2="770" y2="165" stroke="#f0883e" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="600" y="160" class="svg-sub" fill="#f0883e">static threshold (dumb)</text>
+    <circle cx="250" cy="120" r="6" fill="#7ee787"/><text x="205" y="112" class="svg-sub" fill="#7ee787">03:00 low = normal, no page ✓</text>
+    <circle cx="490" cy="150" r="7" fill="#ff7b72"/><text x="500" y="150" class="svg-sub" fill="#ff7b72">noon drop → −9σ, real outage, PAGE ✓</text>
+  </g>
+</svg>
+<figcaption>A fixed line pages on the harmless nightly low (false positive) and misses the midday drop that a static threshold sits below (false negative). A model that learns each metric's seasonal shape flags deviations relative to <em>expected</em> — fewer false pages and it still catches the real incident.</figcaption>
+</figure>
+
+<div class="box note"><span class="box-title">Worked example — anomaly detection vs a static threshold</span>
+<div class="code-label label-output">why learned baselines beat fixed thresholds</div>
+<pre><code>Metric: checkout req/s (strong daily seasonality)
+Static threshold "alert if &lt; 500 req/s":
+  03:00 traffic = 400 (normal nightly low) → FALSE PAGE (noise)
+  12:00 traffic = 600 but usually 2,000    → MISSED real outage!
+
+Learned baseline (expected ± band):
+  03:00 expected 380±60  → 400 normal, no page ✓
+  12:00 expected 2000±150 → 600 is -9σ → PAGE, correct ✓
+Result: fewer false pages AND catches the real one.</code></pre>
+</div>
+
+<div class="box warn"><span class="box-title">Common mistakes</span><ul>
+  <li><strong>Letting AI auto-remediate prod unsupervised</strong> — a confidently wrong action can widen an incident. Human approves changes.</li>
+  <li><strong>Garbage in.</strong> AIOps is only as good as your telemetry — unlabeled metrics and unstructured logs produce noise.</li>
+  <li><strong>Trusting generated root causes/commands</strong> as truth — verify; LLMs are confidently wrong sometimes.</li>
+  <li><strong>Pasting secrets/PII into public LLMs</strong> — a real security leak; use enterprise/self-hosted models for sensitive data.</li>
+</ul></div>
+
+<div class="box eli5"><span class="box-title">Mental model</span><p>AIOps is a smart assistant who has read every dashboard and log all night. It hands you a one-page brief — "these 200 alerts are one incident, probably the payments DB, here's the summary" — so you skip the reading and go straight to deciding. It doesn't fly the plane; it's the co-pilot pointing at the right gauge.</p></div>
+
+<h2 id="best-practices">26. Best Practices — the master checklist</h2>
+<div class="box best"><span class="box-title">SRE master checklist</span><ul>
+  <li>Define user-centric SLIs and SLOs for every critical service.</li>
+  <li>Run an error-budget policy with leadership buy-in; automate burn-rate alerts.</li>
+  <li>Measure &amp; cap toil (&lt;50%); automate the rest away.</li>
+  <li>Monitor the golden signals; page only on actionable symptoms.</li>
+  <li>Structured incident response; blameless postmortems with tracked action items.</li>
+  <li>Design for failure (timeouts, retries+backoff, circuit breakers, redundancy).</li>
+  <li>Validate resilience with chaos engineering.</li>
+  <li>Release progressively, observably, reversibly; use feature flags.</li>
+  <li>Plan capacity from data; keep failure headroom.</li>
+</ul></div>
+
+<h2 id="troubleshooting">27. Reliability Playbook</h2>
+<div class="trouble"><h4>SLO is being missed / error budget burning fast</h4><p>Freeze risky releases per your error-budget policy. Use golden signals + traces to localize the cause. Mitigate first (roll back the last change, scale out, shed load), then root-cause and add a permanent fix via postmortem action items.</p></div>
+<div class="trouble"><h4>Team is drowning in alerts / on-call burnout</h4><p>Alert fatigue. Audit alerts: delete non-actionable ones, convert warnings to tickets/dashboards, and move to <a href="observability-k8s-guide.html#burn-rate">symptom-based SLO alerting</a>. Fewer, better pages.</p></div>
+<div class="trouble"><h4>Repeated incidents from the same cause</h4><p>Postmortem action items aren't shipping. Track them like features (owned, dated, prioritized) and dedicate error-budget-driven time to reliability work until the class of incident is eliminated.</p></div>
+<div class="trouble"><h4>Toil keeps growing</h4><p>You're past the toil cap. Stop and automate the top repetitive task; treat toil reduction as first-class engineering work with real roadmap time, not something done "when there's a spare minute."</p></div>
+
+<div class="box note"><span class="box-title">Where this all comes together</span><p>SRE is the operating layer over everything else: <a href="observability-k8s-guide.html">Observability</a> provides the data, <a href="cicd-complete-guide.html">CI/CD</a> the safe delivery, <a href="kubernetes-complete-guide.html">Kubernetes</a> the resilient platform, <a href="cloud-aws-complete-guide.html">Cloud</a> the redundant infrastructure, and <a href="security-devsecops-guide.html">Security</a> the trust. Master these together and you're operating at lead-engineer level. Back to the <a href="index.html">Learning Hub</a>.</p></div>
+
+</main>
+</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => { if (sec.offsetTop <= scrollPos) current = '#' + sec.id; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === current));
+    const activeLink = document.querySelector('.nav a.active');
+    if (activeLink) {
+      const sb = document.querySelector('.sidebar');
+      const linkTop = activeLink.offsetTop, linkBottom = linkTop + activeLink.offsetHeight;
+      const viewTop = sb.scrollTop, viewBottom = viewTop + sb.clientHeight;
+      if (linkBottom > viewBottom - 40) sb.scrollTop = linkBottom - sb.clientHeight + 60;
+      else if (linkTop < viewTop + 80) sb.scrollTop = Math.max(0, linkTop - 80);
+    }
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+  }
+  window.addEventListener('scroll', onScroll);
+  function filterNav() {
+    const q = document.getElementById('navSearch').value.toLowerCase();
+    document.querySelectorAll('#navList a').forEach(a => {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+  }
+  document.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => {
+    if (window.innerWidth <= 900) document.querySelector('.sidebar').classList.remove('open');
+  }));
+</script>
+</body>
+</html>
